@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Works | Portfolio</title>
+    <style>
+        :root {
+            /* Trustworthy Light Theme (Gentle White) */
+            --bg: #f8f9fa;
+            --fg: #334155;
+            --heading: #0f172a;
+            --muted: #64748b;
+            --primary: #2563eb;
+            --primary-fg: #ffffff;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Noto Sans JP", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header */
+        header {
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .brand {
+            font-weight: 700;
+            color: var(--heading);
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        .back-link {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        .section {
+            padding: 40px 24px 80px;
+            width: min(1000px, 100%);
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: var(--heading);
+            font-size: clamp(24px, 4vw, 32px);
+            margin: 0 0 32px;
+            letter-spacing: -0.02em;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            padding: 32px;
+            border-radius: 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card h3 {
+            margin: 0 0 12px;
+            font-size: 18px;
+            color: var(--heading);
+            font-weight: 700;
+        }
+
+        .card p {
+            font-size: 15px;
+            color: var(--muted);
+            margin: 0 0 20px;
+            line-height: 1.6;
+        }
+
+        .tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #f1f5f9;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="brand">Portfolio</a>
+        <a href="index.html" class="back-link">← Home</a>
+    </header>
+
+    <main class="section">
+        <h1>Works / 実績紹介</h1>
+
+        <div class="cards">
+            <div class="card">
+                <h3>Excel処理の自動化ツール</h3>
+                <p>大手物流企業の月次レポート作成業務を自動化。Python(Pandas)を使用し、毎月20時間かかっていた集計作業を3分に短縮しました。エラーハンドリングとログ出力機能付き。</p>
+                <div class="tags">
+                    <span class="tag">Python</span>
+                    <span class="tag">Excel VBA</span>
+                    <span class="tag">業務効率化</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>倉庫在庫・搬出管理ダッシュボード</h3>
+                <p>複数の拠点に分散する在庫データを一元管理。リアルタイムで搬出状況を可視化し、意思決定の速度を向上させました。</p>
+                <div class="tags">
+                    <span class="tag">React</span>
+                    <span class="tag">TypeScript</span>
+                    <span class="tag">Firebase</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>社内申請ワークフローシステム</h3>
+                <p>紙ベースで行われていた経費精算や休暇申請をデジタル化。承認フローを視覚的に管理できるUIを設計・実装。</p>
+                <div class="tags">
+                    <span class="tag">Next.js</span>
+                    <span class="tag">TailwindCSS</span>
+                    <span class="tag">Supabase</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>ECサイト商品データ連携バッチ</h3>
+                <p>基幹システムとECサイト間の商品データ同期バッチを構築。AWS Lambdaを使用し、サーバーレスで安定稼働を実現。</p>
+                <div class="tags">
+                    <span class="tag">AWS</span>
+                    <span class="tag">Python</span>
+                    <span class="tag">API</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+
+</html>

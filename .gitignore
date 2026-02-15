@@ -1,0 +1,31 @@
+﻿# Security / secrets
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Backup / temporary
+*.bak
+*.old
+*~
+.tmp
+.tmp.*
+tmp/
+temp/
+draft/
+backup/
+dist-old/
+
+# Archives / logs
+*.zip
+*.7z
+*.rar
+*.log
+debug.txt
+output/
+
+# OS/editor
+.DS_Store
+Thumbs.db

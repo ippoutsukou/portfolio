@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>生成AI研修：応用編（COSTフレームワーク）</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    html { height:100%; overflow:hidden; }
+    body {
+      margin:0; padding:0; height:100%; overflow:visible;
+      font-family:'Noto Sans JP',sans-serif; background:#0a0a0a;
+    }
+    .slides-container {
+      height:100vh; overflow-y:auto; scroll-behavior:smooth;
+    }
+    .slide {
+      width:1280px; min-height:720px; margin:0 auto 40px;
+      position:relative; 
+      background:linear-gradient(135deg,#0f1419,#1a2332,#2a3441);
+      color:white; overflow:hidden; border-radius:12px;
+      box-shadow:0 25px 50px rgba(0,0,0,0.5);
+      border:1px solid rgba(255,255,255,0.1);
+    }
+    .grid-pattern {
+      position:absolute; top:0; left:0; width:100%; height:100%;
+      background-image:
+        radial-gradient(circle at 20px 20px, rgba(64,144,255,0.15) 1px, transparent 0);
+      background-size:40px 40px; z-index:1;
+    }
+    .ai-orb {
+      position:absolute; width:400px; height:400px; border-radius:50%;
+      background:radial-gradient(circle, rgba(64,144,255,0.4) 0%, rgba(147,51,234,0.2) 50%, transparent 100%);
+      top:-150px; right:-150px; z-index:1;
+      filter:blur(80px);
+    }
+    .ai-circle {
+      position:absolute; width:500px; height:500px; border-radius:50%;
+      background:radial-gradient(circle, rgba(64,144,255,0.3) 0%, rgba(0,72,186,0.1) 70%, transparent 100%);
+      top:-100px; right:-100px; z-index:1;
+    }
+    .content {
+      position:relative; z-index:2; padding:60px;
+      display:flex; flex-direction:column; align-items:center; text-align:center;
+      height:calc(100% - 120px);
+    }
+    .content.items-start { align-items:flex-start; text-align:left; }
+    .slide-number {
+      position:absolute; bottom:30px; right:40px; 
+      font-size:16px; font-weight:500; opacity:0.6;
+      background:rgba(255,255,255,0.1); padding:8px 16px; border-radius:20px;
+    }
+    h1.title {
+      font-weight:700; font-size:3.5rem; line-height:1.1; letter-spacing:-2px;
+      background:linear-gradient(135deg,#ffffff,#64b5f6,#9c27b0);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      margin-bottom:2rem; text-shadow:none;
+    }
+    .subtitle {
+      font-weight:400; font-size:1.5rem; opacity:0.85; margin-bottom:3rem;
+      color:#cbd5e1;
+    }
+    .badge {
+      background:rgba(255,255,255,0.12); backdrop-filter:blur(10px);
+      border-radius:25px; padding:12px 20px; font-size:0.95rem; font-weight:500;
+      display:inline-flex; align-items:center; gap:10px; 
+      box-shadow:0 8px 32px rgba(0,0,0,0.3);
+      border:1px solid rgba(255,255,255,0.1);
+      transition:all 0.3s ease;
+    }
+    .badge:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(0,0,0,0.4); }
+    .floating-elements {
+      position:absolute; width:100%; height:100%; top:0; left:0; overflow:hidden; z-index:1;
+    }
+    .floating-element {
+      position:absolute; border-radius:50%; opacity:0.3; filter:blur(15px);
+      animation:float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform:translateY(0px); }
+      50% { transform:translateY(-20px); }
+    }
+    .code-block {
+      background:linear-gradient(135deg, rgba(0,0,0,0.4), rgba(30,30,30,0.6));
+      padding:30px; border-radius:12px; overflow-x:auto; margin:20px 0;
+      text-align:left; font-family:'JetBrains Mono',monospace;
+      border:1px solid rgba(64,144,255,0.2);
+      box-shadow:0 8px 32px rgba(0,0,0,0.3);
+      position:relative;
+    }
+    .code-block::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:2px;
+      background:linear-gradient(90deg, #4090ff, #9333ea); border-radius:12px 12px 0 0;
+    }
+    .code-block code {
+      color:#e2e8f0; font-size:0.9rem; line-height:1.6;
+    }
+    .framework-grid {
+      display:grid; grid-template-columns:repeat(2, 1fr); gap:30px;
+      margin-top:30px; width:100%;
+    }
+    .framework-card {
+      background:rgba(255,255,255,0.05); padding:25px; border-radius:12px;
+      border:1px solid rgba(64,144,255,0.2); transition:all 0.3s ease;
+      backdrop-filter:blur(10px);
+    }
+    .framework-card:hover {
+      transform:translateY(-5px); border-color:rgba(64,144,255,0.4);
+      box-shadow:0 15px 40px rgba(64,144,255,0.1);
+    }
+    .framework-letter {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:40px; height:40px; border-radius:50%;
+      background:linear-gradient(135deg, #4090ff, #9333ea);
+      color:white; font-weight:700; font-size:1.2rem;
+      margin-right:15px; flex-shrink:0;
+    }
+    .key-point {
+      display:flex; align-items:flex-start; margin-bottom:20px; text-align:left;
+      padding:15px; border-radius:8px; background:rgba(255,255,255,0.03);
+      border-left:3px solid #4090ff;
+    }
+    .key-point i { 
+      color:#64b5f6; margin-right:12px; margin-top:2px; font-size:1.1rem;
+    }
+    .process-flow {
+      display:grid; grid-template-columns:repeat(4, 1fr); gap:20px;
+      margin-top:40px; width:100%;
+    }
+    .process-step {
+      background:rgba(255,255,255,0.05); padding:25px; border-radius:12px;
+      text-align:center; border:1px solid rgba(64,144,255,0.2);
+      position:relative; transition:all 0.3s ease;
+    }
+    .process-step:hover { transform:translateY(-5px); }
+    .process-step::after {
+      content:'→'; position:absolute; right:-25px; top:50%;
+      transform:translateY(-50%); color:#64b5f6; font-size:1.5rem;
+      font-weight:700;
+    }
+    .process-step:last-child::after { display:none; }
+    .step-number {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:30px; height:30px; border-radius:50%;
+      background:linear-gradient(135deg, #4090ff, #9333ea);
+      color:white; font-weight:700; margin-bottom:15px;
+    }
+    table {
+      width:100%; border-collapse:separate; border-spacing:0;
+      margin:30px 0; background:rgba(255,255,255,0.03);
+      border-radius:12px; overflow:hidden;
+      box-shadow:0 8px 32px rgba(0,0,0,0.2);
+    }
+    th, td { 
+      padding:20px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.1);
+    }
+    th { 
+      background:linear-gradient(135deg, rgba(64,144,255,0.2), rgba(147,51,234,0.2));
+      font-weight:600; color:#ffffff;
+    }
+    td { background:rgba(255,255,255,0.02); }
+    tr:last-child td { border-bottom:none; }
+    ol, ul { 
+      margin:30px 0; padding-left:0; list-style:none;
+    }
+    ol li, ul li {
+      background:rgba(255,255,255,0.05); margin-bottom:15px;
+      padding:20px; border-radius:8px; border-left:3px solid #4090ff;
+      position:relative; padding-left:60px;
+    }
+    ol li::before {
+      content:counter(item); counter-increment:item;
+      position:absolute; left:20px; top:20px;
+      background:linear-gradient(135deg, #4090ff, #9333ea);
+      color:white; width:25px; height:25px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:0.9rem;
+    }
+    ol { counter-reset:item; }
+    .highlight-box {
+      background:linear-gradient(135deg, rgba(64,144,255,0.1), rgba(147,51,234,0.1));
+      border:1px solid rgba(64,144,255,0.3); border-radius:12px;
+      padding:30px; margin:30px 0; text-align:center;
+    }
+    .section-header {
+      display:flex; align-items:center; margin-bottom:30px;
+      padding-bottom:15px; border-bottom:2px solid rgba(64,144,255,0.3);
+    }
+    .section-icon {
+      background:linear-gradient(135deg, #4090ff, #9333ea);
+      width:50px; height:50px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      margin-right:20px; font-size:1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="slides-container">
+
+    <!-- スライド1：表紙 -->
+    <div class="slide flex items-center justify-center">
+      <div class="grid-pattern"></div>
+      <div class="ai-circle"></div>
+      <div class="floating-elements">
+        <div class="floating-element" style="background:#4287f5;width:80px;height:80px;top:15%;left:10%;animation-delay:-1s;"></div>
+        <div class="floating-element" style="background:#42c5f5;width:60px;height:60px;bottom:25%;left:20%;animation-delay:-3s;"></div>
+        <div class="floating-element" style="background:#8f42f5;width:100px;height:100px;top:60%;right:15%;animation-delay:-2s;"></div>
+      </div>
+      <div class="content">
+        <div class="mb-8">
+          <i class="fas fa-robot text-8xl mb-6" style="background:linear-gradient(135deg,#4090ff,#9333ea);-webkit-background-clip:text;-webkit-text-fill-color:transparent;"></i>
+        </div>
+        <h1 class="title" style="font-size:4.5rem;">生成AI研修</h1>
+        <p class="subtitle">COSTフレームワークによる効果的なプロンプト設計</p>
+        <div class="flex gap-6 flex-wrap justify-center">
+          <div class="badge"><i class="fas fa-clock"></i>所要時間: 30分</div>
+          <div class="badge"><i class="fas fa-brain"></i>実務レベル</div>
+          <div class="badge"><i class="fas fa-lightbulb"></i>実践演習あり</div>
+        </div>
+      </div>
+      <div class="slide-number">1 / 7</div>
+    </div>
+
+    <!-- スライド2：定型業務メッセージ雛形（COST） -->
+    <div class="slide">
+      <div class="grid-pattern"></div>
+      <div class="ai-orb"></div>
+      <div class="content items-start">
+        <div class="section-header">
+          <div class="section-icon"><i class="fas fa-envelope"></i></div>
+          <h1 class="title" style="font-size:2.8rem;margin:0;">定型業務メッセージ雛形</h1>
+        </div>
+        
+        <div class="code-block">
+          <code>「あなたは社内コミュニケーション担当です。（Context）
+以下の項目を含む社内進捗報告メールを作成してください。（Order）
+・宛先：〇〇部長
+・件名：週次進捗レポート（YYYY/MM/DD）
+・本文：今週実施タスク4点、来週予定2点を中心に箇条書き
+（Specific）
+対象：全社向けにわかりやすい口調で（Target）」</code>
+        </div>
+
+        <div class="framework-grid">
+          <div class="framework-card">
+            <div class="flex items-center mb-3">
+              <div class="framework-letter">C</div>
+              <strong style="font-size:1.1rem;">Context</strong>
+            </div>
+            <p style="color:#cbd5e1;">役割と状況を明示し、AIに適切な立場を与える</p>
+          </div>
+          <div class="framework-card">
+            <div class="flex items-center mb-3">
+              <div class="framework-letter">O</div>
+              <strong style="font-size:1.1rem;">Order</strong>
+            </div>
+            <p style="color:#cbd5e1;">何を生成すべきかを具体的に命令</p>
+          </div>
+          <div class="framework-card">
+            <div class="flex items-center mb-3">
+              <div class="framework-letter">S</div>
+              <strong style="font-size:1.1rem;">Specific</strong>
+            </div>
+            <p style="color:#cbd5e1;">宛先・件名・箇条書き要素を詳細指定</p>
+          </div>
+          <div class="framework-card">
+            <div class="flex items-center mb-3">
+              <div class="framework-letter">T</div>
+              <strong style="font-size:1.1rem;">Target</strong>
+            </div>
+            <p style="color:#cbd5e1;">読み手を想定して口調を調整</p>
+          </div>
+        </div>
+      </div>
+      <div class="slide-number">2 / 7</div>
+    </div>
+
+    <!-- スライド3：議事録要約雛形（COST） -->
+    <div class="slide">
+      <div class="grid-pattern"></div>
+      <div class="ai-orb"></div>
+      <div class="content items-start">
+        <div class="section-header">
+          <div class="section-icon"><i class="fas fa-file-alt"></i></div>
+          <h1 class="title" style="font-size:2.8rem;margin:0;">議事録要約雛形</h1>
+        </div>
+
+        <div class="code-block">
+          <code>「あなたは会議記録の要約者です。（Context）
+以下の会議録テキストを要約してください。（Order）
+1. 会議日時・参加者
+2. 決定事項3点
+3. 次回アクション2点
+文字数：400字以内
+（Specific）
+対象：プロジェクトメンバー向けに簡潔に（Target）」</code>
+        </div>
+
+        <div class="process-flow">
+          <div class="process-step">
+            <div class="step-number">C</div>
+            <h3 style="margin:0 0 10px 0;">Context設定</h3>
+            <p style="color:#cbd5e1;margin:0;font-size:0.9rem;">要約者の立場を明確化</p>
+          </div>
+          <div class="process-step">
+            <div class="step-number">O</div>
+            <h3 style="margin:0 0 10px 0;">Order指定</h3>
+            <p style="color:#cbd5e1;margin:0;font-size:0.9rem;">要約すべき項目を列挙</p>
+          </div>
+          <div class="process-step">
+            <div class="step-number">S</div>
+            <h3 style="margin:0 0 10px 0;">Specific詳細</h3>
+            <p style="color:#cbd5e1;margin:0;font-size:0.9rem;">構成・文字数制限を指定</p>
+          </div>
+          <div class="process-step">
+            <div class="step-number">T</div>
+            <h3 style="margin:0 0 10px 0;">Target調整</h3>
+            <p style="color:#cbd5e1;margin:0;font-size:0.9rem;">対象読者を意識した文体</p>
+          </div>
+        </div>
+
+        <div class="highlight-box">
+          <i class="fas fa-lightbulb text-2xl mb-3" style="color:#64b5f6;"></i>
+          <p style="margin:0;font-size:1.1rem;"><strong>ポイント：</strong>構造化された情報抽出により、一貫性のある議事録要約が可能</p>
+        </div>
+      </div>
+      <div class="slide-number">3 / 7</div>
+    </div>
+
+    <!-- スライド4：営業資料作成プロンプト（COST） -->
+    <div class="slide">
+      <div class="grid-pattern"></div>
+      <div class="ai-orb"></div>
+      <div class="content items-start">
+        <div class="section-header">
+          <div class="section-icon"><i class="fas fa-chart-line"></i></div>
+          <h1 class="title" style="font-size:2.8rem;margin:0;">営業資料作成プロンプト</h1>
+        </div>
+
+        <div class="code-block">
+          <code>「あなたは営業チームのプレゼン担当です。（Context）
+◯◯製品の新機能プレゼン資料を作成してください。（Order）
+・スライド数：5枚
+・構成：導入／課題／解決策／事例紹介／まとめ
+・文字数：各スライド150字以内
+（Specific）
+対象：営業チーム向けにビジネスカジュアルな口調で（Target）」</code>
+        </div>
+
+        <div class="key-point">
+          <i class="fas fa-user-tie"></i>
+          <div>
+            <strong>Context設定：</strong><br>
+            <span style="color:#cbd5e1;">営業チームの立場でプレゼン資料を作成する専門性を付与</span>
+          </div>
+        </div>
+        <div class="key-point">
+          <i class="fas fa-tasks"></i>
+          <div>
+            <strong>Order明確化：</strong><br>
+            <span style="color:#cbd5e1;">新機能プレゼン資料という具体的な成果物を指定</span>
+          </div>
+        </div>
+        <div class="key-point">
+          <i class="fas fa-ruler"></i>
+          <div>
+            <strong>Specific詳細：</strong><br>
+            <span style="color:#cbd5e1;">スライド数・構成・文字数制限で品質を担保</span>
+          </div>
+        </div>
+        <div class="key-point">
+          <i class="fas fa-bullseye"></i>
+          <div>
+            <strong>Target調整：</strong><br>
+            <span style="color:#cbd5e1;">営業チーム向けのビジネスカジュアルな表現で統一</span>
+          </div>
+        </div>
+      </div>
+      <div class="slide-number">4 / 7</div>
+    </div>
+
+    <!-- スライド5：経理レポート要約プロンプト（COST） -->
+    <div class="slide">
+      <div class="grid-pattern"></div>
+      <div class="ai-orb"></div>
+      <div class="content items-start">
+        <div class="section-header">
+          <div class="section-icon"><i class="fas fa-calculator"></i></div>
+          <h1 class="title" style="font-size:2.8rem;margin:0;">経理レポート要約プロンプト</h1>
+        </div>
+
+        <div class="code-block">
+          <code>「あなたは経理部のレポート担当です。（Context）
+2025年度Q1売上データを要約してください。（Order）
+1. 売上総額
+2. 前年同期比増減率
+3. 主な要因分析3点
+文字数：300字以内
+（Specific）
+対象：管理職向けに正式な文体で（Target）」</code>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:30px;">
+          <div>
+            <h3 style="color:#64b5f6;margin-bottom:20px;">
+              <i class="fas fa-cog mr-2"></i>フレームワーク適用例
+            </h3>
+            <div class="framework-card" style="margin-bottom:15px;">
+              <strong>C：</strong>経理部担当者の専門性
+            </div>
+            <div class="framework-card" style="margin-bottom:15px;">
+              <strong>O：</strong>Q1売上データ要約指示
+            </div>
+            <div class="framework-card" style="margin-bottom:15px;">
+              <strong>S：</strong>3項目構成・文字数制限
+            </div>
+            <div class="framework-card">
+              <strong>T：</strong>管理職向け正式文体
+            </div>
+          </div>
+          <div>
+            <h3 style="color:#64b5f6;margin-bottom:20px;">
+              <i class="fas fa-check-circle mr-2"></i>期待される効果
+            </h3>
+            <ul style="list-style:none;padding:0;">
+              <li style="background:rgba(64,144,255,0.1);padding:15px;margin-bottom:10px;border-radius:8px;border-left:3px solid #4090ff;">
+                <i class="fas fa-arrow-right mr-2" style="color:#64b5f6;"></i>
+                数値データの正確な抽出
+              </li>
+              <li style="background:rgba(64,144,255,0.1);padding:15px;margin-bottom:10px;border-radius:8px;border-left:3px solid #4090ff;">
+                <i class="fas fa-arrow-right mr-2" style="color:#64b5f6;"></i>
+                管理職が求める分析観点
+              </li>
+              <li style="background:rgba(64,144,255,0.1);padding:15px;margin-bottom:10px;border-radius:8px;border-left:3px solid #4090ff;">
+                <i class="fas fa-arrow-right mr-2" style="color:#64b5f6;"></i>
+                適切な文体とトーン
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="slide-number">5 / 7</div>
+    </div>
+
+    <!-- スライド6：デバッグ時のチェックリスト -->
+    <div class="slide">
+      <div class="grid-pattern"></div>
+      <div class="ai-orb"></div>
+      <div class="content items-start">
+        <div class="section-header">
+          <div class="section-icon"><i class="fas fa-bug"></i></div>
+          <h1 class="title" style="font-size:2.8rem;margin:0;">デバッグ時のチェックリスト</h1>
+        </div>
+        
+        <table>
+          <thead>
+            <tr>
+              <th style="width:30%;">チェック項目</th>
+              <th>内容例</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. 指示の明確さ</strong></td>
+              <td>「何を」「どの形式で」依頼しているか？</td>
+            </tr>
+            <tr>
+              <td><strong>2. 入力データの適正</strong></td>
+              <td>テキスト長や必要情報の欠落</td>
+            </tr>
+            <tr>
+              <td><strong>3. 出力フォーマット</strong></td>
+              <td>見出し付きか？文字数制限は？</td>
+            </tr>
+            <tr>
+              <td><strong>4. トーン・スタイル</strong></td>
+              <td>丁寧／カジュアルなど適切か？</td>
+            </tr>
+            <tr>
+              <td><strong>5. 失敗例の分析</strong></td>
+              <td>誤情報（hallucination）がないか？</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="highlight-box">
+          <i class="fas fa-exclamation-triangle text-2xl mb-3" style="color:#f59e0b;"></i>
+          <p style="margin:0;font-size:1.1rem;"><strong>注意：</strong>プロンプトの品質がAI出力の品質を決定します。段階的な改善が重要です。</p>
+        </div>
+      </div>
+      <div class="slide-number">6 / 7</div>
+    </div>
+
+    <!-- スライド7：改善演習の流れ -->
+    <div class="slide">
+      <div class="grid-pattern"></div>
+      <div class="ai-orb"></div>
+      <div class="content items-start">
+        <div class="section-header">
+          <div class="section-icon"><i class="fas fa-sync-alt"></i></div>
+          <h1 class="title" style="font-size:2.8rem;margin:0;">改善演習の流れ</h1>
+        </div>
+        
+        <ol>
+          <li>
+            <strong>与えられたプロンプトを実行</strong><br>
+            <span style="color:#cbd5e1;">まず現状のプロンプトでAIに指示を出し、初期の出力を確認する</span>
+          </li>
+          <li>
+            <strong>出力をチェックリストで評価</strong><br>
+            <span style="color:#cbd5e1;">前スライドのチェックリストを用いて、出力品質を多角的に検証する</span>
+          </li>
+          <li>
+            <strong>問題点を洗い出しプロンプト修正</strong><br>
+            <span style="color:#cbd5e1;">COSTフレームワークに基づいて不足している要素を補完・修正する</span>
+          </li>
+          <li>
+            <strong>再実行して品質を比較</strong><br>
+            <span style="color:#cbd5e1;">修正後のプロンプトで再度実行し、改善効果を定量的に評価する</span>
+          </li>
+        </ol>
+
+        <div class="process-flow" style="margin-top:40px;">
+          <div class="process-step">
+            <i class="fas fa-play text-2xl mb-3" style="color:#4090ff;"></i>
+            <h4 style="margin:0;color:#64b5f6;">修正</h4>
+          </div>
+          <div class="process-step">
+            <i class="fas fa-chart-bar text-2xl mb-3" style="color:#4090ff;"></i>
+            <h4 style="margin:0;color:#64b5f6;">比較</h4>
+          </div>
+        </div>
+
+        <div class="highlight-box" style="margin-top:40px;">
+          <i class="fas fa-trophy text-3xl mb-4" style="color:#f59e0b;"></i>
+          <h3 style="margin:0 0 15px 0;color:#ffffff;">成功の鍵</h3>
+          <p style="margin:0;font-size:1.1rem;">継続的な改善サイクルにより、AI活用の精度と効率が飛躍的に向上します</p>
+        </div>
+      </div>
+      <div class="slide-number">7 / 7</div>
+    </div>
+
+  </div>
+
+  <script>
+    // キーボードナビゲーション
+    document.addEventListener('keydown', function(e) {
+      const container = document.querySelector('.slides-container');
+      const slideHeight = 760; // スライド高さ + マージン
+      
+      if (e.key === 'ArrowDown' || e.key === ' ') {
+        e.preventDefault();
+        container.scrollTop += slideHeight;
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        container.scrollTop -= slideHeight;
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        container.scrollTop = 0;
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        container.scrollTop = container.scrollHeight;
+      }
+    });
+
+    // スムーズな視覚効果
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.transform = 'translateY(0)';
+          entry.target.style.opacity = '1';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.slide').forEach(slide => {
+      slide.style.transform = 'translateY(30px)';
+      slide.style.opacity = '0.8';
+      slide.style.transition = 'all 0.6s ease';
+      observer.observe(slide);
+    });
+  </script>
+</body>
+</html>color:#64b5f6;">実行</h4>
+          </div>
+          <div class="process-step">
+            <i class="fas fa-search text-2xl mb-3" style="color:#4090ff;"></i>
+            <h4 style="margin:0;color:#64b5f6;">評価</h4>
+          </div>
+          <div class="process-step">
+            <i class="fas fa-edit text-2xl mb-3" style="color:#4090ff;"></i>
+            <h4 style="margin:0;

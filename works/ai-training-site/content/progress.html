@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>進捗確認</title>
+  <!-- 共通CSS -->
+  <link rel="stylesheet" href="../css/progress.css" />
+  <!-- アイコン & アニメーションライブラリ -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+  <!-- SheetJS (Excel/CSV) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+</head>
+<body>
+  <button class="back-button" onclick="location.href='../index.html'"><i class="fas fa-arrow-left"></i> 戻る</button>
+
+  <!-- アップロード UI -->
+  <section class="upload-section">
+    <div class="upload-card" data-aos="fade-up">
+      <div class="upload-icon"><i class="fas fa-upload"></i></div>
+      <h1>進捗確認ファイルのアップロード</h1>
+      <div class="file-input-wrapper">
+        <input type="file" id="file-input" accept=".xlsx,.xls,.csv" />
+        <button class="file-input-btn" id="file-btn"><i class="fas fa-file-excel"></i> ファイルを選択</button>
+      </div>
+      <p class="upload-instructions">Microsoft Forms から出力した Excel (.xlsx/.xls) または CSV ファイルをアップロードしてください。</p>
+    </div>
+  </section>
+
+  <div class="loading-spinner" id="loading" style="display:none;">
+    <div class="spinner"></div>
+    <p>ファイルを読み込み中...</p>
+  </div>
+
+  <section class="results-section"><div class="container" id="output"></div></section>
+
+  <script>
+    let latestByUserCategory = {};
+
+    // エラー表示関数を先頭に移動
+    function showError(msg) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('output').innerHTML = `<div class="results-card"><h3>エラー</h3><p>${msg}</p></div>`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      AOS.init({ duration: 800, once: true });
+      document.getElementById('file-btn').addEventListener('click', () => document.getElementById('file-input').click());
+    });
+
+    document.getElementById('file-input').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('output').innerHTML = '';
+
+      const name = file.name.toLowerCase();
+      if (name.endsWith('.csv')) handleCsv(file);
+      else if (name.endsWith('.xlsx') || name.endsWith('.xls')) handleExcel(file);
+      else showError('非対応のファイル形式です。.xlsx, .xls, .csv のいずれかを選択してください。');
+    });
+
+    // ---- CSV ----
+    function handleCsv(file) {
+      const reader = new FileReader();
+      reader.onload = evt => {
+        try {
+          const csv = evt.target.result;
+          let data;
+          if (typeof Papa !== 'undefined') {
+            const res = Papa.parse(csv, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() });
+            if (res.errors.length) throw new Error('CSV 解析エラー');
+            data = res.data;
+          } else {
+            const wb = XLSX.read(csv, { type: 'string' });
+            data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '', blankrows: false });
+          }
+          if (!data.length) throw new Error('CSV にデータが見つかりません。');
+          processData(data);
+        } catch (err) { showError(err.message); console.error(err); }
+      };
+      reader.onerror = () => showError('CSV 読み込み中にエラーが発生しました。');
+      reader.readAsText(file, 'utf-8');
+    }
+
+    // ---- Excel ----
+    function handleExcel(file) {
+      const reader = new FileReader();
+      reader.onload = evt => {
+        try {
+          const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+          if (!wb.SheetNames.length) throw new Error('シートが存在しません');
+          const data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '', blankrows: false });
+          if (!data.length) throw new Error('Excel にデータが見つかりません');
+          processData(data);
+        } catch (err) { showError(err.message); console.error(err); }
+      };
+      reader.onerror = () => showError('Excel 読み込み中にエラーが発生しました。');
+      reader.readAsArrayBuffer(file);
+    }
+
+    // ---- 共通処理 ----
+    function processData(rows) {
+      latestByUserCategory = {};
+      rows.forEach(r => {
+        const name = pick(r, ['氏名','名前','Name']).trim();
+        const code = pick(r, ['確認コード','コード','Code']).trim();
+        if (!name || !code) return;
+        const category = pick(r, ['カテゴリ','試験カテゴリ','試験名','Category']) || '未分類';
+        const score = parseInt(pick(r, ['スコア','Score','点数'])) || 0;
+        const ts = parseTimestamp(pick(r, ['応募日時','Timestamp','ID','Date']));
+        const key = `${name}_${code}_${category}`;
+        if (!latestByUserCategory[key] || latestByUserCategory[key].timestamp < ts) {
+          latestByUserCategory[key] = { name, code, category, score, timestamp: ts };
+        }
+      });
+      if (!Object.keys(latestByUserCategory).length) return showError('有効なデータがありません');
+      document.getElementById('loading').style.display = 'none';
+      renderUI();
+    }
+
+    // UI生成
+    function renderUI() {
+      const sum = {};
+      Object.values(latestByUserCategory).forEach(({ category, score }) => {
+        if (!sum[category]) sum[category] = { total: 0, certified: 0 };
+        sum[category].total++;
+        if (score >= 80) sum[category].certified++;
+      });
+      let stats = `<div class="results-card" data-aos="fade-up"><div class="results-header"><div class="results-icon"><i class="fas fa-chart-pie"></i></div><h2 class="results-title">カテゴリ別統計</h2></div><div class="stats-grid">`;
+      for (const c in sum) {
+        const { total, certified } = sum[c];
+        const rate = Math.round((certified/total)*100);
+        stats += `<div class="stat-card"><div class="stat-number">${c}</div><div class="stat-label">カテゴリ</div></div>`+
+                 `<div class="stat-card certified"><div class="stat-number">${certified}</div><div class="stat-label">認定者</div></div>`+
+                 `<div class="stat-card not-certified"><div class="stat-number">${total-certified}</div><div class="stat-label">未認定</div></div>`+
+                 `<div class="stat-card"><div class="stat-number">${rate}%</div><div class="stat-label">認定率</div></div>`;
+      }
+      stats += '</div></div>';
+
+      const form = `<div class="results-card" data-aos="fade-up"><div class="results-header"><div class="results-icon"><i class="fas fa-user-lock"></i></div><h2 class="results-title">本人認証</h2></div><div style="text-align:center;"><input type="text" id="i-name" placeholder="氏名" style="margin:10px;padding:10px;width:200px;"><input type="text" id="i-code" placeholder="確認コード" style="margin:10px;padding:10px;width:260px;"><button onclick="displayMe()" style="padding:10px 20px;margin:10px;">確認</button></div></div>`;
+
+      document.getElementById('output').innerHTML = stats + form;
+      AOS.refresh();
+    }
+
+    // 個人結果
+    function displayMe() {
+      const name = document.getElementById('i-name').value.trim();
+      const code = document.getElementById('i-code').value.trim();
+      if (!name || !code) return alert('氏名と確認コードを入力してください');
+      document.querySelectorAll('.user-results').forEach(el=>el.remove());
+      const list = Object.values(latestByUserCategory).filter(r=>r.name===name && r.code===code);
+      if (!list.length) {
+        document.getElementById('output').insertAdjacentHTML('beforeend', `<div class="results-card user-results" data-aos="fade-up"><div class="no-data"><div class="no-data-icon"><i class="fas fa-user-slash"></i></div><h3>一致する受験履歴がありません</h3></div></div>`);
+        return AOS.refresh();
+      }
+      let html = `<div class="results-card user-results" data-aos="fade-up"><div class="results-header"><div class="results-icon"><i class="fas fa-user-check"></i></div><h2 class="results-title">${name} さんの進捗</h2></div><table class="result-table"><thead><tr><th>カテゴリ</th><th>スコア</th><th>認定状況</th><th>最終受験日</th></tr></thead><tbody>`;
+      list.forEach(r=>{
+        const ok = r.score>=80;
+        html += `<tr><td>${r.category}</td><td><span class="${ok?'score-high':'score-low'}">${r.score}点</span></td><td><span class="${ok?'status-certified':'status-not-certified'}">${ok?'✅ 認定':'❌ 未認定'}</span></td><td>${r.timestamp.toLocaleDateString('ja-JP')}</td></tr>`;
+      });
+      html += '</tbody></table></div>';
+      document.getElementById('output').insertAdjacentHTML('beforeend', html);
+      AOS.refresh();
+    }
+
+    // エラー
+    function parseTimestamp(v){
+      if(v instanceof Date && !isNaN(v)) return v;
+      if(typeof v==='string' && !isNaN(Date.parse(v))) return new Date(v);
+      const n=Number(v);
+      return isNaN(n)?new Date():new Date(n);
+    }
+
+    function pick(row, keys) {
+      for (const key of keys) {
+        if (row.hasOwnProperty(key) && row[key] !== null && row[key] !== '') {
+          return row[key];
+        }
+      }
+      return '';
+    }
+</script>
+</body>
+</html>

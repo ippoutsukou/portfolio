@@ -275,14 +275,42 @@
             border-top: 1px solid var(--border);
         }
 
-        /* Card link */
+        /* Card links */
+        .card-links {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+        }
+
         .card-link {
             display: inline-block;
-            margin-top: 12px;
             font-size: 13px;
             font-weight: 600;
-            color: var(--primary);
             text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .card-link.primary {
+            background: var(--primary);
+            color: var(--primary-fg);
+        }
+
+        .card-link.primary:hover {
+            background: #1d4ed8;
+        }
+
+        .card-link.secondary {
+            background: #f1f5f9;
+            color: var(--muted);
+        }
+
+        .card-link.secondary:hover {
+            background: #e2e8f0;
+            color: var(--fg);
         }
 
         .card-link:hover {
@@ -417,37 +445,30 @@
         <h2 class="section-header">Featured Apps</h2>
         <div class="cards">
             <div class="card">
-                <h3>Excel集計の自動化ツール</h3>
-                <p>月次レポート作成の手作業（月20時間）を解消。エラー時はログ出力で原因追跡可能。</p>
-                <div class="card-meta">入力：Excel → 処理：Python集計 → 出力：整形済みレポート</div>
+                <h3>AI研修ポータルサイト</h3>
+                <p>社内向けAI研修用のWebポータル。基礎知識・事例共有・確認テスト・進捗管理をひとつのサイトにまとめ、自己学習を支援。</p>
                 <div class="tags">
-                    <span class="tag">Python</span>
-                    <span class="tag">Excel</span>
-                    <span class="tag">業務効率化</span>
+                    <span class="tag">HTML/CSS/JS</span>
+                    <span class="tag">社内研修</span>
+                    <span class="tag">AI活用</span>
                 </div>
-                <a class="card-link" href="#">関連note: #002 →</a>
+                <div class="card-links">
+                    <a class="card-link primary" href="works/ai-training-site/">アプリを見る</a>
+                    <a class="card-link secondary" href="#">関連note</a>
+                </div>
             </div>
             <div class="card">
-                <h3>在庫・搬出ダッシュボード</h3>
-                <p>複数拠点の在庫データを一元管理。指標を統一し意思決定の速度を改善。</p>
-                <div class="card-meta">入力：拠点データ → 処理：集約・可視化 → 出力：ダッシュボード</div>
+                <h3>生成AI活用コンテスト 投票補助アプリ</h3>
+                <p>「仮メモ→最終決定」の2段階UIで投票時の記憶負荷と迷いを軽減。ブラウザだけで完結する静的アプリ。</p>
                 <div class="tags">
-                    <span class="tag">React</span>
-                    <span class="tag">可視化</span>
-                    <span class="tag">Firebase</span>
+                    <span class="tag">HTML/CSS/JS</span>
+                    <span class="tag">UI設計</span>
+                    <span class="tag">意思決定</span>
                 </div>
-                <a class="card-link" href="#">関連note: #001 →</a>
-            </div>
-            <div class="card">
-                <h3>定期バッチ運用システム</h3>
-                <p>タスクスケジューラでの定期実行。異常検知と通知まで含めた運用設計。</p>
-                <div class="card-meta">入力：スケジュール設定 → 処理：バッチ実行 → 出力：結果通知</div>
-                <div class="tags">
-                    <span class="tag">Python</span>
-                    <span class="tag">運用</span>
-                    <span class="tag">監視</span>
+                <div class="card-links">
+                    <a class="card-link primary" href="works/vote-app/">アプリを見る</a>
+                    <a class="card-link secondary" href="#">関連note</a>
                 </div>
-                <a class="card-link" href="#">関連note: #003 →</a>
             </div>
         </div>
     </main>

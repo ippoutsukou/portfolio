@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>生成AI初心者研修</title>
+  <!-- Tailwind と FontAwesome の読み込み -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <!-- 日本語フォント -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ======= 全体レイアウト ======= */
+    html {
+      height: 100%;
+      overflow: hidden; /* ページ全体はスクロール不可 */
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: visible; /* body内部は可視 */
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    /* スライド全体をスクロールするコンテナ */
+    .slides-container {
+      height: 100vh; /* ビューポート高 */
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    /* ======= スライド共通 ======= */
+    .slide {
+      width: 1280px;
+      min-height: 720px;
+      margin: 0 auto 40px;
+      position: relative;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: white;
+      overflow: visible; /* はみ出し要素を表示 */
+    }
+    .grid-pattern {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
+      z-index: 1;
+    }
+    .ai-circle, .ai-orb {
+      position: absolute;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(64,144,255,0.3) 0%, rgba(0,72,186,0.1) 70%, transparent 100%);
+      top: -100px; right: -100px;
+      z-index: 1;
+    }
+    .content {
+      position: relative;
+      z-index: 2; /* テキスト等を手前に */
+    }
+    .slide-number {
+      position: absolute;
+      bottom: 20px; right: 20px;
+      font-size: 18px;
+      opacity: 0.7;
+    }
+
+    /* ======= 共通パーツ ======= */
+    .badge {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(5px);
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 1rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .floating-elements {
+      position: absolute;
+      width: 100%; height: 100%;
+      top: 0; left: 0;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .floating-element {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.5;
+      filter: blur(10px);
+    }
+    .title {
+      font-weight: 900;
+      font-size: 5rem;
+      line-height: 1.2;
+      letter-spacing: -1px;
+      background: linear-gradient(to right, #ffffff, #a6d4ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .subtitle {
+      font-weight: 700;
+      font-size: 1.8rem;
+      opacity: 0.85;
+    }
+    .section-box {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(5px);
+      border-radius: 16px;
+      padding: 20px;
+      border-left: 4px solid #4287f5;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+    }
+    .section-icon {
+      background: rgba(66, 135, 245, 0.2);
+      width: 50px; height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 20px;
+      font-size: 1.5rem;
+    }
+    .section-title { font-weight: 700; font-size: 1.3rem; margin-bottom: 5px; }
+    .section-time {
+      display: inline-block;
+      background: rgba(66, 135, 245, 0.3);
+      border-radius: 20px;
+      padding: 2px 12px;
+      font-size: 0.85rem;
+      margin-left: 10px;
+    }
+    .goal-item { display: flex; align-items: center; margin-bottom: 10px; }
+    .goal-item i { color: #4287f5; margin-right: 10px; }
+    .concept-box {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(5px);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      margin-bottom: 20px;
+      height: 100%;
+      border-left: 4px solid #4287f5;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .concept-box:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+    .concept-icon {
+      background: rgba(66, 135, 245, 0.2);
+      width: 70px; height: 70px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin-bottom: 15px;
+    }
+    .concept-title {
+      font-weight: 700;
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      color: #4db8ff;
+    }
+    .key-point { display: flex; align-items: center; margin-bottom: 8px; }
+    .key-point i { color: #4287f5; margin-right: 10px; font-size: 0.8rem; }
+    .concept-example {
+      background: rgba(66, 135, 245, 0.1);
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-top: 12px;
+      font-size: 0.9rem;
+      border-left: 3px solid rgba(66, 135, 245, 0.5);
+    }
+    .title-slide2, .slide-2 .title {
+      font-weight: 800;
+      font-size: 3.5rem;
+      line-height: 1.2;
+      letter-spacing: -1px;
+      background: linear-gradient(to right, #ffffff, #a6d4ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .ai-brain-bg {
+      position: absolute;
+      width: 350px; height: 350px;
+      background-image: url('https://public-images.interaction-design.org/tags/td-what-is-generative-ai-illustration-gan.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.15;
+      bottom: -50px; left: -50px;
+      z-index: 1;
+    }
+    .genspark-badge-button {
+      position: fixed;
+      bottom: 20px; right: 20px;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+      /* ===== スライド7：プロセスフロー ===== */
+    .process-steps {
+      display:flex; align-items:center; justify-content:center;
+      gap:16px; margin:24px 0;
+    }
+    .process-step {
+      display:flex; flex-direction:column; align-items:center;
+      width:120px; text-align:center;
+    }
+    .process-step .step-icon {
+      font-size:2rem; color:#5EBEFF; margin-bottom:8px;
+    }
+    .process-arrow {
+      font-size:1.5rem; color:#5EBEFF;
+    }
+
+    /* ===== スライド7：エージェントフロー ===== */
+    .flow-container {
+      display:flex; align-items:center; justify-content:center;
+      gap:12px; margin:20px 0;
+    }
+    .flow-step {
+      background:rgba(66,165,245,0.3); color:white;
+      padding:8px 16px; border-radius:8px; font-size:0.9rem;
+      white-space:nowrap;
+    }
+    .flow-arrow {
+      font-size:1.2rem; color:rgba(66,165,245,0.7);
+    }
+  </style>
+</head>
+<body>
+    <div class="slides-container">
+        <!-- スライド1 -->
+        <div class="slide flex items-center justify-center">
+        <div class="grid-pattern"></div>
+        <div class="ai-circle"></div>
+        
+        <div class="floating-elements">
+            <div class="floating-element" style="background: #4287f5; width: 80px; height: 80px; top: 15%; left: 10%;"></div>
+            <div class="floating-element" style="background: #42c5f5; width: 60px; height: 60px; bottom: 25%; left: 20%;"></div>
+            <div class="floating-element" style="background: #8f42f5; width: 100px; height: 100px; top: 60%; right: 15%;"></div>
+        </div>
+        
+        <div class="content flex flex-col items-center text-center px-20 py-16">
+            <div class="mb-6">
+                <i class="fas fa-robot text-6xl mb-4 text-blue-300"></i>
+            </div>
+            <h1 class="title mb-6">生成AI初心者研修</h1>
+            <p class="subtitle mb-10">基本から応用までの30分速習</p>
+            
+            <div class="flex gap-4 mt-4">
+                <div class="badge">
+                    <i class="fas fa-clock"></i>
+                    所要時間: 30分
+                </div>
+                <div class="badge">
+                    <i class="fas fa-brain"></i>
+                    初心者向け
+                </div>
+                <div class="badge">
+                    <i class="fas fa-lightbulb"></i>
+                    実践演習あり
+                </div>
+            </div>
+            
+            <div class="mt-20 text-sm opacity-70">
+                <p>© 2024 GenSpark AI Training</p>
+            </div>
+        </div>
+        
+        <div class="slide-number">1 / 7</div>
+    </div>
+        <!-- スライド2 -->
+        <div class="slide flex flex-col">
+        <div class="grid-pattern"></div>
+        <div class="ai-circle"></div>
+        
+        <div class="content px-20 py-16 flex flex-col h-full">
+            <h1 class="title mb-6">イントロダクション</h1>
+            
+            <div class="mb-8">
+                <div class="text-xl font-bold mb-2">研修の目的</div>
+                <p class="text-lg opacity-90">生成AIの基本概念を理解し、実践的なプロンプト設計スキルを30分で習得する</p>
+            </div>
+            
+            <div class="mb-8">
+                <div class="text-xl font-bold mb-4">研修の構成</div>
+                
+                <div class="section-box">
+                    <div class="section-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="section-content">
+                        <div class="section-title">基本的なAIの概念<span class="section-time"><i class="fas fa-clock mr-1"></i>5分</span></div>
+                        <div class="opacity-80">生成AI、モデル、LLM（大規模言語モデル）の基礎を学ぶ</div>
+                    </div>
+                </div>
+                
+                <div class="section-box">
+                    <div class="section-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="section-content">
+                        <div class="section-title">用語説明<span class="section-time"><i class="fas fa-clock mr-1"></i>15分</span></div>
+                        <div class="opacity-80">プロンプト設計と応用、AIの応答と仕組み、AIの基本操作を理解する</div>
+                    </div>
+                </div>
+                
+                <div class="section-box">
+                    <div class="section-icon">
+                        <i class="fas fa-puzzle-piece"></i>
+                    </div>
+                    <div class="section-content">
+                        <div class="section-title">クイズと演習<span class="section-time"><i class="fas fa-clock mr-1"></i>10分</span></div>
+                        <div class="opacity-80">理解度確認クイズと実践的なプロンプト設計演習</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <div class="text-xl font-bold mb-3">学習目標</div>
+                <div class="goal-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>生成AIの基本的な動作原理を理解する</span>
+                </div>
+                <div class="goal-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>効果的なプロンプト設計の基礎を習得する</span>
+                </div>
+                <div class="goal-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>AIの特性と限界を把握し、適切に活用できるようになる</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="slide-number">2 / 7</div>
+    </div>
+        <!-- スライド3 -->
+         <div class="slide flex flex-col">
+        <div class="grid-pattern"></div>
+        <div class="ai-circle"></div>
+        <div class="ai-brain-bg"></div>
+        
+        <div class="content px-20 py-12 flex flex-col h-full">
+            <h1 class="title mb-8">基本的なAIの概念</h1>
+            
+            <div class="concept-container grid grid-cols-3 gap-6 flex-grow">
+                <div class="concept-box">
+                    <div class="concept-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="concept-title">生成AI<span class="text-sm ml-2">(Generative AI)</span></div>
+                    <div class="concept-description mb-4">
+                        新しいコンテンツを自動的に作成する人工知能技術
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>テキスト、画像、音声を生成</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>既存データから学習し創作</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>人間のような出力を創出</span>
+                    </div>
+                    <div class="concept-example">
+                        <span class="text-blue-300 font-bold">例:</span> ChatGPT, Midjourney, DALL-E 2
+                    </div>
+                </div>
+                
+                <div class="concept-box">
+                    <div class="concept-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="concept-title">モデル<span class="text-sm ml-2">(Model)</span></div>
+                    <div class="concept-description mb-4">
+                        データから学習し予測や生成を行うAIのアルゴリズム構造
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>大量のデータで訓練される</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>パターンを認識し再現</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>精度はデータと構造に依存</span>
+                    </div>
+                    <div class="concept-example">例: GPT-4, Gemini 2.5 , DeepSeek R1</div>
+                </div>
+                
+                <div class="concept-box">
+                    <div class="concept-icon">
+                        <i class="fas fa-language"></i>
+                    </div>
+                    <div class="concept-title">LLM<span class="text-sm ml-2">(大規模言語モデル)</span></div>
+                    <div class="concept-description mb-4">
+                        膨大なテキストデータから言語パターンを学習した大規模モデル
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>数十億〜数兆のパラメータ</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>文脈を理解し自然な文章生成</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>複雑な言語タスクを処理</span>
+                    </div>
+                    <div class="concept-example">
+                        <span class="text-blue-300 font-bold">例:</span> GPT-4は約1.76兆パラメータを持つ
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-center text-sm opacity-70">
+                <i class="fas fa-info-circle mr-2"></i>これらの概念は互いに関連し、現代の生成AIシステムを構成しています
+            </div>
+        </div>
+        
+        <div class="slide-number">3 / 7</div>
+    </div>
+        <!-- スライド4 -->
+            <div class="slide flex flex-col">
+        <div class="grid-pattern"></div>
+        <div class="prompt-bubble"></div>
+        <div class="prompt-conversation">
+            <div class="chat-bubble user-bubble">Write a poem about AI</div>
+            <div class="chat-bubble ai-bubble">Silicon dreams in digital streams,<br>AI wisdom growing beam by beam.</div>
+            <div class="chat-bubble user-bubble">Make it shorter and add rhyme</div>
+            <div class="chat-bubble ai-bubble">Minds of code with hearts unknown,<br>AI grows as seeds are sown.</div>
+        </div>
+        
+        <div class="content px-20 py-12 flex flex-col h-full">
+            <h1 class="title mb-8">プロンプトとその操作</h1>
+            
+            <div class="concept-container grid grid-cols-2 gap-6 flex-grow">
+                <div class="concept-box">
+                    <div class="concept-icon">
+                        <i class="fas fa-comment-dots"></i>
+                    </div>
+                    <div class="concept-title">プロンプト<span class="text-sm ml-2">(Prompt)</span></div>
+                    <div class="concept-description mb-4">
+                        AIに与える指示や質問のテキスト入力
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>AIの回答を引き出す質問や指示</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>精度の高い回答を得るための鍵</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>詳細な指示ほど精度が向上</span>
+                    </div>
+                    <div class="concept-example">
+                        <span class="text-purple-300 font-bold">例:</span> "2023年の日本経済について300字で分析してください"
+                    </div>
+                </div>
+                
+                <div class="concept-box">
+                    <div class="concept-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div class="concept-title">システムプロンプト<span class="text-sm ml-2">(System Prompt)</span></div>
+                    <div class="concept-description mb-4">
+                        AIの動作や回答スタイルを定義する初期設定指示
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>AIの役割や行動規範を設定</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>ユーザーには通常表示されない</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>一貫性のある応答を実現</span>
+                    </div>
+                    <div class="concept-example">
+                        <span class="text-purple-300 font-bold">例:</span> "あなたは日本語の文法を校正する専門家です。敬語で丁寧に修正点を説明してください"
+                    </div>
+                </div>
+                
+                <div class="concept-box">
+                    <div class="concept-icon">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <div class="concept-title">プロンプトエンジニアリング<span class="text-sm ml-2">(PE)</span></div>
+                    <div class="concept-description mb-4">
+                        AIから最適な回答を引き出すためのプロンプト設計技術
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>目的に合わせた指示の工夫</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>AI特性を理解した設計</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>COSTフレームワークの活用</span>
+                    </div>
+                    <div class="concept-example">COST: Context（文脈）、Order（目的）、Specific（明確、特定）、Targer（対象）</div>
+                </div>
+                
+                <div class="concept-box">
+                    <div class="concept-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="concept-title">テンプレートプロンプティング</div>
+                    <div class="concept-description mb-4">
+                        特定の目的のための定型的なプロンプト形式
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>再利用可能な指示形式</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>一貫性のある結果を得やすい</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>業務効率化に直結</span>
+                    </div>
+                    <div class="concept-example">例: 固定の雛形に変数だけを入れて呼び出し、一貫した出力を得る
+　　{{企業名}}のファンダメンタル分析をして株価を予測して</div>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-center text-sm opacity-70">
+                <i class="fas fa-lightbulb mr-2"></i>プロンプトの質と構造がAIの出力品質を大きく左右します
+            </div>
+        </div>
+        
+        <div class="slide-number">4 / 7</div>
+    </div>
+        <!-- スライド5 -->
+        <div class="slide flex flex-col">
+        <div class="grid-pattern"></div>
+        <div class="ai-orb"></div>
+        <div class="hallucination-illustration">
+            <div class="fact-box">東京は日本の首都です</div>
+            <div class="fact-box">富士山は3776mです</div>
+            <div class="hallucination-box">東京タワーは1960年に完成し、高さは400mです</div>
+        </div>
+        <div class="context-window-illustration">
+            <span class="token">これは</span>
+            <span class="token">コンテキスト</span>
+            <span class="token">ウィンドウ</span>
+            <span class="token">の</span>
+            <span class="token">例です</span>
+            <span class="token">AI</span>
+            <span class="token">は</span>
+            <span class="token">一定</span>
+            <span class="token">量の</span>
+            <span class="token">情報</span>
+            <span class="token">しか</span>
+            <span class="token">扱え</span>
+            <span class="token">ません</span>
+            <span class="token">この</span>
+            <span class="token">限界</span>
+            <span class="token">が</span>
+            <span class="token">コンテキスト</span>
+            <span class="token">ウィンドウ</span>
+            <span class="token">です</span>
+            <!-- 多数のトークンを表現 -->
+        </div>
+        
+        <div class="content px-20 py-12 flex flex-col h-full">
+            <h1 class="title mb-8">AIの応答と仕組み</h1>
+            
+            <div class="concept-container grid grid-cols-3 gap-6 flex-grow">
+                <div class="concept-box">
+                    <div class="concept-icon">
+                        <i class="fas fa-reply-all"></i>
+                    </div>
+                    <div class="concept-title">レスポンス<span class="text-sm ml-2">(Response)</span></div>
+                    <div class="concept-description mb-4">
+                        AIがプロンプトに対して生成する回答
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>プロンプトの質に依存</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>確率的に生成される</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>同じ質問でも異なる回答が生成されることも</span>
+                    </div>
+                    <div class="concept-example">
+                        <span class="text-blue-300 font-bold">形式:</span> テキスト、画像、コード、表など多様な出力形式に対応
+                    </div>
+                </div>
+                
+                <div class="concept-box">
+                    <div class="concept-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="concept-title">ハルシネーション<span class="warning-indicator"><i class="fas fa-exclamation-triangle"></i></span></div>
+                    <div class="concept-description mb-4">
+                        AIが生成する事実と異なる情報や誤った回答
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>自信ありげに誤情報を提示</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>事実確認が常に必要</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>特に数値や固有名詞で発生しやすい</span>
+                    </div>
+                    <div class="concept-example">
+                        <span class="text-blue-300 font-bold">例:</span> 存在しない論文の引用、架空の歴史的事実、正確ではない統計データなど
+                    </div>
+                </div>
+                
+                <div class="concept-box">
+                    <div class="concept-icon">
+                        <i class="fas fa-window-maximize"></i>
+                    </div>
+                    <div class="concept-title">コンテキストウィンドウ</div>
+                    <div class="concept-description mb-4">
+                        AIが一度に処理できる情報量の上限
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>トークン数で表される処理限界</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>モデルにより容量が異なる</span>
+                    </div>
+                    <div class="key-point">
+                        <i class="fas fa-circle"></i>
+                        <span>長い会話では古い情報が忘れられる</span>
+                    </div>
+                    <div class="concept-example">
+                        <span class="text-blue-300 font-bold">例:</span> GPT-4は約8,000トークン（約6,000単語）、GPT-4 Turboは約128,000トークン
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-center text-sm opacity-70">
+                <i class="fas fa-info-circle mr-2"></i>AIの応答には制限と限界があることを理解することが重要です
+            </div>
+        </div>
+        
+        <div class="slide-number">5 / 7</div>
+    </div>
+        <!-- スライド6 -->
+         <div class="slide flex flex-col">
+        <div class="grid-pattern"></div>
+        <div class="ai-orb"></div>
+        
+        <div class="content px-20 py-12 flex flex-col h-full">
+            <h1 class="title mb-8">プロンプト設計と応用</h1>
+            
+            <div class="concept-container grid grid-cols-3 gap-6 flex-grow">
+                <div class="concept-box cost-box">
+                    <div class="concept-icon cost-icon">
+                        <i class="fas fa-sitemap"></i>
+                    </div>
+                    <div class="concept-title cost-title">COSTフレームワーク</div>
+                    <div class="concept-description mb-4">
+                        効果的なプロンプト設計の原則
+                    </div>
+                    
+                    <div class="cost-framework">
+                        <div class="cost-item">
+                            <div class="cost-letter">C</div>
+                            <div>コンテキスト（Context）質問や指示の背景情報を明確に指定</div>
+                        </div>
+                        <div class="cost-item">
+                            <div class="cost-letter">O</div>
+                            <div>オーダー（Order）　回答の形式、文字数などを明確に指定</div>
+                        </div>
+                        <div class="cost-item">
+                            <div class="cost-letter">S</div>
+                            <div>スペシフィック（Specific）具体的な情報、条件、要素を指定</div>
+                        </div>
+                        <div class="cost-item">
+                            <div class="cost-letter">T</div>
+                            <div>ターゲット（Target）　回答の対象（受け手）を明確に指定</div>
+                        </div>
+                    </div>
+                    
+                    <div class="concept-example cost-example">
+                        <span class="text-orange-300 font-bold">活用例:</span> 「明確な指示＋具体的な条件＋出力フォーマット」の組み合わせ
+                    </div>
+                </div>
+                
+                <div class="concept-box zero-shot-box">
+                    <div class="concept-icon zero-shot-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="concept-title zero-shot-title">ゼロショット<span class="text-sm ml-2">(Zero-shot)</span></div>
+                    <div class="concept-description mb-4">
+                        例示なしで直接指示を与える方法
+                    </div>
+                    <div class="key-point zero-shot-point">
+                        <i class="fas fa-circle"></i>
+                        <span>サンプルや例示なしでタスクを実行</span>
+                    </div>
+                    <div class="key-point zero-shot-point">
+                        <i class="fas fa-circle"></i>
+                        <span>最も一般的な使用方法</span>
+                    </div>
+                    <div class="key-point zero-shot-point">
+                        <i class="fas fa-circle"></i>
+                        <span>簡単なタスクで効果的</span>
+                    </div>
+                    
+                    <div class="prompt-visualization">
+                        「ビジネスメールの書き方について5つのポイントを箇条書きで説明してください。」
+                    </div>
+                    
+                    <div class="concept-example zero-shot-example">
+                        <span class="text-green-300 font-bold">特徴:</span> シンプルで迅速。複雑でないタスクに適している。
+                    </div>
+                </div>
+                
+                <div class="concept-box few-shot-box">
+                    <div class="concept-icon few-shot-icon">
+                        <i class="fas fa-copy"></i>
+                    </div>
+                    <div class="concept-title few-shot-title">フューショット<span class="text-sm ml-2">(Few-shot)</span></div>
+                    <div class="concept-description mb-4">
+                        例を示してからタスクを指示する方法
+                    </div>
+                    <div class="key-point few-shot-point">
+                        <i class="fas fa-circle"></i>
+                        <span>いくつかの例を示してから指示</span>
+                    </div>
+                    <div class="key-point few-shot-point">
+                        <i class="fas fa-circle"></i>
+                        <span>AIの回答精度と一貫性が向上</span>
+                    </div>
+                    <div class="key-point few-shot-point">
+                        <i class="fas fa-circle"></i>
+                        <span>特定のフォーマットや形式が必要な場合に効果的</span>
+                    </div>
+                    
+                    <div class="prompt-visualization">例1: 質問: Pythonとは？ 回答: プログラミング言語の一種です。
+                        例2: 質問: HTMLとは？ 回答: Webページを作成するためのマークアップ言語です。</div>
+                    
+                    <div class="concept-example few-shot-example">
+                        <span class="text-pink-300 font-bold">活用場面:</span> 特定のスタイルやフォーマットが必要な場合、複雑なタスク
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-center text-sm opacity-70">
+                <i class="fas fa-info-circle mr-2"></i>プロンプト設計の質がAIからの回答の質を大きく左右します
+            </div>
+        </div>
+        
+        <div class="slide-number">6 / 7</div>
+    </div>
+
+        <!-- スライド7 -->
+ <!-- ここからスライド7 -->
+<div class="slide slide-7 flex flex-col">
+  <div class="grid-pattern"></div>
+  <div class="ai-orb"></div>
+  
+  <div class="content px-20 py-12 flex flex-col h-full">
+    <h1 class="title mb-8">AI運用に関わる基本</h1>
+    
+    <div class="grid grid-cols-2 gap-8 flex-grow">
+      <!-- ファインチューニング -->
+      <div class="concept-box fine-tuning-box">
+        <div class="concept-content">
+          <div class="concept-icon fine-tuning-icon">
+            <i class="fas fa-cogs"></i>
+          </div>
+          <div class="concept-title fine-tuning-title">
+            ファインチューニング<span class="text-sm ml-2">(Fine-tuning)</span>
+          </div>
+          <div class="concept-description mb-4">
+            既存のAIモデルを特定のタスクや領域向けに調整・最適化する技術
+          </div>
+          
+          <div class="key-point fine-tuning-point">
+            <i class="fas fa-circle"></i>
+            <span>ベースモデル（ChatGPTなど）を特定の目的に合わせてカスタマイズ</span>
+          </div>
+          <div class="key-point fine-tuning-point">
+            <i class="fas fa-circle"></i>
+            <span>専門知識や企業固有の情報を学習させ、より精度の高い回答を実現</span>
+          </div>
+          <div class="key-point fine-tuning-point">
+            <i class="fas fa-circle"></i>
+            <span>プロンプト設計だけでは解決できない複雑な業務に有効</span>
+          </div>
+          
+          <div class="process-steps">
+            <div class="process-step">
+              <div class="step-icon"><i class="fas fa-database text-blue-300"></i></div>
+              <div class="step-text">データ収集</div>
+            </div>
+            <div class="process-step">
+              <div class="step-icon"><i class="fas fa-broom text-blue-300"></i></div>
+              <div class="step-text">データ整形</div>
+            </div>
+            <div class="process-step">
+              <div class="step-icon"><i class="fas fa-graduation-cap text-blue-300"></i></div>
+              <div class="step-text">モデル学習</div>
+            </div>
+            <div class="process-step">
+              <div class="step-icon"><i class="fas fa-check-circle text-blue-300"></i></div>
+              <div class="step-text">評価・運用</div>
+            </div>
+          </div>
+          <div class="diagram-caption">ファインチューニングのプロセス</div>
+          
+          <div class="use-case fine-tuning-case">
+            <span class="text-blue-300 font-bold">活用例:</span>
+            法律文書の自動生成、社内FAQ応答システム、専門分野の文献要約
+          </div>
+        </div>
+        <div class="illustration-bg">
+          <i class="fas fa-robot fa-10x"></i>
+        </div>
+      </div>
+      
+      <!-- エージェント -->
+      <div class="concept-box agent-box">
+        <div class="concept-content">
+          <div class="concept-icon agent-icon">
+            <i class="fas fa-brain"></i>
+          </div>
+          <div class="concept-title agent-title">
+            エージェント<span class="text-sm ml-2">(Agent)</span>
+          </div>
+          <div class="concept-description mb-4">
+            AIが自律的に判断・行動し、複数のタスクを連携して実行するシステム
+          </div>
+          
+          <div class="key-point agent-point">
+            <i class="fas fa-circle"></i>
+            <span>目標達成のために自らプランを立て、行動を選択できるAI</span>
+          </div>
+          <div class="key-point agent-point">
+            <i class="fas fa-circle"></i>
+            <span>外部ツールやAPIと連携し、情報収集や処理を自動的に実行</span>
+          </div>
+          <div class="key-point agent-point">
+            <i class="fas fa-circle"></i>
+            <span>複雑なワークフローの自動化や意思決定支援に活用可能</span>
+          </div>
+          
+          <!-- エージェント基本フロー -->
+          <div class="flow-container">
+            <div class="flow-step">情報収集</div>
+            <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+            <div class="flow-step">分析・判断</div>
+            <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+            <div class="flow-step">行動実行</div>
+          </div>
+          
+          <div class="diagram-caption">AIエージェントの基本的な動作フロー</div>
+          
+          <div class="use-case agent-case">
+            <span class="text-purple-300 font-bold">活用例:</span>
+            カスタマーサポート自動化、情報収集と要約レポート作成、スケジュール管理と調整
+          </div>
+          
+          <div class="mt-4 flex items-center">
+            <i class="fas fa-lightbulb text-yellow-300 mr-2"></i>
+            <div class="text-sm">
+              AIエージェントは「LangChain」などのフレームワークで開発可能
+            </div>
+          </div>
+        </div>
+        <div class="illustration-bg">
+          <i class="fas fa-microchip fa-10x"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-4 text-center text-sm opacity-70">
+      <i class="fas fa-info-circle mr-2"></i>
+      企業でのAI活用には、これらの技術を目的に合わせて適切に選択・組み合わせることが重要です
+    </div>
+  </div>
+  
+  <div class="slide-number">7 / 7</div>
+</div>
+<!-- ここまでスライド7 -->
+
+</body>
+</html>

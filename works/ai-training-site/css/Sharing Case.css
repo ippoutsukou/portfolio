@@ -1,0 +1,54 @@
+/* Sharing Case.css */
+
+/* 全体的な文字サイズの調整 */
+body {
+    font-size: 1.1rem; /* ベースのフォントサイズを少し大きく */
+}
+
+h1 {
+    font-size: 3.5rem; /* より大きく */
+}
+
+h2 {
+    font-size: 2.8rem; /* より大きく */
+}
+
+.hero h1 {
+    font-size: 4rem; /* ヒーローセクションのH1をさらに大きく */
+}
+
+.hero p {
+    font-size: 1.3rem; /* ヒーローセクションのPも大きく */
+}
+
+.section-description {
+    font-size: 1.2rem; /* セクション説明文も大きく */
+}
+
+.card-body p {
+    font-size: 1rem; /* カード内のテキストも少し大きく */
+}
+
+/* ナビゲーションリンクの文字サイズも調整 */
+nav ul li a {
+    font-size: 1.1rem;
+}
+
+/* フッターリンクの文字サイズも調整 */
+.footer-links a {
+    font-size: 1.1rem;
+}
+
+/* 「主要なAI活用事例」の2カラム表示（categoriesクラスの修正） */
+/* デフォルト（大画面）はstyle.cssのgrid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); を使用 */
+@media (max-width: 992px) { /* 992px以下で2カラム */
+    .categories {
+        grid-template-columns: repeat(auto-fill, minmax(calc(50% - 1rem), 1fr)); /* 2カラム表示に調整 */
+    }
+}
+
+@media (max-width: 768px) { /* 768px以下で1カラム */
+    .categories {
+        grid-template-columns: 1fr; /* 小画面では1カラムに戻す */
+    }
+}

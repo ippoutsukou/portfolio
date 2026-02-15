@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI基礎知識 応用編</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Noto Sans JP', sans-serif;
+      background: #0f2027;
+      color: white;
+      overflow-x: hidden;
+    }
+    .slide {
+      width: 1280px;
+      min-height: 720px;
+      margin: 40px auto;
+      position: relative;
+      padding: 2rem;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      border-radius: 15px;
+      page-break-after: always;
+    }
+    .title-slide {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .title {
+      font-size: 4rem;
+      font-weight: 900;
+      background: linear-gradient(to right, #ffffff, #a6d4ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .subtitle {
+      font-size: 1.5rem;
+      text-align: center;
+      opacity: 0.9;
+      margin-bottom: 3rem;
+    }
+    .section {
+      background: rgba(255,255,255,0.08);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      border-left: 5px solid #4db8ff;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+    .section:hover {
+      background: rgba(255,255,255,0.12);
+      transform: translateY(-2px);
+    }
+    .section-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: #4db8ff;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .section-icon {
+      font-size: 1.5rem;
+      color: #4db8ff;
+    }
+    .key-point {
+      margin-left: 2rem;
+      margin-bottom: 0.8rem;
+      position: relative;
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+    .key-point::before {
+      content: '\f138';
+      font-family: 'Font Awesome 5 Free';
+      font-weight: 900;
+      position: absolute;
+      left: -2rem;
+      color: #4db8ff;
+      font-size: 0.8rem;
+    }
+    .example {
+      font-size: 1rem;
+      color: #b8d4f0;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(77, 184, 255, 0.1);
+      border-radius: 8px;
+      border-left: 3px solid #4db8ff;
+    }
+    .example::before {
+      content: '💡 ';
+      margin-right: 0.5rem;
+    }
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    .overview-item {
+      background: rgba(255,255,255,0.05);
+      padding: 1.5rem;
+      border-radius: 12px;
+      text-align: center;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+    .overview-item:hover {
+      border-color: #4db8ff;
+      background: rgba(77, 184, 255, 0.1);
+    }
+    .overview-icon {
+      font-size: 3rem;
+      color: #4db8ff;
+      margin-bottom: 1rem;
+    }
+    .flow-diagram {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 2rem 0;
+    }
+    .flow-item {
+      flex: 1;
+      text-align: center;
+      padding: 1rem;
+      background: rgba(255,255,255,0.08);
+      border-radius: 10px;
+      margin: 0 0.5rem;
+    }
+    .flow-arrow {
+      font-size: 2rem;
+      color: #4db8ff;
+    }
+    .slide-number {
+      position: absolute;
+      bottom: 1rem;
+      right: 2rem;
+      font-size: 1rem;
+      opacity: 0.6;
+    }
+    .progress-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 4px;
+      background: #4db8ff;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body>
+  <!-- タイトルスライド -->
+  <div class="slide title-slide">
+    <div class="flex flex-col justify-center items-center h-full relative">
+      <div class="absolute top-0 left-0 w-full h-full opacity-10">
+        <div class="absolute top-1/4 left-1/4 w-32 h-32 bg-white rounded-full blur-3xl"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-24 h-24 bg-blue-300 rounded-full blur-2xl"></div>
+      </div>
+      <div class="relative z-10 text-center">
+        <div class="mb-8">
+          <div class="text-8xl mb-6">🤖</div>
+          <h1 class="text-7xl font-black mb-4 bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent">
+            AI基礎知識
+          </h1>
+          <h2 class="text-5xl font-bold mb-6 text-white shadow-lg">応用編</h2>
+        </div>
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
+          <p class="text-2xl mb-4 text-blue-100">次世代のAI技術を理解するための</p>
+          <p class="text-2xl font-bold text-white mb-6">包括的ガイド</p>
+          <div class="flex items-center justify-center gap-4 text-xl">
+            <span class="bg-gradient-to-r from-blue-400 to-purple-400 px-4 py-2 rounded-full">🚀 Advanced AI Concepts</span>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+    <div class="slide-number">1 / 7</div>
+    <div class="progress-bar" style="width: 14.3%;"></div>
+  </div>
+
+  <!-- 概要スライド -->
+  <div class="slide">
+    <h1 class="text-8xl font-black mb-8 text-center bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">学習内容の概要</h1>
+    <div class="overview-grid">
+      <div class="overview-item">
+        <div class="overview-icon"><i class="fas fa-brain"></i></div>
+        <h3 class="text-xl font-bold mb-3 text-blue-200">機械学習・ディープラーニング</h3>
+        <p class="text-base opacity-80 leading-relaxed">AIの核となる学習メカニズム</p>
+      </div>
+      <div class="overview-item">
+        <div class="overview-icon"><i class="fas fa-microchip"></i></div>
+        <h3 class="text-xl font-bold mb-3 text-blue-200">Transformer・GPU</h3>
+        <p class="text-base opacity-80 leading-relaxed">現代AIを支える技術基盤</p>
+      </div>
+      <div class="overview-item">
+        <div class="overview-icon"><i class="fas fa-search"></i></div>
+        <h3 class="text-xl font-bold mb-3 text-blue-200">推論・RAG</h3>
+        <p class="text-base opacity-80 leading-relaxed">知識活用と回答生成技術</p>
+      </div>
+      <div class="overview-item">
+        <div class="overview-icon"><i class="fas fa-rocket"></i></div>
+        <h3 class="text-xl font-bold mb-3 text-blue-200">次世代AI技術</h3>
+        <p class="text-base opacity-80 leading-relaxed">AGI・シンギュラリティ・AIアライメント</p>
+      </div>
+    </div>
+    <div class="slide-number">2 / 7</div>
+    <div class="progress-bar" style="width: 28.6%;"></div>
+  </div>
+
+  <!-- 機械学習・ディープラーニング -->
+  <div class="slide">
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-brain section-icon"></i>
+        機械学習（Machine Learning）
+      </div>
+      <div class="key-point">データから自動でパターンを学習し、予測・判断を実行</div>
+      <div class="key-point">教師あり学習、教師なし学習、強化学習の3つのアプローチ</div>
+      <div class="key-point">ビジネス効率化から意思決定支援まで幅広く活用</div>
+      <div class="example">
+        実践例: スパムメール分類、顧客行動予測、需要予測システム
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-network-wired section-icon"></i>
+        ディープラーニング（Deep Learning）
+      </div>
+      <div class="key-point">多層ニューラルネットワークによる高度な特徴抽出</div>
+      <div class="key-point">画像認識、音声処理、自然言語理解で革命的な性能</div>
+      <div class="key-point">大量データと計算資源で真価を発揮</div>
+      <div class="example">
+        実践例: 顔認識システム、自動翻訳、医療画像診断、自動運転技術
+      </div>
+    </div>
+    <div class="slide-number">3 / 7</div>
+    <div class="progress-bar" style="width: 42.9%;"></div>
+  </div>
+
+  <!-- Transformer・GPU -->
+  <div class="slide">
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-atom section-icon"></i>
+        Transformer（トランスフォーマー）
+      </div>
+      <div class="key-point">Self-Attentionメカニズムで文脈理解を革新</div>
+      <div class="key-point">並列処理可能な構造で学習効率を大幅向上</div>
+      <div class="key-point">GPT、BERT等の大規模言語モデルの基盤技術</div>
+      <div class="example">
+        実践例: ChatGPT、Google翻訳、文書要約システム、コード生成AI
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-microchip section-icon"></i>
+        GPU（Graphics Processing Unit）
+      </div>
+      <div class="key-point">数千のコアで並列計算を高速実行</div>
+      <div class="key-point">行列演算に特化しAI学習・推論を加速</div>
+      <div class="key-point">クラウドからエッジまで幅広いAI基盤を支える</div>
+      <div class="example">
+        実践例: モデル学習の高速化、リアルタイム画像処理、大規模データ解析
+      </div>
+    </div>
+    <div class="slide-number">4 / 7</div>
+    <div class="progress-bar" style="width: 57.2%;"></div>
+  </div>
+
+  <!-- 推論・RAG -->
+  <div class="slide">
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-cogs section-icon"></i>
+        推論（Inference）
+      </div>
+      <div class="key-point">学習済みモデルを使用した予測・応答生成プロセス</div>
+      <div class="key-point">リアルタイム処理と高精度のバランスが重要</div>
+      <div class="key-point">エッジ環境での軽量化技術も発展</div>
+      <div class="example">
+        実践例: 音声アシスタント、画像検索、リアルタイム翻訳、推薦システム
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-search-plus section-icon"></i>
+        RAG（Retrieval-Augmented Generation）
+      </div>
+      <div class="key-point">外部知識ベース検索と生成AIを組み合わせ</div>
+      <div class="key-point">最新情報や専門知識での回答精度を向上</div>
+      <div class="key-point">企業内データ活用で実用性を大幅に向上</div>
+      <div class="example">
+        実践例: 社内ナレッジチャットボット、法律相談AI、技術サポートシステム
+      </div>
+    </div>
+    <div class="slide-number">5 / 7</div>
+    <div class="progress-bar" style="width: 71.5%;"></div>
+  </div>
+
+  <!-- 次世代AI技術 Part 1 -->
+  <div class="slide">
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-infinity section-icon"></i>
+        シンギュラリティ（技術的特異点）
+      </div>
+      <div class="key-point">AIの知能が人間を超越する転換点</div>
+      <div class="key-point">社会構造、労働市場、人間の役割が根本的に変化</div>
+      <div class="key-point">倫理的・経済的影響について活発な議論が継続</div>
+      <div class="example">
+        考察: 全知識労働の自動化、新たな職業の創出、人間とAIの協働社会
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-robot section-icon"></i>
+        AIエージェント（AI Agent）
+      </div>
+      <div class="key-point">自律的にタスクを実行し外部システムと連携</div>
+      <div class="key-point">API統合で複雑な業務プロセスを自動化</div>
+      <div class="key-point">マルチモーダル対応で多様な入出力を処理</div>
+      <div class="example">
+        実践例: 自動スケジューラ、資料作成支援、顧客対応の完全自動化
+      </div>
+    </div>
+    <div class="slide-number">6 / 7</div>
+    <div class="progress-bar" style="width: 85.8%;"></div>
+  </div>
+
+  <!-- 次世代AI技術 Part 2 -->
+  <div class="slide">
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-globe section-icon"></i>
+        AGI（汎用人工知能）
+      </div>
+      <div class="key-point">人間レベルの汎用的知能を持つAIシステム</div>
+      <div class="key-point">特定タスクではなく幅広い領域で人間と同等以上の能力</div>
+      <div class="key-point">学習・推論・創造性を統合した究極のAI形態</div>
+      <div class="example">
+        展望: 科学研究の加速、教育の個別最適化、創作活動への参画
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">
+        <i class="fas fa-balance-scale section-icon"></i>
+        AIアライメント（AI Alignment）
+      </div>
+      <div class="key-point">AIの目標と人間の価値観を一致させる技術・思想</div>
+      <div class="key-point">暴走や予期しない行動を防ぐ安全性の確保</div>
+      <div class="key-point">長期的なAI発展における最重要課題の一つ</div>
+      <div class="example">
+        取組み: 倫理ガイドライン策定、有害出力フィルター、透明性の向上
+      </div>
+    </div>
+    
+    <div class="text-center mt-8">
+      <p class="text-xl font-bold text-blue-300">🎯 これらの技術を理解し、適切に活用することが</p>
+      <p class="text-xl font-bold text-blue-300">デジタル時代のプロフェッショナルに求められています</p>
+    </div>
+    
+    <div class="slide-number">7 / 7</div>
+    <div class="progress-bar" style="width: 100%;"></div>
+  </div>
+
+  <script>
+    // スライド間のスムーズスクロール効果
+    document.addEventListener('DOMContentLoaded', function() {
+      const slides = document.querySelectorAll('.slide');
+      slides.forEach((slide, index) => {
+        slide.style.animationDelay = `${index * 0.1}s`;
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI研修ポータル</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/interactive.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
+    <!-- AOS library for scroll animations -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+</head>
+<body>
+    <nav id="back-to-works" style="position:fixed;top:0;left:0;width:100%;padding:8px 20px;font-size:13px;background:#fff;border-bottom:1px solid #e2e8f0;z-index:1100;">
+        <a href="../../works.html" style="color:#2563eb;text-decoration:none;font-weight:500;">← Works に戻る</a>
+    </nav>
+    <style>
+        header { top: 36px !important; }
+        main { padding-top: 36px; }
+    </style>
+    <!-- Header Section -->
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <i class="fas fa-robot"></i>
+                <span>AI研修ポータル</span>
+            </div>
+            <button class="nav-toggle" aria-expanded="false" aria-label="メニューを開く">
+                <i class="fas fa-bars"></i>
+            </button>
+            <nav>
+                <ul>
+                    <li><a href="#basic-knowledge">基礎知識</a></li>
+                    <li><a href="#tests">確認テスト</a></li>
+                    <li><a href="#case-studies">事例共有</a></li>
+                    <li><a href="#progress">進捗確認</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div id="particles-js"></div>
+            <div class="container">
+                <h1 data-aos="fade-up">AI技術を学び、<br>業務に活かそう</h1>
+                <p data-aos="fade-up" data-aos-delay="200">このポータルサイトでは、AI技術の基礎から応用まで、段階的に学ぶことができます。<br>各部署での活用事例も紹介しているので、自分の業務にどう活かせるかイメージしやすくなっています。</p>
+                <div class="hero-buttons" data-aos="fade-up" data-aos-delay="400">
+                    <a href="#basic-knowledge" class="btn">学習を始める</a>
+                    <a href="#progress" class="btn btn-outline">進捗を確認する</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Basic Knowledge Section -->
+        <section id="basic-knowledge" class="section-padding">
+            <div class="container">
+                <h2 class="section-title" data-aos="fade-up">基礎知識</h2>
+                <p class="section-description" data-aos="fade-up" style="text-align: center;">AIの基本概念から応用まで、段階的に学ぶことができます。</p>
+                
+                <div class="categories">
+                    <div class="card" data-aos="fade-up">
+                        <div class="card-header">
+                            <i class="fas fa-graduation-cap"></i>
+                            基礎知識 - 初級編
+                        </div>
+                        <div class="card-body">
+                            <p>AIの基本概念、種類などの基礎的な知識を学びます。AIを理解するための第一歩です。</p>
+                            <a href="content/基礎知識/初級編.html" class="btn">学習する</a>
+                        </div>
+                    </div>
+                    
+                    <div class="card" data-aos="fade-up" data-aos-delay="100">
+                        <div class="card-header">
+                            <i class="fas fa-brain"></i>
+                            基礎知識 - 応用編
+                        </div>
+                        <div class="card-body">
+                            <p>機械学習、ディープラーニングなど、より高度なAI技術について学びます。実践的な知識を身につけましょう。</p>
+                            <a href="content/基礎知識/応用編.html" class="btn">学習する</a>
+                        </div>
+                    </div>
+
+                    <div class="card" data-aos="fade-up" data-aos-delay="200">
+                        <div class="card-header">
+                            <i class="fas fa-terminal"></i>
+                            基礎知識 - プロンプト設計
+                        </div>
+                        <div class="card-body">
+                            <p>COST（Context・Order・Specific・Target）の4要素でプロンプトを整理することで、AIから欲しい答えを引き出せるようになります。</p>
+                            <a href="content/基礎知識/プロンプト設計.html" class="btn">学習する</a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Tests Section -->
+        <section id="tests" class="section-padding bg-light">
+            <div class="container">
+                <h2 class="section-title" data-aos="fade-up">確認テスト</h2>
+                <p class="section-description" data-aos="fade-up">学習した内容の理解度を確認するためのテストです。</p>
+                
+                <div class="categories">
+                    <div class="card" data-aos="fade-up">
+                        <div class="card-header">
+                            <i class="fas fa-clipboard-check"></i>
+                            確認テスト - 初級編
+                        </div>
+                        <div class="card-body">
+                            <p>基礎知識（初級編）の内容に関するテストです。基本的な概念の理解度を確認します。</p>
+                            <a href="content/確認テスト/初級編.md" class="btn">テストを受ける</a>
+                        </div>
+                    </div>
+                    
+                    <div class="card" data-aos="fade-up" data-aos-delay="100">
+                        <div class="card-header">
+                            <i class="fas fa-clipboard-list"></i>
+                            確認テスト - 応用編
+                        </div>
+                        <div class="card-body">
+                            <p>基礎知識（応用編）の内容に関するテストです。より高度な概念の理解度を確認します。</p>
+                            <a href="content/確認テスト/応用編.md" class="btn">テストを受ける</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Case Studies Section -->
+        <section id="case-studies" class="section-padding">
+            <div class="container">
+                <h2 class="section-title" data-aos="fade-up">事例共有</h2>
+                <p class="section-description" data-aos="fade-up">各部署でのAI活用事例を紹介します。自分の業務にどう活かせるかイメージしましょう。</p>
+                
+                <div class="filter-buttons" data-aos="fade-up">
+                    <button class="filter-btn active" data-filter="all">すべて</button>
+                    <button class="filter-btn" data-filter="sales">営業</button>
+                    <button class="filter-btn" data-filter="accounting">経理</button>
+                    <button class="filter-btn" data-filter="planning">経営企画</button>
+                    <button class="filter-btn" data-filter="logistics">物流</button>
+                    <button class="filter-btn" data-filter="hr">総務人事</button>
+                    <button class="filter-btn" data-filter="manufacturing">製造</button>
+                    <button class="filter-btn" data-filter="it">IT</button>
+
+                </div>
+                
+                <div class="categories">
+                    <div class="card content-card sales" data-aos="fade-up">
+                        <div class="card-header">
+                            <i class="fas fa-chart-line"></i>
+                            事例共有 - 営業
+                        </div>
+                        <div class="card-body">
+                            <p>営業部門でのAI活用事例を紹介します。顧客データ分析、予測モデルなど、営業活動の効率化に役立つ事例です。</p>
+                            <a href="content/事例共有/営業.html" class="btn">詳細を見る</a>
+                        </div>
+                    </div>
+                    
+                    <div class="card content-card accounting" data-aos="fade-up" data-aos-delay="100">
+                        <div class="card-header">
+                            <i class="fas fa-calculator"></i>
+                            事例共有 - 経理
+                        </div>
+                        <div class="card-body">
+                            <p>経理部門でのAI活用事例を紹介します。自動仕訳、不正検知など、経理業務の効率化と精度向上に役立つ事例です。</p>
+                            <a href="content/事例共有/経理.html" class="btn">詳細を見る</a>
+                        </div>
+                    </div>
+                    
+                    <div class="card content-card planning" data-aos="fade-up" data-aos-delay="200">
+                        <div class="card-header">
+                            <i class="fas fa-lightbulb"></i>
+                            事例共有 - 経営企画
+                        </div>
+                        <div class="card-body">
+                            <p>経営企画部門でのAI活用事例を紹介します。市場分析、戦略立案支援など、意思決定の質を高める事例です。</p>
+                            <a href="content/事例共有/経営企画.html" class="btn">詳細を見る</a>
+                        </div>
+                    </div>
+                    
+                    <div class="card content-card logistics" data-aos="fade-up">
+                        <div class="card-header">
+                            <i class="fas fa-truck"></i>
+                            事例共有 - 物流
+                        </div>
+                        <div class="card-body">
+                            <p>物流部門でのAI活用事例を紹介します。配送最適化、需要予測など、物流業務の効率化に役立つ事例です。</p>
+                            <a href="content/事例共有/物流.html" class="btn">詳細を見る</a>
+                        </div>
+                    </div>
+                    
+                    <div class="card content-card hr" data-aos="fade-up" data-aos-delay="100">
+                        <div class="card-header">
+                            <i class="fas fa-users"></i>
+                            事例共有 - 総務人事
+                        </div>
+                        <div class="card-body">
+                            <p>総務人事部門でのAI活用事例を紹介します。採用支援、勤怠管理など、人事業務の効率化と質の向上に役立つ事例です。</p>
+                            <a href="content/事例共有/総務人事.html" class="btn">詳細を見る</a>
+                        </div>
+                    </div>
+
+                                        
+                    <div class="card content-card manufacturing" data-aos="fade-up" data-aos-delay="200">
+                        <div class="card-header">
+                            <i class="fas fa-industry"></i>
+                            事例共有 - 製造
+                        </div>
+                        <div class="card-body">
+                            <p>製造部門でのAI活用事例を紹介します。品質管理、予知保全、生産計画の最適化など、製造プロセスの効率化と品質向上に役立つ事例です。</p>
+                            <a href="content/事例共有/製造.html" class="btn">詳細を見る</a>
+                        </div>
+                    </div>
+                    
+                    <div class="card content-card it" data-aos="fade-up" data-aos-delay="300">
+                        <div class="card-header">
+                            <i class="fas fa-code"></i>
+                            事例共有 - IT
+                        </div>
+                        <div class="card-body">
+                            <p>IT部門でのAI活用事例を紹介します。システム監視、セキュリティ対策、開発効率化など、ITインフラの安定運用と開発生産性向上に役立つ事例です。</p>
+                            <a href="content/事例共有/IT.html" class="btn">詳細を見る</a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Progress Section -->
+        <section id="progress" class="section-padding bg-light">
+            <div class="container">
+                <div class="progress-section" data-aos="fade-up">
+                    <h2>学習進捗の確認</h2>
+                    <p>あなたの学習進捗状況を確認し、認定証を取得することができます。</p>
+                    <a href="content/progress.html" class="btn">進捗を確認する</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-robot"></i>
+                    AI研修ポータル
+                </div>
+                <div class="footer-links">
+                    <a href="#basic-knowledge">基礎知識</a>
+                    <a href="#tests">確認テスト</a>
+                    <a href="#case-studies">事例共有</a>
+                    <a href="#progress">進捗確認</a>
+                </div>
+                <div class="copyright">
+                    &copy; 2025 AI研修ポータル All Rights Reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
+

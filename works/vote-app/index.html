@@ -1,0 +1,1164 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>生成AI活用コンテスト｜投票（静的）</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #0f1a2e;
+      --card: #101f3a;
+      --text: #e8eefc;
+      --muted: #a9b6d6;
+      --line: rgba(255, 255, 255, .12);
+      --accent: #7aa7ff;
+      --good: #4ad295;
+      --warn: #ffcc66;
+      --danger: #ff6b7a;
+      --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      font-family: "Meiryo", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(1200px 600px at 20% 0%, rgba(122, 167, 255, .18), transparent 60%),
+        radial-gradient(900px 500px at 80% 10%, rgba(74, 210, 149, .14), transparent 55%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    a {
+      color: inherit
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 16px;
+      padding: 16px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 14px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .03));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 10px;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+    }
+
+    .title {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: .2px
+    }
+
+    .title .sub {
+      color: var(--muted);
+      font-size: 12px
+    }
+
+    .nav {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, .04);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: .15s;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, .07)
+    }
+
+    .btn.primary {
+      border-color: rgba(122, 167, 255, .55);
+      background: rgba(122, 167, 255, .14)
+    }
+
+    .btn.good {
+      border-color: rgba(74, 210, 149, .55);
+      background: rgba(74, 210, 149, .14)
+    }
+
+    .btn.warn {
+      border-color: rgba(255, 204, 102, .55);
+      background: rgba(255, 204, 102, .14)
+    }
+
+    .btn.danger {
+      border-color: rgba(255, 107, 122, .55);
+      background: rgba(255, 107, 122, .14)
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .04);
+    }
+
+    .toggle input {
+      transform: scale(1.15)
+    }
+
+    .main {
+      min-height: 70vh;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .03));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .card {
+      background: rgba(16, 31, 58, .92);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      min-height: 160px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+    }
+
+    .card h3 {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.35
+    }
+
+    .titleLink {
+      color: inherit;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .titleLink:hover {
+      text-decoration: underline;
+    }
+
+
+    .meta {
+      color: var(--muted);
+      font-size: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+    .noteBox {
+      margin-top: 8px;
+    }
+
+    .noteText {
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--muted);
+      background: rgba(255, 255, 255, .03);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 11px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, .03);
+    }
+
+    .actions {
+      margin-top: auto;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mini {
+      padding: 7px 9px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .favOn {
+      outline: 2px solid rgba(74, 210, 149, .55)
+    }
+
+    .mcOn {
+      outline: 3px solid rgba(255, 204, 102, .85);
+      box-shadow: 0 0 0 8px rgba(255, 204, 102, .08);
+    }
+
+    .badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, .04);
+      color: var(--muted);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 92px;
+      height: calc(100vh - 110px);
+      overflow: auto;
+    }
+
+    .sideTitle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px
+    }
+
+    .sideTitle h2 {
+      margin: 0;
+      font-size: 14px
+    }
+
+    .list {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .favItem {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .03);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .favRow {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: flex-start
+    }
+
+    .favName {
+      font-weight: 800;
+      font-size: 12.5px;
+      line-height: 1.35
+    }
+
+    .favBtns {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap
+    }
+
+    .smallTxt {
+      color: var(--muted);
+      font-size: 12px
+    }
+
+    .pager {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px
+    }
+
+    .input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, .04);
+      color: var(--text);
+      outline: none;
+    }
+
+    .finalGrid {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 12px;
+    }
+
+    .awardBox {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255, 255, 255, .03);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .awardHead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px
+    }
+
+    .awardHead h3 {
+      margin: 0;
+      font-size: 14px
+    }
+
+    .selected {
+      padding: 10px;
+      border-radius: 14px;
+      border: 1px dashed rgba(255, 255, 255, .2);
+      background: rgba(0, 0, 0, .12);
+      color: var(--text);
+      font-weight: 800;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+
+    .mcBanner {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 10px;
+      z-index: 100;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 204, 102, .6);
+      background: rgba(255, 204, 102, .14);
+      color: var(--text);
+      font-weight: 900;
+      box-shadow: var(--shadow);
+      display: none;
+      max-width: min(920px, 92vw);
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .hint {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 1100px) {
+      .app {
+        grid-template-columns: 1fr
+      }
+
+      .sidebar {
+        position: relative;
+        top: auto;
+        height: auto
+      }
+
+      .grid {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .finalGrid {
+        grid-template-columns: 1fr
+      }
+    }
+
+    @media (max-width: 680px) {
+      .grid {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .guideInst {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .guideVal {
+      color: var(--good);
+      font-weight: 700;
+      font-size: 15px;
+      padding: 10px;
+      background: rgba(74, 210, 149, .1);
+      border: 1px solid rgba(74, 210, 149, .3);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Label System */
+    .labelSection {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--line);
+    }
+
+    .labelHint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .labelBtns {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .labelBtn {
+      padding: 5px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .15s;
+      border: 1px solid;
+    }
+
+    .labelBtn.lA {
+      border-color: rgba(74, 210, 149, .5);
+      color: var(--good);
+      background: transparent;
+    }
+
+    .labelBtn.lA.on {
+      background: rgba(74, 210, 149, .2);
+    }
+
+    .labelBtn.lB {
+      border-color: rgba(122, 167, 255, .5);
+      color: var(--accent);
+      background: transparent;
+    }
+
+    .labelBtn.lB.on {
+      background: rgba(122, 167, 255, .2);
+    }
+
+    .labelBtn.lC {
+      border-color: rgba(255, 204, 102, .5);
+      color: var(--warn);
+      background: transparent;
+    }
+
+    .labelBtn.lC.on {
+      background: rgba(255, 204, 102, .2);
+    }
+
+    .labelBadge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 700;
+      margin-right: 4px;
+    }
+
+    .labelBadge.lA {
+      background: rgba(74, 210, 149, .2);
+      color: var(--good);
+    }
+
+    .labelBadge.lB {
+      background: rgba(122, 167, 255, .2);
+      color: var(--accent);
+    }
+
+    .labelBadge.lC {
+      background: rgba(255, 204, 102, .2);
+      color: var(--warn);
+    }
+
+    .labelNote {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    /* Radio Options */
+    .radioGroup {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .radioOpt {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: .15s;
+    }
+
+    .radioOpt:hover {
+      background: rgba(255, 255, 255, .03);
+    }
+
+    .radioOpt.selected {
+      border-color: var(--good);
+      background: rgba(74, 210, 149, .08);
+    }
+
+    .radioOpt input[type="radio"] {
+      transform: scale(1.2);
+      accent-color: var(--good);
+    }
+
+    .radioLabel {
+      flex: 1;
+      font-size: 13px;
+    }
+
+    .candidateList {
+      margin-bottom: 16px;
+    }
+
+    .candidateItem {
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <nav style="padding:10px 20px;font-size:14px;background:rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.12);">
+      <a href="../../works.html" style="color:#7aa7ff;text-decoration:none;font-weight:500;">← Works に戻る</a>
+  </nav>
+  <div class="mcBanner" id="mcBanner">発表中：—</div>
+
+  <div class="app">
+    <header>
+      <div class="title">
+        <h1>生成AI活用コンテスト｜投票（静的・送信なし）</h1>
+        <div class="sub">発表中に「候補へ」→ 最後に賞A/B/Cを各1作品確定 → Formsへ転記</div>
+      </div>
+      <div class="nav">
+        <button class="btn primary" id="navList">作品一覧</button>
+        <button class="btn good" id="navFinal">最終確認</button>
+        <div class="toggle" title="司会用：発表中の作品をワンクリックで強調表示">
+          <input type="checkbox" id="mcToggle" />
+          <label for="mcToggle" style="cursor:pointer;font-weight:800;">司会モード</label>
+        </div>
+      </div>
+    </header>
+
+    <section class="main">
+      <div class="panel" id="viewList" style="display:block;">
+        <div style="display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap;">
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <input class="input" id="searchInput" placeholder="検索：作品名 / ID（例：w07）" style="max-width:520px;" />
+            <span class="smallTxt" id="countText">—</span>
+          </div>
+          <div class="pager">
+            <button class="btn mini" id="prevPage">◀</button>
+            <span class="smallTxt" id="pageText">Page 1</span>
+            <button class="btn mini" id="nextPage">▶</button>
+          </div>
+        </div>
+
+        <div style="height:12px;"></div>
+        <div class="grid" id="grid"></div>
+
+        <div class="hint">
+          <b>使い方：</b>発表を聞きながら「候補に入れる」。迷ったら候補に入れてOK。最後に「最終投票」で賞A/B/Cを各1作品に絞ります。
+        </div>
+      </div>
+
+      <div class="panel" id="viewFinal" style="display:none;">
+        <div style="margin-bottom:20px; text-align:center;">
+          <h2 style="margin:0 0 8px 0; font-size:20px;">最終確認（この内容をFormsで選択します）</h2>
+          <div
+            style="background:rgba(255,255,255,.05); display:inline-block; padding:8px 16px; border-radius:99px; font-size:12px; font-weight:bold; border:1px solid var(--line);">
+            【Microsoft Forms 入力ガイド】 候補から3作品を各賞に選んでください。
+          </div>
+        </div>
+
+        <div class="finalGrid">
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <div class="awardBox">
+              <h3 id="awardAName">① 賞A</h3>
+              <div class="radioGroup" id="radioA"></div>
+            </div>
+            <div class="awardBox">
+              <h3 id="awardBName">② 賞B</h3>
+              <div class="radioGroup" id="radioB"></div>
+            </div>
+            <div class="awardBox">
+              <h3 id="awardCName">③ 賞C</h3>
+              <div class="radioGroup" id="radioC"></div>
+            </div>
+            <div id="voteWarning"
+              style="display:none; padding:10px; background:rgba(255,204,102,.1); border:1px solid rgba(255,204,102,.4); border-radius:8px; font-size:12px; color:var(--warn);">
+              ⚠ 同じ作品が複数の賞に選ばれています。投票は可能ですが、集計時に調整される場合があります。
+            </div>
+            <div class="awardBox" style="text-align:center; padding:20px; border-color:var(--accent);">
+              <button class="btn primary" id="openFormsBtn" style="width:100%; padding:14px; font-size:16px;">[
+                Microsoft Forms を開く ]</button>
+              <div class="hint" style="margin-top:10px;">別タブで開きます。上から3クリックで完了。</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="awardBox">
+              <div class="awardHead">
+                <h3>▼ あなたの候補作品</h3>
+              </div>
+              <div class="smallTxt" style="margin-bottom:10px;">仮ラベルを参考に各賞を決めてください。</div>
+              <div class="candidateList" id="candidateList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <div class="panel">
+        <div class="sideTitle">
+          <h2>候補ボード（常に表示）</h2>
+          <button class="btn mini danger" id="clearFavs">候補全削除</button>
+        </div>
+        <div class="hint" style="margin-top:8px;">
+          「いいな」と思ったら候補へ。最後に賞A/B/Cへ割当。
+        </div>
+
+        <div style="height:10px;"></div>
+        <input class="input" id="mcSearch" placeholder="（司会）発表中を検索してEnter：w07 / 作品名" />
+
+        <div class="list" id="favList"></div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    (() => {
+      // ====== 設定（仮置き） ======
+      const CONFIG = {
+        formsUrl: "https://forms.office.com/r/XXXXXXXXXX", // 仮
+        awards: {
+          awardA: "賞A（仮）",
+          awardB: "賞B（仮）",
+          awardC: "賞C（仮）",
+        },
+        perPage: 9
+      };
+
+      // ====== 作品データ（仮：25件） ======
+      // 運営の実データに差し替え：id, title, note
+      const WORKS = [
+        { id: "w01", title: "サンプル01", note: "??????01" },
+        { id: "w02", title: "サンプル02", note: "??????02" },
+        { id: "w03", title: "サンプル03", note: "??????03" },
+        { id: "w04", title: "サンプル04", note: "??????04" },
+        { id: "w05", title: "サンプル05", note: "??????05" },
+        { id: "w06", title: "サンプル06", note: "??????06" },
+        { id: "w07", title: "サンプル07", note: "??????07" },
+        { id: "w08", title: "サンプル08", note: "??????08" },
+        { id: "w09", title: "サンプル09", note: "??????09" },
+        { id: "w10", title: "サンプル10", note: "??????10" },
+        { id: "w11", title: "サンプル11", note: "??????11" },
+        { id: "w12", title: "サンプル12", note: "??????12" },
+        { id: "w13", title: "サンプル13", note: "??????13" },
+        { id: "w14", title: "サンプル14", note: "??????14" },
+        { id: "w15", title: "サンプル15", note: "??????15" },
+        { id: "w16", title: "サンプル16", note: "??????16" },
+        { id: "w17", title: "サンプル17", note: "??????17" },
+        { id: "w18", title: "サンプル18", note: "??????18" },
+        { id: "w19", title: "サンプル19", note: "??????19" },
+        { id: "w20", title: "サンプル20", note: "??????20" },
+        { id: "w21", title: "サンプル21", note: "??????21" },
+        { id: "w22", title: "サンプル22", note: "??????22" },
+        { id: "w23", title: "サンプル23", note: "??????23" },
+        { id: "w24", title: "サンプル24", note: "??????24" },
+        { id: "w25", title: "サンプル25", note: "??????25" }
+      ];
+
+      // ====== LocalStorage ======
+      const KEY_FAVS = "gaic_favs_v1";
+      const KEY_LABELS = "gaic_labels_v1";
+      const KEY_VOTES = "gaic_votes_v1";
+      const KEY_MC = "gaic_mc_v1";
+
+      const loadJSON = (k, fallback) => {
+        try { return JSON.parse(localStorage.getItem(k) || ""); } catch { return fallback; }
+      };
+      const saveJSON = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+      let favs = loadJSON(KEY_FAVS, []);
+      let labels = loadJSON(KEY_LABELS, {}); // {workId: ['awardA', 'awardB'], ...}
+      let votes = loadJSON(KEY_VOTES, { awardA: null, awardB: null, awardC: null });
+      let mc = loadJSON(KEY_MC, { enabled: false, current: null });
+
+      // ====== DOM ======
+      const $ = (id) => document.getElementById(id);
+
+      const viewList = $("viewList");
+      const viewFinal = $("viewFinal");
+      const navList = $("navList");
+      const navFinal = $("navFinal");
+
+      const searchInput = $("searchInput");
+      const grid = $("grid");
+      const countText = $("countText");
+      const pageText = $("pageText");
+      const prevPage = $("prevPage");
+      const nextPage = $("nextPage");
+
+      const favList = $("favList");
+      const finalFavList = $("finalFavList");
+      const clearFavs = $("clearFavs");
+
+      const awardAName = $("awardAName");
+      const awardBName = $("awardBName");
+      const awardCName = $("awardCName");
+
+      const openFormsBtn = $("openFormsBtn");
+
+      const mcToggle = $("mcToggle");
+      const mcBanner = $("mcBanner");
+      const mcSearch = $("mcSearch");
+
+      // ====== 状態 ======
+      let page = 1;
+      let query = "";
+
+      // ====== Helpers ======
+      const findWork = (id) => WORKS.find(w => w.id === id);
+      const getWorkHref = (w) => w.file || `${w.id}.png`;
+      const isFav = (id) => favs.includes(id);
+
+      const setFav = (id, on) => {
+        if (on) {
+          if (!favs.includes(id)) favs = [id, ...favs];
+        } else {
+          favs = favs.filter(x => x !== id);
+          // 候補を外しても、最終投票の選択は維持（好みで変えてOK）
+        }
+        saveJSON(KEY_FAVS, favs);
+        renderAll();
+      };
+
+      const setVote = (awardKey, workId) => {
+        votes = { ...votes, [awardKey]: workId };
+        saveJSON(KEY_VOTES, votes);
+        renderFinal();
+        renderFavBoards();
+        renderGrid(); // バッジ反映
+      };
+
+      const clearVote = (awardKey) => setVote(awardKey, null);
+
+      // Label helpers
+      const getLabels = (id) => labels[id] || [];
+      const hasLabel = (id, lbl) => getLabels(id).includes(lbl);
+      const toggleLabel = (id, lbl) => {
+        const curr = getLabels(id);
+        if (curr.includes(lbl)) {
+          labels[id] = curr.filter(x => x !== lbl);
+        } else {
+          labels[id] = [...curr, lbl];
+        }
+        if (labels[id].length === 0) delete labels[id];
+        saveJSON(KEY_LABELS, labels);
+        renderAll();
+      };
+      const labelName = (lbl) => ({
+        awardA: '業務インパクト',
+        awardB: '再現性・展開性',
+        awardC: 'アイデア'
+      }[lbl] || lbl);
+      const labelClass = (lbl) => ({ awardA: 'lA', awardB: 'lB', awardC: 'lC' }[lbl] || '');
+
+      const formatWork = (id) => {
+        if (!id) return "未選択";
+        const w = findWork(id);
+        return w ? `${w.id.toUpperCase()}｜${w.title}` : "未選択";
+      };
+
+      const filteredWorks = () => {
+        const q = query.trim().toLowerCase();
+        if (!q) return WORKS;
+        return WORKS.filter(w =>
+          (w.id || "").toLowerCase().includes(q) ||
+          (w.title || "").toLowerCase().includes(q) ||
+          (w.note || "").toLowerCase().includes(q)
+        );
+      };
+
+      const pagedWorks = () => {
+        const arr = filteredWorks();
+        const total = arr.length;
+        const totalPages = Math.max(1, Math.ceil(total / CONFIG.perPage));
+        page = Math.min(page, totalPages);
+        const start = (page - 1) * CONFIG.perPage;
+        const slice = arr.slice(start, start + CONFIG.perPage);
+        return { slice, total, totalPages };
+      };
+
+      const setMC = (enabled, currentId = null) => {
+        mc = { enabled, current: currentId ?? mc.current };
+        saveJSON(KEY_MC, mc);
+        mcToggle.checked = !!mc.enabled;
+        renderMC();
+        renderGrid();
+      };
+
+      const renderMC = () => {
+        if (mc.enabled && mc.current) {
+          const w = findWork(mc.current);
+          mcBanner.style.display = "block";
+          mcBanner.textContent = `発表中：${w ? (w.id.toUpperCase() + "｜" + w.title) : mc.current}`;
+        } else if (mc.enabled) {
+          mcBanner.style.display = "block";
+          mcBanner.textContent = "発表中：—（作品を検索してEnter）";
+        } else {
+          mcBanner.style.display = "none";
+        }
+      };
+
+      // ====== Render: Grid ======
+      const renderGrid = () => {
+        const { slice, total, totalPages } = pagedWorks();
+        countText.textContent = `表示：${total}件（全${WORKS.length}）`;
+        pageText.textContent = `Page ${page} / ${totalPages}`;
+
+        grid.innerHTML = slice.map(w => {
+          const fav = isFav(w.id);
+          const isMC = (mc.enabled && mc.current === w.id);
+          const wLabels = getLabels(w.id);
+          return `
+        <div class="card ${fav ? "favOn" : ""} ${isMC ? "mcOn" : ""}" data-id="${w.id}">
+          <div class="badge">${w.id.toUpperCase()}</div>
+          <h3><a class="titleLink" href="${escapeHtml(getWorkHref(w))}" target="_blank" rel="noopener">${escapeHtml(w.title)}</a></h3>
+          <div class="noteBox">
+            ${w.note ? `<div class="noteText">${escapeHtml(w.note)}</div>` : ``}
+          </div>
+
+          <div class="actions">
+            <button class="btn mini ${fav ? "danger" : "good"}" data-action="fav" data-id="${w.id}" style="width:100%">
+              ${fav ? "★ 候補中" : "☆ 候補に入れる"}
+            </button>
+            ${mc.enabled ? `<button class="btn mini warn" data-action="mc" data-id="${w.id}">発表中にする</button>` : ""}
+          </div>
+
+          ${fav ? `
+          <div class="labelSection">
+            <div class="labelHint">この賞っぽい？（仮メモ）</div>
+            <div class="labelBtns">
+              <button class="labelBtn lA ${hasLabel(w.id, 'awardA') ? 'on' : ''}" data-action="labelA" data-id="${w.id}">業務インパクト</button>
+              <button class="labelBtn lB ${hasLabel(w.id, 'awardB') ? 'on' : ''}" data-action="labelB" data-id="${w.id}">再現性</button>
+              <button class="labelBtn lC ${hasLabel(w.id, 'awardC') ? 'on' : ''}" data-action="labelC" data-id="${w.id}">アイデア</button>
+            </div>
+            <div class="labelNote">※メモ用。最終投票は後で行います。</div>
+          </div>
+          ` : ""}
+        </div>
+      `;
+        }).join("");
+
+        // click handlers
+        grid.querySelectorAll("button[data-action]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const id = btn.getAttribute("data-id");
+            const act = btn.getAttribute("data-action");
+            if (act === "fav") setFav(id, !isFav(id));
+            if (act === "mc") setMC(true, id);
+            if (act === "labelA") toggleLabel(id, 'awardA');
+            if (act === "labelB") toggleLabel(id, 'awardB');
+            if (act === "labelC") toggleLabel(id, 'awardC');
+          });
+        });
+
+        // MC mode: scroll to current
+        if (mc.enabled && mc.current) {
+          const el = grid.querySelector(`.card[data-id="${mc.current}"]`);
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      };
+
+      // ====== Render: Fav board (Sidebar) ======
+      const renderFavBoards = () => {
+        const items = favs.map(id => findWork(id)).filter(Boolean);
+
+        const mkItem = (w) => {
+          const wLabels = getLabels(w.id);
+          return `
+          <div class="favItem">
+            <div class="favRow">
+              <div>
+                <div class="favName">${escapeHtml(w.id.toUpperCase() + "｜" + w.title)}</div>
+                ${wLabels.length ? `<div style="margin-top:4px;">${wLabels.map(l => `<span class="labelBadge ${labelClass(l)}">仮: ${labelName(l)}</span>`).join('')}</div>` : ''}
+              </div>
+              <button class="btn mini danger" data-action="rm" data-id="${w.id}">削除</button>
+            </div>
+            ${mc.enabled ? `<div class="favBtns"><button class="btn mini warn" data-action="MC" data-id="${w.id}">発表中</button></div>` : ""}
+          </div>`;
+        };
+
+        const emptyMsg = `<div class="smallTxt">候補がまだありません。発表を聞きながら「候補に入れる」をクリックしてください。</div>`;
+        favList.innerHTML = items.length ? items.map(mkItem).join("") : emptyMsg;
+
+        // Bind sidebar events
+        favList.querySelectorAll("button[data-action]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const id = btn.getAttribute("data-id");
+            const act = btn.getAttribute("data-action");
+            if (act === "rm") setFav(id, false);
+            if (act === "MC") setMC(true, id);
+          });
+        });
+      };
+
+      // ====== Render: Final (Radio Buttons) ======
+      const renderFinal = () => {
+        const radioA = $("radioA");
+        const radioB = $("radioB");
+        const radioC = $("radioC");
+        const candidateListEl = $("candidateList");
+        const voteWarning = $("voteWarning");
+
+        awardAName.textContent = "① " + CONFIG.awards.awardA;
+        awardBName.textContent = "② " + CONFIG.awards.awardB;
+        awardCName.textContent = "③ " + CONFIG.awards.awardC;
+
+        const items = favs.map(id => findWork(id)).filter(Boolean);
+
+        // Candidate list
+        candidateListEl.innerHTML = items.length
+          ? items.map(w => {
+            const wLabels = getLabels(w.id);
+            return `<div class="candidateItem">
+                <strong>${w.id.toUpperCase()}｜${escapeHtml(w.title)}</strong>
+                ${wLabels.length ? `<div style="margin-top:4px;">${wLabels.map(l => `<span class="labelBadge ${labelClass(l)}">仮: ${labelName(l)}</span>`).join('')}</div>` : ''}
+              </div>`;
+          }).join("")
+          : `<div class="smallTxt">候補がありません。作品一覧から候補を追加してください。</div>`;
+
+        // Render radio group helper
+        const mkRadio = (awardKey, container) => {
+          container.innerHTML = items.length
+            ? items.map(w => {
+              const wLabels = getLabels(w.id);
+              const selected = votes[awardKey] === w.id;
+              return `
+                  <label class="radioOpt ${selected ? 'selected' : ''}">
+                    <input type="radio" name="${awardKey}" value="${w.id}" ${selected ? 'checked' : ''} />
+                    <span class="radioLabel">
+                      ${w.id.toUpperCase()}｜${escapeHtml(w.title)}
+                      ${wLabels.length ? wLabels.map(l => `<span class="labelBadge ${labelClass(l)}">仮: ${labelName(l)}</span>`).join('') : ''}
+                    </span>
+                  </label>`;
+            }).join("")
+            : `<div class="smallTxt">候補がありません</div>`;
+
+          container.querySelectorAll('input[type="radio"]').forEach(inp => {
+            inp.addEventListener('change', () => {
+              if (inp.checked) setVote(awardKey, inp.value);
+            });
+          });
+        };
+
+        mkRadio('awardA', radioA);
+        mkRadio('awardB', radioB);
+        mkRadio('awardC', radioC);
+
+        // Duplicate warning
+        const ids = [votes.awardA, votes.awardB, votes.awardC].filter(Boolean);
+        const unique = new Set(ids);
+        voteWarning.style.display = (ids.length > 0 && unique.size !== ids.length) ? 'block' : 'none';
+      };
+
+      // ====== Navigation ======
+      const showList = () => {
+        viewList.style.display = "block";
+        viewFinal.style.display = "none";
+        renderGrid();
+      };
+      const showFinal = () => {
+        viewList.style.display = "none";
+        viewFinal.style.display = "block";
+        renderFinal();
+        renderFavBoards();
+      };
+
+      navList.addEventListener("click", showList);
+      navFinal.addEventListener("click", showFinal);
+
+      // ====== Paging & Search ======
+      searchInput.addEventListener("input", (e) => {
+        query = e.target.value || "";
+        page = 1;
+        renderGrid();
+      });
+      prevPage.addEventListener("click", () => { page = Math.max(1, page - 1); renderGrid(); });
+      nextPage.addEventListener("click", () => { page = page + 1; renderGrid(); });
+
+      // ====== Sidebar actions ======
+      clearFavs.addEventListener("click", () => {
+        if (!confirm("候補をすべて削除しますか？")) return;
+        favs = [];
+        saveJSON(KEY_FAVS, favs);
+        renderAll();
+      });
+
+      // ====== Copy / Open Forms ======
+      // ====== Open Forms with Validation ======
+      openFormsBtn.addEventListener("click", () => {
+        // 1. Validation: All selected?
+        const missing = [];
+        if (!votes.awardA) missing.push(CONFIG.awards.awardA);
+        if (!votes.awardB) missing.push(CONFIG.awards.awardB);
+        if (!votes.awardC) missing.push(CONFIG.awards.awardC);
+
+        if (missing.length) {
+          alert("未選択の賞があります。\nすべての賞（A/B/C）を選んでからFormsを開いてください。");
+          return;
+        }
+
+        // 2. Validation: Duplicates?
+        const ids = [votes.awardA, votes.awardB, votes.awardC].filter(Boolean);
+        const unique = new Set(ids);
+        if (unique.size !== ids.length) {
+          if (!confirm("⚠ 同じ作品が複数の賞に選ばれています。\n\n投票は可能ですが、意図した選択か確認してください。\n\nFormsを開きますか？")) {
+            return;
+          }
+        }
+
+        window.open(CONFIG.formsUrl, "_blank", "noopener,noreferrer");
+      });
+
+      // ====== MC Mode ======
+      mcToggle.addEventListener("change", () => {
+        setMC(mcToggle.checked, mc.current);
+        renderFavBoards();
+      });
+
+      mcSearch.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter") return;
+        const q = (mcSearch.value || "").trim().toLowerCase();
+
+        // Empty enter clears current selection
+        if (!q) {
+          setMC(true, null);
+          return;
+        }
+
+        const hit = WORKS.find(w =>
+          w.id.toLowerCase() === q ||
+          w.title.toLowerCase().includes(q)
+        );
+        if (hit) {
+          setMC(true, hit.id);
+          // 発表中を候補にも入れておく（好みでON/OFF）
+          setFav(hit.id, true);
+        } else {
+          alert("該当が見つかりません（ID: w07 など / 作品名で検索）");
+        }
+      });
+
+      // キーボード：N次 / P前（現在ページ内ではなく全体順）
+      document.addEventListener("keydown", (e) => {
+        if (!mc.enabled) return;
+        if (["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName)) return;
+
+        const idx = WORKS.findIndex(w => w.id === mc.current);
+        if (e.key.toLowerCase() === "n") {
+          const next = WORKS[Math.min(WORKS.length - 1, (idx < 0 ? 0 : idx + 1))];
+          if (next) setMC(true, next.id);
+        }
+        if (e.key.toLowerCase() === "p") {
+          const prev = WORKS[Math.max(0, (idx < 0 ? 0 : idx - 1))];
+          if (prev) setMC(true, prev.id);
+        }
+      });
+
+      // ====== Utils ======
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        }[c]));
+      }
+
+      function renderAll() {
+        renderMC();
+        renderFavBoards();
+        renderFinal();
+        renderGrid();
+      }
+
+      // ====== init ======
+      mcToggle.checked = !!mc.enabled;
+      awardAName.textContent = CONFIG.awards.awardA;
+      awardBName.textContent = CONFIG.awards.awardB;
+      awardCName.textContent = CONFIG.awards.awardC;
+      renderAll();
+    })();
+  </script>
+</body>
+
+</html>

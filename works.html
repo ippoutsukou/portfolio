@@ -128,6 +128,13 @@
             font-weight: 600;
         }
 
+        .card-thumb {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
         @media (max-width: 768px) {
             .cards {
                 grid-template-columns: 1fr;
@@ -148,6 +155,7 @@
 
         <div class="cards">
             <a class="card" href="works/ai-training-site/" style="text-decoration:none;color:inherit;">
+                <img class="card-thumb" src="works/61_image/AIポータルサイト.png" alt="AI研修ポータルサイト スクリーンショット" />
                 <h3>AI研修ポータルサイト</h3>
                 <p>社内向けAI研修用のWebポータル。基礎知識・事例共有・確認テスト・進捗管理をひとつのサイトにまとめ、自己学習を支援。</p>
                 <div class="tags">
@@ -158,12 +166,23 @@
             </a>
 
             <a class="card" href="works/vote-app/" style="text-decoration:none;color:inherit;">
+                <img class="card-thumb" src="works/61_image/投票補助アプリ.png" alt="投票補助アプリ スクリーンショット" />
                 <h3>生成AI活用コンテスト 投票補助アプリ</h3>
                 <p>「仮メモ→最終決定」の2段階UIで投票時の記憶負荷と迷いを軽減。ブラウザだけで完結する静的アプリ。</p>
                 <div class="tags">
                     <span class="tag">HTML/CSS/JS</span>
                     <span class="tag">UI設計</span>
                     <span class="tag">意思決定</span>
+                </div>
+            </a>
+            <a class="card" href="works/61_image/Approval Counter.png" style="text-decoration:none;color:inherit;">
+                <img class="card-thumb" src="works/61_image/Approval Counter.png" alt="承認カウンター スクリーンショット" />
+                <h3>承認カウンター（通知ツール）</h3>
+                <p>基幹システムの承認待ち件数を常駐監視し、処理完了を通知するツール。「通知がない」を技術で埋めようとして失敗→現場運用の理解と可視化が先だと学んだ実験。</p>
+                <div class="tags">
+                    <span class="tag">業務改善</span>
+                    <span class="tag">通知自動化</span>
+                    <span class="tag">AI壁打ち</span>
                 </div>
             </a>
         </div>

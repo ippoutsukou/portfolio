@@ -1,0 +1,241 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Kanban</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-left">
+                <h1>Simple Kanban</h1>
+            </div>
+            <div class="header-right">
+                <button id="export-btn" class="btn btn-secondary">エクスポート</button>
+                <button id="import-btn" class="btn btn-secondary">インポート</button>
+                <input type="file" id="import-file-input" accept="application/json" style="display: none;">
+                <button id="csv-export-btn" class="btn btn-secondary">CSVエクスポート</button>
+                <button id="csv-import-btn" class="btn btn-secondary">CSVインポート</button>
+                <input type="file" id="csv-import-file-input" accept=".csv,text/csv" style="display: none;">
+
+                <button id="archived-btn" class="btn btn-secondary">アーカイブ一覧</button>
+                <button id="reset-btn" class="btn btn-danger-outline">データ初期化</button>
+            </div>
+        </header>
+
+        <div class="view-tabs">
+            <button id="tab-kanban" class="tab active">かんばんビュー</button>
+            <button id="tab-gantt" class="tab">ガントビュー</button>
+        </div>
+
+        <div class="toolbar">
+            <div class="filter-group">
+                <label for="filter-assignee">担当者</label>
+                <select id="filter-assignee">
+                    <option value="">すべて</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filter-project">プロジェクト</label>
+                <select id="filter-project">
+                    <option value="">すべて</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filter-due-date">期限</label>
+                <select id="filter-due-date">
+                    <option value="">すべて</option>
+                    <option value="overdue">期限切れ</option>
+                    <option value="today">今日</option>
+                    <option value="tomorrow">明日</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="gantt-range-select">表示範囲</label>
+                <select id="gantt-range-select">
+                    <option value="all">全期間</option>
+                    <option value="90d">3ヶ月</option>
+                    <option value="30d">1ヶ月</option>
+                    <option value="14d">2週間</option>
+                </select>
+                <input type="range" id="gantt-range-slider" min="0" max="100" value="0" />
+            </div>
+        </div>
+
+        <main class="board-container" id="kanban-view">
+            <div id="board"></div>
+        </main>
+
+        <section id="gantt-view" class="gantt-container hidden">
+            <div class="gantt-toolbar">
+            </div>
+            <div class="gantt-axis-header">
+                <div class="gantt-axis-spacer"></div>
+                <div class="gantt-axis-track" id="gantt-axis"></div>
+            </div>
+            <div class="gantt-chart" id="gantt-chart"></div>
+        </section>
+    </div>
+
+    <div id="card-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">カード編集</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="card-form">
+                    <input type="hidden" id="card-id">
+                    <input type="hidden" id="card-column-id">
+
+                    <div class="form-group">
+                        <label for="input-title">タイトル <span class="required">*</span></label>
+                        <input type="text" id="input-title" required placeholder="タスク名を入力">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="input-assignee">担当者</label>
+                            <input type="text" id="input-assignee" placeholder="名前を入力">
+                        </div>
+                        <div class="form-group">
+                            <label for="input-project">プロジェクト</label>
+                            <input type="text" id="input-project" placeholder="プロジェクト名">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="input-desc">詳細メモ</label>
+                        <textarea id="input-desc" rows="4" placeholder="詳細を入力"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="input-priority">優先度</label>
+                            <select id="input-priority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="input-start-date">開始日</label>
+                            <input type="date" id="input-start-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="input-date">期日</label>
+                            <input type="date" id="input-date">
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <div class="left-actions">
+                            <button type="button" id="archive-card-btn" class="btn btn-secondary">アーカイブ</button>
+                            <button type="button" id="delete-card-btn" class="btn btn-danger-outline">削除</button>
+                        </div>
+                        <div class="right-actions">
+                            <button type="button" class="btn btn-secondary close-modal">キャンセル</button>
+                            <button type="submit" class="btn btn-primary">保存</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="column-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="column-modal-title">カラム編集</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="column-form">
+                    <input type="hidden" id="column-id">
+
+                    <div class="form-group">
+                        <label for="input-column-name">カラム名 <span class="required">*</span></label>
+                        <input type="text" id="input-column-name" required placeholder="カラム名を入力">
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" id="delete-column-btn" class="btn btn-danger-outline">削除</button>
+                        <div class="right-actions">
+                            <button type="button" class="btn btn-secondary close-modal">キャンセル</button>
+                            <button type="submit" class="btn btn-primary">保存</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="column-detail-modal" class="modal hidden">
+        <div class="modal-content modal-full">
+            <div class="modal-header">
+                <h2 id="detail-column-title">Column Details</h2>
+                <div class="right-actions">
+                    <button id="detail-add-card-btn" class="btn btn-primary">+ Add Card</button>
+                    <button class="close-modal">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="table-container">
+                    <table class="card-table">
+                        <thead>
+                            <tr>
+                                <th>タイトル</th>
+                                <th>担当者</th>
+                                <th>プロジェクト</th>
+                                <th>優先度</th>
+                                <th>期日</th>
+                                <th>削除</th>
+                                <th>アーカイブ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detail-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="archived-modal" class="modal hidden">
+        <div class="modal-content modal-full">
+            <div class="modal-header">
+                <h2>アーカイブ済みカード</h2>
+                <div class="right-actions">
+                    <button class="close-modal">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="table-container">
+                    <table class="card-table">
+                        <thead>
+                            <tr>
+                                <th>タイトル</th>
+                                <th>担当者</th>
+                                <th>プロジェクト</th>
+                                <th>カラム</th>
+                                <th>期日</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="archived-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

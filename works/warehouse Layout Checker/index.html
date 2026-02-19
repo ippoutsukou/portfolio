@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>Warehouse Layout Checker (PoC)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f1115; --panel: #171a21; --muted:#9aa4b2; --text:#e6eaf0; --accent:#4da3ff;
+      --aisle:#2a7fff33; --aisle-stroke:#2a7fff; --obs:#999; --cargo:#f59f00cc; --sel:#ff4d4f;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; }
+    .app { display: grid; grid-template-columns: 320px 1fr 280px; gap: 12px; padding: 12px; height: 100%; }
+    .card { background: var(--panel); border: 1px solid #232838; border-radius: 14px; padding: 12px; box-shadow: 0 1px 0 #0b0d12; }
+    .card h2 { margin: 6px 0 12px; font-size: 16px; color: #f0f5ff; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+    label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+    input[type="number"], select { width: 100%; padding: 8px 10px; border-radius: 10px; border: 1px solid #2a3143; background: #0e1118; color: var(--text); }
+    input[type="checkbox"] { transform: translateY(1px); }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 10px; border: 1px solid #2a3143; background: #10131a; color: var(--text); cursor: pointer; user-select: none; }
+    .btn:hover { border-color: #384056; }
+    .btn.accent { background: #0f2746; border-color: #0f427c; color: #d6e8ff; }
+    .btn.danger { background: #2a0f12; border-color: #5b1b20; color: #ffd6d6; }
+    .btnbar { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 10px; }
+    .canvas-wrap { position: relative; overflow: auto; height: calc(100vh - 24px); background: #0a0c10; border-radius: 14px; border: 1px solid #1b2030; }
+    svg { display: block; background: #0a0c10; }
+    .grid line { stroke: #1a2030; stroke-width: 1; }
+    .grid .major { stroke: #25304a; stroke-width: 1.2; }
+    .obj { cursor: move; }
+    .aisle { fill: var(--aisle); stroke: var(--aisle-stroke); stroke-width: 2; }
+    .obstacle { fill: var(--obs); stroke: #bfbfbf; stroke-width: 1.5; }
+    .cargo { fill: var(--cargo); stroke: #cc7a00; stroke-width: 2; }
+    .selected { stroke: var(--sel) !important; stroke-width: 2.5 !important; filter: drop-shadow(0 0 6px #ff4d4f66); }
+    .footer { font-size: 12px; color: var(--muted); margin-top: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .stat { font-weight: 600; color: #d7f0ff; }
+    .toast { position: fixed; right: 16px; bottom: 16px; background: #1e0f10; border: 1px solid #6b1f27; color: #ffdadd; padding: 10px 12px; border-radius: 10px; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+    .toast.show { opacity: 1; }
+    .small { font-size: 11px; color: var(--muted); }
+    .divider { height: 1px; background: #1b2030; margin: 10px 0; }
+    a.link { color: #9cc8ff; text-decoration: none; }
+
+    /* resize handles for aisle/obstacle */
+    .handle { fill:#ffffff; stroke:#1e90ff; stroke-width:1.5; cursor:nwse-resize; }
+    .handle.ne, .handle.sw { cursor:nesw-resize; }
+    .handle.nw, .handle.se { cursor:nwse-resize; }
+    .handle-box { pointer-events: none; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Left Panel -->
+    <div class="card" id="leftPanel">
+      <h2>プロパティ</h2>
+      <div class="row">
+        <div>
+          <label>倉庫 幅 W (m)</label>
+          <input id="whW" type="number" step="0.1" value="40" />
+        </div>
+        <div>
+          <label>倉庫 奥行 H (m)</label>
+          <input id="whH" type="number" step="0.1" value="30" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>荷物 幅 (m)</label>
+          <input id="cargoW" type="number" step="0.01" value="1.1" />
+        </div>
+        <div>
+          <label>荷物 奥行 (m)</label>
+          <input id="cargoH" type="number" step="0.01" value="1.1" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>向き</label>
+          <select id="cargoOrient">
+            <option value="portrait">縦向き</option>
+            <option value="landscape">横向き</option>
+          </select>
+        </div>
+        <div>
+          <label>段積み数</label>
+          <input id="stack" type="number" min="1" step="1" value="2" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label><input id="snapChk" type="checkbox" checked> グリッド吸着</label>
+        </div>
+        <div class="small" id="scaleInfo">縮尺: -</div>
+      </div>
+
+      <div class="btnbar">
+        <button class="btn" id="btnResizeWH">倉庫サイズを反映</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="btnbar">
+        <button class="btn" id="btnAddAisle">通路 追加</button>
+        <button class="btn" id="btnAddObs">障害物 追加</button>
+        <button class="btn" id="btnAddCargo">荷物 追加</button>
+        <button class="btn accent" id="btnAutoPack">自動配置</button>
+        <button class="btn accent" id="btnAutoLayout">自動配置（最適）</button>
+      </div>
+
+      <div class="divider"></div>
+      <h2>数値で追加</h2>
+      <div class="row">
+        <div>
+          <label>種類</label>
+          <select id="newType">
+            <option value="aisle">通路</option>
+            <option value="obstacle">障害物</option>
+          </select>
+        </div>
+        <div>
+          <label>原点（左上）X (m)</label>
+          <input id="newX" type="number" step="0.1" value="0" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>原点（左上）Y (m)</label>
+          <input id="newY" type="number" step="0.1" value="0" />
+        </div>
+        <div>
+          <label>幅 W (m)</label>
+          <input id="newW" type="number" step="0.1" value="3" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>奥行 H (m)</label>
+          <input id="newH" type="number" step="0.1" value="5" />
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <button class="btn" id="btnAddByValue" style="width:100%;">この数値で配置</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="row">
+        <div>
+          <label>X (m)</label>
+          <input id="propX" type="number" step="0.1" />
+        </div>
+        <div>
+          <label>Y (m)</label>
+          <input id="propY" type="number" step="0.1" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>幅 W (m)</label>
+          <input id="propW" type="number" step="0.1" />
+        </div>
+        <div>
+          <label>奥行 H (m)</label>
+          <input id="propH" type="number" step="0.1" />
+        </div>
+      </div>
+      <div class="btnbar">
+        <button class="btn" id="btnApply">選択の数値を反映</button>
+        <button class="btn danger" id="btnDelete">選択を削除</button>
+      </div>
+
+      <div class="divider"></div>
+      <div class="small">ヒント: オブジェクトはドラッグで移動できます。<br>荷物は他オブジェクトと重なり不可、通路と障害物同士は重なりOKです。</div>
+    </div>
+
+    <!-- Canvas Center -->
+    <div class="canvas-wrap card">
+      <svg id="svg" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"></svg>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="card">
+      <h2>結果 / 保存</h2>
+      <div class="row">
+        <div>
+          <label>平面配置数</label>
+          <div class="stat" id="flatCount">0</div>
+        </div>
+        <div>
+          <label>総保管数</label>
+          <div class="stat" id="totalCount">0</div>
+        </div>
+      </div>
+      <div class="btnbar">
+        <button class="btn accent" id="btnSavePNG">PNGで保存</button>
+        <button class="btn" id="btnSaveSVG">SVGで保存</button>
+      </div>
+      <div class="divider"></div>
+      <div class="small">凡例: <span style="color:#9cc8ff">■</span>通路 / <span style="color:#bbb">■</span>障害物 / <span style="color:#ffd18b">■</span>荷物</div>
+      <div class="footer small">
+        <span>WLC PoC — 単一HTML / オフライン</span>
+        <a class="link" href="#" id="btnClear">レイアウト初期化</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Non-module JS to avoid file:// module issues -->
+  <script src="./app.js"></script>
+</body>
+</html>

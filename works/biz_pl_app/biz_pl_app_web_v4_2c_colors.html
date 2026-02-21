@@ -1,0 +1,920 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>事業別損益分析ツール v4.2c</title>
+<style>
+  :root { 
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    --dark-bg: #0f0f23;
+    --card-bg: rgba(30, 35, 60, 0.8);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --text-primary: #ffffff;
+    --text-secondary: #a8b3d1;
+    --text-muted: #6b7280;
+    --accent-blue: #3b82f6;
+    --accent-purple: #8b5cf6;
+    --accent-pink: #ec4899;
+    --input-bg: rgba(30, 35, 60, 0.6);
+    --input-border: rgba(255, 255, 255, 0.2);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  body { 
+    margin: 0; 
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif; 
+    color: var(--text-primary); 
+    background: var(--dark-bg);
+    background-image: 
+      radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 40% 80%, rgba(120, 200, 255, 0.1) 0%, transparent 50%);
+    min-height: 100vh;
+  }
+  
+  .wrap { 
+    max-width: 1400px; 
+    margin: 0 auto; 
+    padding: 32px 24px; 
+  }
+  
+  h1 { 
+    font-size: 32px; 
+    font-weight: 700;
+    margin: 0 0 8px; 
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
+    letter-spacing: -0.025em;
+  }
+  
+  .sub { 
+    color: var(--text-secondary); 
+    margin-bottom: 32px; 
+    text-align: center;
+    line-height: 1.6;
+    font-size: 14px;
+  }
+  
+  .grid { 
+    display: grid; 
+    gap: 24px; 
+  }
+  
+  .g-2 { 
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); 
+  }
+  
+  .g-3 { 
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+  }
+  
+  .card { 
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--card-border);
+    border-radius: 20px; 
+    padding: 24px; 
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--primary-gradient);
+    opacity: 0.5;
+  }
+  
+  .card h3 {
+    margin: 0 0 20px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  
+  .row { 
+    display: flex; 
+    gap: 16px; 
+    flex-wrap: wrap; 
+    align-items: flex-end;
+    margin-bottom: 20px;
+  }
+  
+  .row > div {
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  label { 
+    font-size: 12px; 
+    font-weight: 500;
+    color: var(--text-secondary); 
+    display: block; 
+    margin-bottom: 8px; 
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  select, input[type="file"], button, input[type="text"] { 
+    background: var(--input-bg);
+    backdrop-filter: blur(8px);
+    color: var(--text-primary); 
+    border: 1px solid var(--input-border);
+    border-radius: 12px; 
+    padding: 12px 16px; 
+    font-size: 14px;
+    transition: all 0.2s ease;
+    width: 100%;
+  }
+  
+  select:focus, input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  select:hover, input:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  button {
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: none;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 12px;
+  }
+  
+  button.primary { 
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: 0 4px 14px 0 rgba(102, 126, 234, 0.4);
+  }
+  
+  button.primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px 0 rgba(102, 126, 234, 0.6);
+  }
+  
+  button.primary:active {
+    transform: translateY(0);
+  }
+  
+  .muted { 
+    color: var(--text-muted); 
+    font-size: 13px;
+    font-weight: 500;
+  }
+  
+  table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    font-size: 12px;
+    margin-top: 12px;
+  }
+  
+  th, td { 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+    padding: 10px 12px; 
+    text-align: right; 
+  }
+  
+  th:first-child, td:first-child { 
+    text-align: left; 
+  }
+  
+  th {
+    background: rgba(255, 255, 255, 0.05);
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 11px;
+  }
+  
+  canvas { 
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 16px; 
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .preview { 
+    max-height: 240px; 
+    overflow: auto; 
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 12px; 
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(4px);
+  }
+  
+  .preview::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .preview::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+  }
+  
+  .preview::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+  }
+  
+  .preview::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+  
+  .alert { 
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    color: #ffd60a; 
+    border-radius: 12px; 
+    padding: 12px 16px; 
+    margin: 12px 0;
+    backdrop-filter: blur(8px);
+    font-size: 13px;
+    font-weight: 500;
+  }
+  
+  .error { 
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #f87171; 
+    border-radius: 12px; 
+    padding: 12px 16px; 
+    margin: 12px 0;
+    backdrop-filter: blur(8px);
+    font-size: 13px;
+    font-weight: 500;
+  }
+  
+  #status {
+    margin-bottom: 24px;
+  }
+  
+  /* 繝｢繝繝ｳ縺ｪ繧ｻ繝ｬ繧ｯ繝育泙蜊ｰ */
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a8b3d1' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    padding-right: 40px;
+  }
+  
+  /* 繝輔ぃ繧､繝ｫ蜈･蜉帙・繧ｹ繧ｿ繧､繝ｪ繝ｳ繧ｰ */
+  input[type="file"] {
+    position: relative;
+    padding: 12px;
+  }
+  
+  input[type="file"]::file-selector-button {
+    background: var(--success-gradient);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    padding: 8px 16px;
+    margin-right: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  input[type="file"]::file-selector-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+  }
+  
+  /* 繧ｰ繝ｭ繝ｼ蜉ｹ譫・*/
+  .card:hover::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: var(--primary-gradient);
+    border-radius: 22px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .card:hover::after {
+    opacity: 0.1;
+  }
+  
+  /* 繧｢繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ */
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .card {
+    animation: slideIn 0.6s ease-out forwards;
+  }
+  
+  .card:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+  
+  .card:nth-child(3) {
+    animation-delay: 0.2s;
+  }
+  
+  .card:nth-child(4) {
+    animation-delay: 0.3s;
+  }
+  
+  /* 繝ｬ繧ｹ繝昴Φ繧ｷ繝・*/
+  @media (max-width: 768px) {
+    .wrap {
+      padding: 24px 16px;
+    }
+    
+    h1 {
+      font-size: 24px;
+    }
+    
+    .g-2 {
+      grid-template-columns: 1fr;
+    }
+    
+    .g-3 {
+      grid-template-columns: 1fr;
+    }
+    
+    .row {
+      flex-direction: column;
+    }
+    
+    .row > div {
+      min-width: 100%;
+    }
+  }
+  
+  /* 迚ｹ蛻･縺ｪ繧ｹ繧ｿ繧､繝ｪ繝ｳ繧ｰ */
+  .main-controls {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  
+  .chart-container {
+    position: relative;
+  }
+  
+  .chart-container::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    bottom: -1px;
+    background: var(--primary-gradient);
+    border-radius: 21px;
+    opacity: 0.1;
+    z-index: -1;
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <h1>事業別損益分析ツール v4.2c</h1>
+  <div class="sub">
+    損益データの人件費をそのまま使う方法と、<strong>工数比率ファイル</strong>で配賦する方法を比較できます。<br/>
+    公開用サンプルは初期表示済みです。必要に応じて Excel を読み込んで再計算してください。<br/>
+    この画面では、売上・粗利・営業利益、四象限、損益分岐、コスト構成、時系列推移を確認できます。
+  </div>
+
+  <div id="status"></div>
+
+  <div class="card main-controls">
+    <div class="row">
+      <div><label>損益データ（Excel .xlsx）</label><input type="file" id="plFile" accept=".xlsx" /></div>
+      <div><label>工数比率ファイル（Excel .xlsx／任意）</label><input type="file" id="ratioFile" accept=".xlsx" /></div>
+      <div><label>配賦ルール</label>
+        <select id="rule">
+          <option value="sales">売上比率配賦（損益データの人件費を使用）</option>
+          <option value="hours">工数比率配賦（工数ファイルの金額で配賦）</option>
+        </select>
+      </div>
+      <div><label>更新</label><br/><button class="primary" id="runBtn">読み込み＆再計算</button></div>
+    </div>
+
+    <div class="grid g-3" style="margin-top:20px">
+      <div><label>データ形式</label>
+        <select id="dataMode">
+          <option value="long">縦持ち（事業/期間/科目/金額）</option>
+          <option value="wide">横持ち（売上/売上原価/人件費/販管費）</option>
+        </select>
+      </div>
+      <div><label>期間フィルタ（複数選択）</label><select id="periods" multiple size="6" style="min-width:160px;"></select></div>
+      <div></div>
+
+      <div><label>（共通）事業列</label><select id="colBiz"></select></div>
+      <div><label>（共通）期間列</label><select id="colDate"></select></div>
+      <div></div>
+
+      <div id="longOnly1"><label>（縦持ち）科目列</label><select id="colAcct"></select></div>
+      <div id="longOnly2"><label>（縦持ち）金額列</label><select id="colAmt"></select></div>
+      <div id="longOnly3"><label>（縦持ち）売上の科目名</label><input id="nameSales" value="売上" /></div>
+      <div id="longOnly4"><label>（縦持ち）売上原価の科目名</label><input id="nameCogs" value="売上原価" /></div>
+      <div id="longOnly5"><label>（縦持ち）人件費の科目名</label><input id="nameLabor" value="人件費" /></div>
+
+      <div id="wideOnly1" style="display:none"><label>（横持ち）売上列</label><select id="colSales"></select></div>
+      <div id="wideOnly2" style="display:none"><label>（横持ち）売上原価列</label><select id="colCogs"></select></div>
+      <div id="wideOnly3" style="display:none"><label>（横持ち）人件費列</label><select id="colLabor"></select></div>
+      <div id="wideOnly4" style="display:none"><label>（横持ち）販管費列（任意）</label><select id="colSgna"></select></div>
+    </div>
+
+    <div class="grid g-3" style="margin-top:20px">
+      <div><label>（工数ファイル）事業列</label><select id="rbBiz"></select></div>
+      <div><label>（工数ファイル）期間列</label><select id="rbDate"></select></div>
+      <div><label>（工数ファイル）金額列</label><select id="rbAmt"></select></div>
+    </div>
+
+    <div class="grid g-2" style="margin-top:20px;">
+      <div><div class="muted">損益データ プレビュー（先頭10行）</div><div id="plPreview" class="preview"></div></div>
+      <div><div class="muted">工数ファイル プレビュー（先頭10行）</div><div id="rbPreview" class="preview"></div></div>
+    </div>
+  </div>
+
+  <div class="grid g-2" style="margin-top:24px;">
+    <div class="card chart-container"><h3>事業別 売上・粗利・営業利益（合算）</h3><canvas id="barPL"></canvas></div>
+    <div class="card chart-container"><h3>四象限マップ（売上規模 × 利益率）</h3><canvas id="scatter"></canvas></div>
+  </div>
+
+  <div class="card" style="margin-top:24px;">
+    <h3>配賦ルールの適用状況</h3>
+    <div id="allocNote" class="muted"></div>
+  </div>
+
+  <div class="grid g-2" style="margin-top:24px;">
+    <div class="card chart-container"><h3>損益分岐点（参考）</h3><div class="row"><label>事業を選択</label><select id="bizSelect"></select></div><canvas id="breakEven"></canvas></div>
+    <div class="card chart-container"><h3>コスト構成（合算）& 時系列推移</h3><canvas id="pieCost"></canvas><div style="height:16px"></div><canvas id="lineTs"></canvas></div>
+  </div>
+</div>
+<script>
+// ---- Consistent colors ----
+const COLORS = {
+  sales: '#4e79a7',
+  gross: '#f28e2b',
+  op: '#e15759',
+  cogs: '#76b7b2',
+  labor: '#b07aa1',
+  sgna: '#edc948',
+  bubble: '#4e79a780'
+};
+
+const statusBox = document.getElementById('status');
+function info(msg, cls='alert'){ const d=document.createElement('div'); d.className=cls; d.textContent=msg; statusBox.appendChild(d); }
+function clearInfo(){ statusBox.innerHTML=''; }
+
+function toArrayPickLargest(workbook){
+  let bestSheet=null, bestLen=-1;
+  for(const name of workbook.SheetNames){
+    const ws = workbook.Sheets[name];
+    const rows = XLSX.utils.sheet_to_json(ws, {defval:null});
+    if(rows.length>bestLen){ bestLen=rows.length; bestSheet={name,rows}; }
+  }
+  return bestSheet;
+}
+function parseXlsx(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      try{ const data=new Uint8Array(e.target.result); const wb=XLSX.read(data,{type:'array'}); const picked=toArrayPickLargest(wb); resolve({rows:picked.rows, sheet:picked.name}); }
+      catch(err){ reject(err); }
+    };
+    reader.onerror=reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+async function parseXlsxFromUrl(url){
+  const res = await fetch(url, { cache: 'no-store' });
+  if(!res.ok) throw new Error(`fetch failed: ${url}`);
+  const buf = await res.arrayBuffer();
+  const wb = XLSX.read(new Uint8Array(buf), { type:'array' });
+  const picked = toArrayPickLargest(wb);
+  return { rows:picked.rows, sheet:picked.name };
+}
+function num(x){ const v=+x; return isFinite(v)?v:0; }
+function excelSerialToDate(n){ const utcDays=Math.floor(n-25569); const utcValue=utcDays*86400; return new Date(utcValue*1000); }
+function ym(d){
+  if(d==null) return null;
+  if(typeof d==='number'){ const dt=excelSerialToDate(d); const y=dt.getUTCFullYear(); const m=(dt.getUTCMonth()+1).toString().padStart(2,'0'); return `${y}-${m}`; }
+  const s=(''+d).trim();
+  if(/^\d{4}-\d{2}$/.test(s)) return s;
+  const dt=new Date(s);
+  if(!isNaN(dt)){ const y=dt.getFullYear(); const m=(dt.getMonth()+1).toString().padStart(2,'0'); return `${y}-${m}`; }
+  const m1=s.match(/^(\d{4})[\/\.](\d{1,2})/);
+  if(m1) return `${m1[1]}-${m1[2].padStart(2,'0')}`;
+  return null;
+}
+function uniq(a){ return Array.from(new Set(a)); }
+
+let plRows=[], rbRows=[], charts={};
+const $=(id)=>document.getElementById(id);
+const els={
+  plFile:$('plFile'), ratioFile:$('ratioFile'), rule:$('rule'), runBtn:$('runBtn'), dataMode:$('dataMode'),
+  periods:$('periods'), colBiz:$('colBiz'), colDate:$('colDate'), colAcct:$('colAcct'), colAmt:$('colAmt'),
+  nameSales:$('nameSales'), nameCogs:$('nameCogs'), nameLabor:$('nameLabor'),
+  colSales:$('colSales'), colCogs:$('colCogs'), colLabor:$('colLabor'), colSgna:$('colSgna'),
+  rbBiz:$('rbBiz'), rbDate:$('rbDate'), rbAmt:$('rbAmt'),
+  plPreview:$('plPreview'), rbPreview:$('rbPreview'),
+  barPL:$('barPL'), scatter:$('scatter'), allocNote:$('allocNote'),
+  bizSelect:$('bizSelect'), breakEven:$('breakEven'), pieCost:$('pieCost'), lineTs:$('lineTs'),
+  longOnly:[ $('longOnly1'),$('longOnly2'),$('longOnly3'),$('longOnly4'),$('longOnly5') ],
+  wideOnly:[ $('wideOnly1'),$('wideOnly2'),$('wideOnly3'),$('wideOnly4') ]
+};
+
+function fillSelect(sel, opts, presets){
+  sel.innerHTML='';
+  for(const o of opts){ const el=document.createElement('option'); el.value=o; el.textContent=o; sel.appendChild(el); }
+  if(presets){ const pref=presets.find(p=>opts.includes(p)); if(pref) sel.value=pref; }
+}
+function fillMultiSelect(sel, opts, all=false){
+  sel.innerHTML='';
+  for(const v of opts){ const el=document.createElement('option'); el.value=v; el.textContent=v; if(all) el.selected=true; sel.appendChild(el); }
+}
+function selectedValues(sel){ return Array.from(sel.selectedOptions).map(o=>o.value); }
+function renderPreview(container, rows){
+  container.replaceChildren();
+  if(!rows||!rows.length){
+    const empty = document.createElement('div');
+    empty.className = 'muted';
+    empty.textContent = 'データなし';
+    container.appendChild(empty);
+    return;
+  }
+
+  const headers = Object.keys(rows[0]);
+  const table = document.createElement('table');
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  for(const h of headers){
+    const th = document.createElement('th');
+    th.textContent = h;
+    headRow.appendChild(th);
+  }
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  for(const r of rows.slice(0,10)){
+    const tr = document.createElement('tr');
+    for(const h of headers){
+      const td = document.createElement('td');
+      const v = r[h];
+      td.textContent = v == null ? '' : String(v);
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  container.appendChild(table);
+}
+
+function toggleMode(){
+  const mode = els.dataMode.value;
+  els.longOnly.forEach(el => el.style.display = (mode==='long'?'block':'none'));
+  els.wideOnly.forEach(el => el.style.display = (mode==='wide'?'block':'none'));
+}
+
+async function loadDemoData(){
+  clearInfo();
+  // Public demo data (embedded)
+  plRows = [
+    {事業:'業種01', 月:'2025-10', 売上:1200000, 売上原価:520000, 人件費:240000, 販管費:180000},
+    {事業:'業種01', 月:'2025-11', 売上:1350000, 売上原価:560000, 人件費:250000, 販管費:190000},
+    {事業:'業種01', 月:'2025-12', 売上:1280000, 売上原価:540000, 人件費:245000, 販管費:185000},
+    {事業:'業種02', 月:'2025-10', 売上:980000,  売上原価:410000, 人件費:220000, 販管費:160000},
+    {事業:'業種02', 月:'2025-11', 売上:1050000, 売上原価:430000, 人件費:225000, 販管費:165000},
+    {事業:'業種02', 月:'2025-12', 売上:1120000, 売上原価:460000, 人件費:230000, 販管費:170000},
+    {事業:'業種03', 月:'2025-10', 売上:760000,  売上原価:330000, 人件費:170000, 販管費:120000},
+    {事業:'業種03', 月:'2025-11', 売上:820000,  売上原価:345000, 人件費:175000, 販管費:125000},
+    {事業:'業種03', 月:'2025-12', 売上:910000,  売上原価:370000, 人件費:180000, 販管費:130000}
+  ];
+  rbRows = [];
+  try{
+    const sampleRatioUrl = 'date/工数比率データ.xlsx';
+    const rb = await parseXlsxFromUrl(sampleRatioUrl);
+    rbRows = rb.rows;
+    const rbCols = rbRows.length ? Object.keys(rbRows[0]) : [];
+    fillSelect(els.rbBiz, rbCols, ['業種コード','事業','部門','セグメント']);
+    fillSelect(els.rbDate, rbCols, ['年月','月','期間','Date','date']);
+    fillSelect(els.rbAmt, rbCols, ['金額','人件費','Amount','amount']);
+    renderPreview(els.rbPreview, rbRows);
+    els.rule.value = 'hours';
+    info(`工数サンプル: シート「${rb.sheet}」 行=${rbRows.length}`);
+  }catch(_e){
+    rbRows = [
+      {年月:'2025-10', 業種コード:'業種01', 区分:'比例費', 勘定科目:'事業直接人件費', 金額:1135},
+      {年月:'2025-10', 業種コード:'業種02', 区分:'比例費', 勘定科目:'事業直接人件費', 金額:1630},
+      {年月:'2025-10', 業種コード:'業種03', 区分:'比例費', 勘定科目:'事業直接人件費', 金額:1930},
+      {年月:'2025-11', 業種コード:'業種01', 区分:'比例費', 勘定科目:'事業直接人件費', 金額:1135},
+      {年月:'2025-11', 業種コード:'業種02', 区分:'比例費', 勘定科目:'事業直接人件費', 金額:1630},
+      {年月:'2025-11', 業種コード:'業種03', 区分:'比例費', 勘定科目:'事業直接人件費', 金額:1930},
+      {年月:'2025-12', 業種コード:'業種01', 区分:'比例費', 勘定科目:'事業直接人件費', 金額:1135},
+      {年月:'2025-12', 業種コード:'業種02', 区分:'比例費', 勘定科目:'事業直接人件費', 金額:1630},
+      {年月:'2025-12', 業種コード:'業種03', 区分:'比例費', 勘定科目:'事業直接人件費', 金額:1930}
+    ];
+    const rbCols = Object.keys(rbRows[0]);
+    fillSelect(els.rbBiz, rbCols, ['業種コード','事業','部門','セグメント']);
+    fillSelect(els.rbDate, rbCols, ['年月','月','期間','Date','date']);
+    fillSelect(els.rbAmt, rbCols, ['金額','人件費','Amount','amount']);
+    renderPreview(els.rbPreview, rbRows);
+    els.rule.value = 'hours';
+    info('工数サンプル: 埋め込みデータで表示しています（file:// 直開き対策）。');
+  }
+
+  const plCols = Object.keys(plRows[0] || {});
+  fillSelect(els.colBiz, plCols, ['事業']);
+  fillSelect(els.colDate, plCols, ['月']);
+  fillSelect(els.colAcct, plCols, ['勘定科目','科目']);
+  fillSelect(els.colAmt, plCols, ['金額','Amount','amount']);
+  fillSelect(els.colSales, plCols, ['売上']);
+  fillSelect(els.colCogs, plCols, ['売上原価']);
+  fillSelect(els.colLabor, plCols, ['人件費']);
+  fillSelect(els.colSgna, plCols, ['販管費']);
+
+  els.dataMode.value = 'wide';
+  if(!rbRows.length) els.rule.value = 'sales';
+  toggleMode();
+
+  const pers = uniq(plRows.map(r => ym(r[els.colDate.value]))).filter(Boolean).sort();
+  fillMultiSelect(els.periods, pers, true);
+  renderPreview(els.plPreview, plRows);
+  info('初期表示はサンプルデータです。Excelを選択するとあなたのデータで再計算します。');
+  return true;
+}
+
+async function loadFiles(){
+  clearInfo();
+  if(!els.plFile.files[0]){ info('損益データ（Excel）を選択してください','error'); return false; }
+
+  const pl = await parseXlsx(els.plFile.files[0]);
+  plRows = pl.rows;
+  info(`損益: シート「${pl.sheet}」 行=${plRows.length}`);
+
+  const plCols = plRows.length ? Object.keys(plRows[0]) : [];
+  if(plCols.length===0){ info('損益データに有効な行がありません','error'); return false; }
+
+  fillSelect(els.colBiz, plCols, ['事業','部門','セグメント']);
+  fillSelect(els.colDate, plCols, ['月','年月','期間','Date','date']);
+  fillSelect(els.colAcct, plCols, ['勘定科目','科目','アカウント']);
+  fillSelect(els.colAmt, plCols, ['金額','Amount','amount']);
+  fillSelect(els.colSales, plCols, ['売上','売上高','Revenue','Sales']);
+  fillSelect(els.colCogs, plCols, ['売上原価','原価','COGS']);
+  fillSelect(els.colLabor, plCols, ['人件費','労務費']);
+  fillSelect(els.colSgna, plCols, ['販管費','販管費その他','SG&A']);
+
+  renderPreview(els.plPreview, plRows);
+
+  rbRows = [];
+  if(els.ratioFile.files[0]){
+    const rb = await parseXlsx(els.ratioFile.files[0]);
+    rbRows = rb.rows;
+    info(`工数ファイル: シート「${rb.sheet}」 行=${rbRows.length}`);
+
+    const rbCols = rbRows.length ? Object.keys(rbRows[0]) : [];
+    fillSelect(els.rbBiz, rbCols, ['事業','部門','セグメント']);
+    fillSelect(els.rbDate, rbCols, ['月','年月','期間','Date','date']);
+    fillSelect(els.rbAmt, rbCols, ['人件費','金額','Amount','amount']);
+    renderPreview(els.rbPreview, rbRows);
+  }else{
+    info('工数ファイルは未選択です（売上比率配賦なら不要）');
+  }
+
+  const pers = uniq(plRows.map(r => ym(r[els.colDate.value]))).filter(Boolean).sort();
+  if(!pers.length){ info('期間の解釈に失敗しました。期間列を確認してください','error'); }
+  fillMultiSelect(els.periods, pers, true);
+
+  toggleMode();
+  return true;
+}
+
+function buildWideRows(){
+  const c={ biz:els.colBiz.value, date:els.colDate.value, sales:els.colSales.value, cogs:els.colCogs.value, labor:els.colLabor.value, sgna:els.colSgna.value||null };
+  return plRows.map(r=>({ biz:String(r[c.biz]??''), period:ym(r[c.date]), sales:num(r[c.sales]), cogs:num(r[c.cogs]), labor:num(r[c.labor]), sgna:c.sgna?num(r[c.sgna]):0 })).filter(r=>r.biz&&r.period);
+}
+function buildLongRows(){
+  const c={ biz:els.colBiz.value, date:els.colDate.value, acct:els.colAcct.value, amt:els.colAmt.value };
+  const nm={ sales: (els.nameSales.value||'売上').trim(), cogs: (els.nameCogs.value||'売上原価').trim(), labor: (els.nameLabor.value||'人件費').trim() };
+  const raw = plRows.map(r=>({ biz:String(r[c.biz]??''), period:ym(r[c.date]), acct:String(r[c.acct]??''), amt:num(r[c.amt]) })).filter(r=>r.biz&&r.period&&r.acct);
+  const mp={};
+  for(const r of raw){
+    const key=r.biz+'||'+r.period;
+    if(!mp[key]) mp[key]={ biz:r.biz, period:r.period, sales:0, cogs:0, labor:0, sgna:0 };
+    if(r.acct===nm.sales){ mp[key].sales += r.amt; }
+    else if(r.acct===nm.cogs){ mp[key].cogs += r.amt; }
+    else if(r.acct===nm.labor){ mp[key].labor += r.amt; }
+    else { mp[key].sgna += r.amt; }
+  }
+  return Object.values(mp);
+}
+function buildOverrideFromRatio(){
+  if(!rbRows.length) return new Map();
+  const b=els.rbBiz.value, d=els.rbDate.value, a=els.rbAmt.value;
+  const acctCol = Object.keys(rbRows[0]||{}).find(k=>k==='蜍伜ｮ夂ｧ醍岼' || /遘醍岼/.test(k));
+  const mustAcct = '莠区･ｭ逶ｴ謗･莠ｺ莉ｶ雋ｻ';
+  const m=new Map();
+  for(const r of rbRows){
+    if(acctCol && r[acctCol] && String(r[acctCol]).trim()!==mustAcct) continue; // auto filter to target account
+    const biz=String(r[b]??''); const period=ym(r[d]); const amt=num(r[a]);
+    if(!biz||!period) continue;
+    const k=biz+'||'+period;
+    m.set(k, (m.get(k)||0) + amt);
+  }
+  return m;
+}
+
+function allocateAndRender(){
+  clearInfo();
+  if(!plRows.length){ info('蜈医↓謳咲寢繝・・繧ｿ繧定ｪｭ縺ｿ霎ｼ繧薙〒縺上□縺輔＞','error'); return; }
+  const mode = els.dataMode.value;
+  let rows = (mode==='wide') ? buildWideRows() : buildLongRows();
+
+  const selected=selectedValues(els.periods); if(selected.length){ rows=rows.filter(r=>selected.includes(r.period)); }
+  info(`対象レコード: ${rows.length}`);
+  if(!rows.length){ info('対象データが0件です。期間/列設定を確認してください。','error'); return; }
+
+  // ---- Labor to use ----
+  let laborAfterByKey = new Map();
+  if(els.rule.value==='sales'){
+    for(const r of rows){ const k=r.biz+'||'+r.period; laborAfterByKey.set(k, (laborAfterByKey.get(k)||0) + r.labor); }
+    els.allocNote.innerText = '売上比率配賦: PLの人件費をそのまま使用します。';
+  }else{
+    const over = buildOverrideFromRatio();
+    if(over.size===0){
+      for(const r of rows){ const k=r.biz+'||'+r.period; laborAfterByKey.set(k, (laborAfterByKey.get(k)||0) + r.labor); }
+      els.rule.value = 'sales';
+      els.allocNote.innerText = '工数データを取得できなかったため、売上比率配賦に切り替えました。';
+      info('工数サンプルを取得できなかったため、売上比率配賦で表示しています。','alert');
+    }else{
+      laborAfterByKey = over;
+      els.allocNote.innerText = '工数比率配賦: 工数ファイルの人件費を優先して使用します。';
+    }
+  }
+
+  // aggregate PL and attach labor
+  const agg = new Map();
+  for(const r of rows){
+    const k=r.biz+'||'+r.period;
+    if(!agg.has(k)) agg.set(k, {biz:r.biz, period:r.period, sales:0, cogs:0, sgna:0});
+    const o=agg.get(k); o.sales+=r.sales; o.cogs+=r.cogs; o.sgna+=r.sgna;
+  }
+  const pl=[];
+  for(const [k,o] of agg.entries()){
+    const laborAfter = laborAfterByKey.get(k) || 0;
+    const gross = o.sales - o.cogs;
+    const op = gross - laborAfter - o.sgna;
+    const margin = o.sales>0 ? (op/o.sales*100) : 0;
+    pl.push({ biz:o.biz, period:o.period, sales:o.sales, gross, op, cogs:o.cogs, sgna:o.sgna, labor_after:laborAfter, margin });
+  }
+
+  makeCharts(pl);
+
+  const bizList=uniq(pl.map(r=>r.biz)).sort(); fillSelect(els.bizSelect, bizList);
+  if(bizList.length){ els.bizSelect.value=bizList[0]; renderDetail(pl, bizList[0]); }
+  els.bizSelect.onchange=()=>renderDetail(pl, els.bizSelect.value);
+}
+
+function makeCharts(pl){
+  if(typeof Chart === 'undefined'){
+    info('Chart.js の読み込みに失敗しました。ネットワーク接続を確認してください。','error');
+    return;
+  }
+  const byBiz={};
+  for(const r of pl){
+    if(!byBiz[r.biz]) byBiz[r.biz]={biz:r.biz,sales:0,gross:0,op:0,marginSum:0,count:0};
+    byBiz[r.biz].sales+=r.sales; byBiz[r.biz].gross+=r.gross; byBiz[r.biz].op+=r.op; byBiz[r.biz].marginSum+=r.margin; byBiz[r.biz].count+=1;
+  }
+  const arr=Object.values(byBiz).sort((a,b)=>b.op-a.op);
+  const labels=arr.map(x=>x.biz), sales=arr.map(x=>x.sales), gross=arr.map(x=>x.gross), op=arr.map(x=>x.op);
+  if(charts.bar) charts.bar.destroy();
+  charts.bar=new Chart(els.barPL,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'売上',data:sales,backgroundColor:COLORS.sales},
+      {label:'粗利',data:gross,backgroundColor:COLORS.gross},
+      {label:'営業利益',data:op,backgroundColor:COLORS.op}
+    ]},
+    options:{responsive:true,scales:{y:{beginAtZero:true}}}
+  });
+  const scatterData=arr.map(x=>({x:x.sales,y:(x.marginSum/x.count||0),label:x.biz,r:Math.max(4, Math.sqrt(Math.max(0,x.sales))/500)}));
+  if(charts.scatter) charts.scatter.destroy();
+  charts.scatter=new Chart(els.scatter,{
+    type:'bubble',
+    data:{datasets:[{label:'莠区･ｭ',data:scatterData.map(p=>({x:p.x,y:p.y,r:p.r,label:p.label})),backgroundColor:COLORS.bubble}]},
+    options:{plugins:{tooltip:{callbacks:{label:(ctx)=>`${ctx.raw.label}: 螢ｲ荳・${Math.round(ctx.raw.x).toLocaleString()} / 蛻ｩ逶顔紫 ${ctx.raw.y.toFixed(1)}%`}}},
+      scales:{x:{beginAtZero:true},y:{beginAtZero:true,ticks:{callback:v=>v+'%'}}}}
+  });
+}
+
+function renderDetail(pl, biz){
+  const detail=pl.filter(r=>r.biz===biz).sort((a,b)=>a.period.localeCompare(b.period));
+  const labels=detail.map(r=>r.period); const fixed=detail.map(r=>Math.max(0, r.labor_after + r.sgna)); const cogs=detail.map(r=>r.cogs); const sales=detail.map(r=>r.sales);
+  if(charts.break) charts.break.destroy();
+  charts.break=new Chart(els.breakEven,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'蝗ｺ螳夊ｲｻ(霑台ｼｼ)',data:fixed,stack:'s',backgroundColor:COLORS.labor},
+      {label:'螢ｲ荳雁次萓｡',data:cogs,stack:'s',backgroundColor:COLORS.cogs},
+      {label:'売上',data:sales,backgroundColor:COLORS.sales}
+    ]},
+    options:{responsive:true,scales:{x:{stacked:true},y:{beginAtZero:true}},plugins:{legend:{position:'bottom'}}}
+  });
+  const totals=detail.reduce((a,c)=>{a.cogs+=c.cogs; a.labor+=c.labor_after; a.sgna+=c.sgna; return a;},{cogs:0,labor:0,sgna:0});
+  if(charts.pie) charts.pie.destroy();
+  charts.pie=new Chart(els.pieCost,{
+    type:'pie',
+    data:{labels:['売上原価','人件費(配賦後)','販管費その他'],datasets:[{data:[totals.cogs,totals.labor,totals.sgna],backgroundColor:[COLORS.cogs, COLORS.labor, COLORS.sgna]}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom'}}}
+  });
+  if(charts.line) charts.line.destroy();
+  charts.line=new Chart(els.lineTs,{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'売上',data:detail.map(r=>r.sales),borderColor:COLORS.sales,backgroundColor:COLORS.sales},
+      {label:'粗利',data:detail.map(r=>r.gross),borderColor:COLORS.gross,backgroundColor:COLORS.gross},
+      {label:'営業利益',data:detail.map(r=>r.op),borderColor:COLORS.op,backgroundColor:COLORS.op}
+    ]},
+    options:{responsive:true,plugins:{legend:{position:'bottom'}}}
+  });
+}
+
+els.runBtn.addEventListener('click', async ()=>{
+  if(els.plFile.files[0]){
+    const ok = await loadFiles();
+    if(ok) allocateAndRender();
+    return;
+  }
+  const ok = await loadDemoData();
+  if(ok) allocateAndRender();
+});
+els.plFile.addEventListener('change', async ()=>{ await loadFiles(); });
+els.ratioFile.addEventListener('change', async ()=>{ if(els.plFile.files[0]){ await loadFiles(); } });
+els.rule.addEventListener('change', ()=>{ if(plRows.length) allocateAndRender(); });
+els.periods.addEventListener('change', ()=>{ if(plRows.length) allocateAndRender(); });
+els.dataMode.addEventListener('change', toggleMode);
+
+(async () => {
+  const ok = await loadDemoData();
+  if(ok) allocateAndRender();
+})();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

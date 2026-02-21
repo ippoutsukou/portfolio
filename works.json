@@ -20,7 +20,7 @@
   {
     "title": "承認カウンター（通知ツール）",
     "description": "基幹システムの承認待ち件数を常駐監視し、処理完了を通知するツール。「通知がない」を技術で埋めようとして失敗→現場運用の理解と可視化が先だと学んだ実験。",
-    "href": "works/61_image/Approval Counter.png",
+    "href": "works/approval-counter/",
     "noteUrl": "https://note.com/clean_whale1844/n/nb55d2cf206df",
     "image": "works/61_image/Approval Counter.png",
     "alt": "承認カウンター スクリーンショット",

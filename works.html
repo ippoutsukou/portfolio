@@ -7,7 +7,6 @@
     <title>Works | Portfolio</title>
     <style>
         :root {
-            /* Trustworthy Light Theme (Gentle White) */
             --bg: #f8f9fa;
             --fg: #334155;
             --heading: #0f172a;
@@ -33,7 +32,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Header */
         header {
             padding: 20px 24px;
             display: flex;
@@ -65,7 +63,6 @@
             color: var(--primary);
         }
 
-        /* Main Content */
         .section {
             padding: 40px 24px 80px;
             width: min(1000px, 100%);
@@ -77,6 +74,12 @@
             font-size: clamp(24px, 4vw, 32px);
             margin: 0 0 32px;
             letter-spacing: -0.02em;
+        }
+
+        .entry-message {
+            margin: -16px 0 24px;
+            color: var(--muted);
+            font-size: 14px;
         }
 
         .cards {
@@ -135,6 +138,79 @@
             border: 1px solid var(--border);
         }
 
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .card-link {
+            display: inline-block;
+            text-decoration: none;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 7px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .card-link.work-link {
+            color: var(--heading);
+            background: #ffffff;
+        }
+
+        .card-link.work-link:hover {
+            background: #f1f5f9;
+        }
+
+        .card-link.note-link {
+            color: var(--primary-fg);
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .card-link.note-link:hover {
+            background: #1d4ed8;
+            border-color: #1d4ed8;
+        }
+
+        .load-more-wrap {
+            margin-top: 28px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .load-more {
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--heading);
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px 18px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .load-more:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .load-more[hidden] {
+            display: none;
+        }
+
+        .status {
+            margin-top: 14px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
         @media (max-width: 768px) {
             .cards {
                 grid-template-columns: 1fr;
@@ -152,77 +228,18 @@
 
     <main class="section">
         <h1>Works / 実績紹介</h1>
+        <p id="entryMessage" class="entry-message" hidden></p>
 
-        <div class="cards">
-            <a class="card" href="works/ai-training-site/" style="text-decoration:none;color:inherit;">
-                <img class="card-thumb" src="works/61_image/AIポータルサイト.png" alt="AI研修ポータルサイト スクリーンショット" />
-                <h3>AI研修ポータルサイト</h3>
-                <p>社内向けAI研修用のWebポータル。基礎知識・事例共有・確認テスト・進捗管理をひとつのサイトにまとめ、自己学習を支援。</p>
-                <div class="tags">
-                    <span class="tag">HTML/CSS/JS</span>
-                    <span class="tag">社内研修</span>
-                    <span class="tag">AI活用</span>
-                </div>
-            </a>
+        <div class="cards" id="worksCards" aria-live="polite"></div>
 
-            <a class="card" href="works/vote-app/" style="text-decoration:none;color:inherit;">
-                <img class="card-thumb" src="works/61_image/投票補助アプリ.png" alt="投票補助アプリ スクリーンショット" />
-                <h3>生成AI活用コンテスト 投票補助アプリ</h3>
-                <p>「仮メモ→最終決定」の2段階UIで投票時の記憶負荷と迷いを軽減。ブラウザだけで完結する静的アプリ。</p>
-                <div class="tags">
-                    <span class="tag">HTML/CSS/JS</span>
-                    <span class="tag">UI設計</span>
-                    <span class="tag">意思決定</span>
-                </div>
-            </a>
-            <a class="card" href="works/61_image/Approval Counter.png" style="text-decoration:none;color:inherit;">
-                <img class="card-thumb" src="works/61_image/Approval Counter.png" alt="承認カウンター スクリーンショット" />
-                <h3>承認カウンター（通知ツール）</h3>
-                <p>基幹システムの承認待ち件数を常駐監視し、処理完了を通知するツール。「通知がない」を技術で埋めようとして失敗→現場運用の理解と可視化が先だと学んだ実験。</p>
-                <div class="tags">
-                    <span class="tag">業務改善</span>
-                    <span class="tag">通知自動化</span>
-                    <span class="tag">AI壁打ち</span>
-                </div>
-            </a>
-            <a class="card" href="works/Simple%20Kanban%20Board/" style="text-decoration:none;color:inherit;">
-                <img class="card-thumb" src="works/61_image/simple%20kaban.png" alt="Simple Kanban Board スクリーンショット" />
-                <h3>Simple Kanban Board</h3>
-                <p>ドラッグ＆ドロップで進捗管理できるかんばんアプリ。カード編集、担当者/プロジェクト/期限フィルタ、ガントビュー、JSON/CSVの入出力に対応。</p>
-                <div class="tags">
-                    <span class="tag">HTML/CSS/JS</span>
-                    <span class="tag">かんばん</span>
-                    <span class="tag">ガント表示</span>
-                </div>
-            </a>
-
-            <a class="card" href="works/warehouse%20Layout%20Checker/" style="text-decoration:none;color:inherit;">
-                <img class="card-thumb" src="works/61_image/倉庫レイアウト.png" alt="倉庫レイアウトチェッカー スクリーンショット" />
-                <h3>倉庫レイアウトチェッカー（PoC）</h3>
-                <p>倉庫の平面図上に通路・障害物・荷物をドラッグ配置し、収容量を自動計算するツール。自動配置機能やPNG/SVG出力にも対応。単一HTMLでオフライン動作。</p>
-                <div class="tags">
-                    <span class="tag">HTML/CSS/JS</span>
-                    <span class="tag">倉庫レイアウト</span>
-                    <span class="tag">可視化</span>
-                </div>
-            </a>
-            <a class="card" href="works/biz_pl_app/biz_pl_app_web_v4_2c_colors.html" style="text-decoration:none;color:inherit;">
-                <img class="card-thumb" src="works/61_image/biz_pl_app.png" alt="事業別損益分析ツール v4.2c スクリーンショット" />
-                <h3>事業別損益分析ツール v4.2c</h3>
-                <p>事業別の売上・粗利・営業利益を可視化し、売上比率配賦と工数比率配賦を比較できる分析ツール。サンプルデータを埋め込み済みで、単体HTMLとして動作。</p>
-                <div class="tags">
-                    <span class="tag">HTML/CSS/JS</span>
-                    <span class="tag">損益分析</span>
-                    <span class="tag">配賦シミュレーション</span>
-                </div>
-            </a>
+        <div class="load-more-wrap">
+            <button id="loadMoreBtn" class="load-more" type="button" hidden>もっと見る</button>
         </div>
+
+        <p id="worksStatus" class="status" aria-live="polite"></p>
     </main>
 
+    <script src="works.js" defer></script>
 </body>
 
 </html>
-
-
-
-

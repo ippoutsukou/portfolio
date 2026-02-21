@@ -1,0 +1,407 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Co-Creation Demo (Static)</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --line: #e5e7eb;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --indigo: #4f46e5;
+      --emerald: #10b981;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Segoe UI", "Yu Gothic UI", sans-serif; background: var(--bg); color: var(--text); }
+    .app { display: flex; flex-direction: column; height: 100vh; }
+    .header { height: 64px; border-bottom: 1px solid var(--line); background: #fff; display: flex; align-items: center; padding: 0 16px; }
+    .header-title { font-weight: 700; }
+    .main { flex: 1; display: flex; min-height: 0; }
+    .chat-pane { width: 42%; min-width: 320px; border-right: 1px solid var(--line); display: flex; flex-direction: column; background: #f8fafc; }
+    .chat-list { flex: 1; overflow: auto; padding: 16px; }
+    .empty { color: #9ca3af; height: 100%; display: grid; place-items: center; text-align: center; }
+    .bubble-wrap { display: flex; margin-bottom: 14px; }
+    .bubble-wrap.user { justify-content: flex-end; }
+    .bubble { max-width: 80%; border-radius: 14px; padding: 10px 12px; white-space: pre-wrap; line-height: 1.5; font-size: 14px; }
+    .bubble.user { background: var(--indigo); color: #fff; border-top-right-radius: 3px; }
+    .bubble.ai { background: #fff; border: 1px solid #eef2f7; border-top-left-radius: 3px; }
+    .label { font-size: 11px; font-weight: 700; opacity: .7; margin-bottom: 6px; text-transform: uppercase; }
+    .thinking { color: #9ca3af; font-size: 12px; padding: 4px 6px; animation: pulse 1.2s infinite; }
+    @keyframes pulse { 0%,100% { opacity: .4; } 50% { opacity: 1; } }
+    .doc-pane { flex: 1; padding: 16px; background: #f3f4f6; min-width: 0; }
+    .doc-card { height: 100%; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
+    .doc-head { border-bottom: 1px solid var(--line); padding: 12px; font-size: 13px; color: #4b5563; display: flex; justify-content: space-between; }
+    .doc-body { flex: 1; overflow: auto; padding: 16px; white-space: pre-wrap; line-height: 1.7; }
+    .doc-empty { color: #9ca3af; text-align: center; margin-top: 60px; }
+    .blur { filter: blur(1px); opacity: .6; }
+    .footer { border-top: 1px solid var(--line); background: #fff; padding: 14px 16px; }
+    .footer-row { display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+    .exp { min-width: 0; }
+    .step-chip { display: inline-block; background: #e0e7ff; color: #3730a3; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 8px; margin-bottom: 6px; }
+    .exp-title { font-weight: 700; }
+    .exp-text { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .actions { display: flex; gap: 8px; }
+    button { border: 0; border-radius: 999px; font-weight: 700; padding: 10px 14px; cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .5; }
+    .btn-back { background: #f3f4f6; color: #374151; }
+    .btn-next { background: linear-gradient(90deg, #4f46e5, #6366f1); color: #fff; }
+    .btn-reset { background: #f3f4f6; color: #374151; }
+    .progress { margin-top: 10px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+    .bar { height: 6px; border-radius: 999px; background: #e5e7eb; }
+    .bar.done { background: #4f46e5; }
+    .bar.current { background: #a5b4fc; }
+    @media (max-width: 960px) {
+      .main { flex-direction: column; }
+      .chat-pane { width: 100%; min-width: 0; height: 45%; }
+      .doc-pane { height: 55%; }
+      .footer-row { flex-direction: column; align-items: stretch; }
+      .actions { justify-content: stretch; }
+      .actions button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="header-title">AI Co-Creation Demo (Static / file://)</div>
+    </header>
+
+    <main class="main">
+      <section class="chat-pane">
+        <div id="chatList" class="chat-list">
+          <div class="empty">「次の指示を送る」を押して開始してください</div>
+        </div>
+      </section>
+
+      <section class="doc-pane">
+        <div class="doc-card">
+          <div class="doc-head">
+            <span>Canvas (生成されたドキュメント)</span>
+            <span id="docState">Saved</span>
+          </div>
+          <div id="docBody" class="doc-body">
+            <div class="doc-empty">まだドキュメントは生成されていません。</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-row">
+        <div class="exp">
+          <span id="stepChip" class="step-chip">STEP 1 / 5</span>
+          <div id="expTitle" class="exp-title"></div>
+          <div id="expText" class="exp-text"></div>
+          <div id="progress" class="progress"></div>
+        </div>
+        <div class="actions">
+          <button id="backBtn" class="btn-back">戻る</button>
+          <button id="nextBtn" class="btn-next">次の指示を送る</button>
+          <button id="resetBtn" class="btn-reset" style="display:none;">最初からやり直す</button>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const STEPS = [
+      {
+        id: 1,
+        userPrompt: `AI活用コンテストの総括を考えたい。
+今回のポイントは以下の３つ
+・ マクロやプログラミングなど新たに挑戦している事例がみられた
+・ 画像生成、資料まとめなど新しい技術をキャッチアップした事例が多くみられた
+・ 若手教育ツールや分析考察など業務のフローの中に組み込まれている、チームで活用にしている事例がみられた
+
+参加者が今後も意欲的に活用していけるようなコメントに膨らませて`,
+        aiResponsePreface: "以下は、参加者の努力と今後の成長につながるように意欲を後押しするトーンで膨らませた総括案です。",
+        documentContent: `AI活用コンテスト 総括コメント（案）
+
+今回のAI活用コンテストでは、単なる「便利ツールの紹介」にとどまらず、業務のやり方そのものを変えようとする前向きな挑戦が数多く見られました。今回特に評価できる点としては、次の3点です。
+
+① マクロやプログラミングなど、新たな挑戦が生まれたこと
+これまで手作業で行っていた業務に対し、Excelマクロへの挑戦、Pythonなどのプログラミング活用、自動化・効率化を前提とした仕組みづくりといった、一歩踏み込んだ取り組みが複数見られました。「難しそう」「自分には無理」と感じやすい分野に対して、AIを“学習パートナー”として活用しながら挑戦した姿勢そのものが、今回の大きな成果です。
+
+② 画像生成・資料作成など、新しい技術を積極的にキャッチアップしていたこと
+「こんなことまでAIでできるのか」と感じられる事例が多く見られました。重要なのは、最新技術を“知る”だけで終わらせず、実務に当てはめて試している点です。
+
+③ 業務フローに組み込み、チーム活用まで踏み込んだ事例があったこと
+若手教育ツールとしての活用や、分析・考察を業務プロセスに組み込む工夫が見られました。これは「AIを使った」だけでなく、AIを業務の一部として設計したという点で、大きな前進です。
+
+今回の取り組みはゴールではなくスタートです。ぜひ今後も「もっと楽にできる方法はないかな？」という視点を持ち続けてください。`,
+        explanationTitle: "1. たたき台を作らせる",
+        explanationText: "まずは完璧を目指さず、箇条書きで「含めたいポイント」と「目的（参加者の意欲向上）」を伝えて、ベースとなる文章を生成させます。ゼロから書くより圧倒的に早いです。",
+        highlightKey: "base"
+      },
+      {
+        id: 2,
+        userPrompt: `Python
+「データベースや業務改善ツール作成」　に変更したい。canvas使って`,
+        aiResponsePreface: "了解です。「マクロやプログラミングなど新たに挑戦」の部分を、「データベースや業務改善ツール作成」に置き換えた総括文を反映しました。",
+        documentContent: `AI活用コンテスト 総括コメント（案）
+
+今回のAI活用コンテストでは、単なる「便利ツールの紹介」にとどまらず、業務のやり方そのものを変えようとする前向きな挑戦が数多く見られました。今回特に評価できる点としては、次の3点です。
+
+① データベースや業務改善ツール作成など、新たな挑戦が生まれたこと
+これまで手作業で行っていた業務に対し、データベースを活用した情報管理の仕組み化、業務改善ツールの自作による効率化といった、一歩踏み込んだ取り組みが複数見られました。「専門知識が必要そう」と感じやすい分野に対して、AIを相談相手・設計補助として活用しながら形にしていく姿勢が、今回の大きな成果です。
+
+② 画像生成・資料作成など、新しい技術を積極的にキャッチアップしていたこと
+「こんなことまでAIでできるのか」と感じられる事例が多く見られました。重要なのは、最新技術を“知る”だけで終わらせず、実務に当てはめて試している点です。
+
+③ 業務フローに組み込み、チーム活用まで踏み込んだ事例があったこと
+若手教育ツールとしての活用や、分析・考察を業務プロセスに組み込む工夫が見られました。これは「AIを使った」だけでなく、AIを業務の一部として設計したという点で、大きな前進です。
+
+今回の取り組みはゴールではなくスタートです。ぜひ今後も「もっと楽にできる方法はないかな？」という視点を持ち続けてください。`,
+        explanationTitle: "2. 部分的な修正指示",
+        explanationText: "AIが生成した内容の一部（Pythonなど）が実情と少し違う場合、「〇〇を△△に変えて」と具体的に指示します。全体を書き直さなくても、文脈を維持したまま修正してくれます。",
+        highlightKey: "db_tool"
+      },
+      {
+        id: 3,
+        userPrompt: `なんか上から目線なので言い換えて`,
+        aiResponsePreface: "了解です。「上から評価している」ニュアンスが出ないよう、「今回特に評価できる点として」を「今回特に印象的だった点として」等に言い換え、事実として感じたことを共有するトーンに調整しました。",
+        documentContent: `AI活用コンテスト 総括コメント（案）
+
+今回のAI活用コンテストでは、単なる「便利ツールの紹介」にとどまらず、業務のやり方そのものを変えようとする前向きな挑戦が数多く見られました。今回特に印象的だったのが、次の3点です。
+
+① データベースや業務改善ツール作成など、新たな挑戦が生まれたこと
+これまで手作業で行っていた業務に対し、データベースを活用した情報管理の仕組み化、業務改善ツールの自作による効率化といった、一歩踏み込んだ取り組みが見られました。AIを相談相手として活用しながら形にしていく姿勢が、今回の大きな成果だと感じています。
+
+② 画像生成・資料作成など、新しい技術を積極的にキャッチアップしていたこと
+「こんなことまでAIでできるのか」と感じられる事例が多く見られました。最新技術を“知る”だけで終わらせず、実務に当てはめて試している点が素晴らしいと感じました。
+
+③ 業務フローに組み込み、チーム活用まで踏み込んだ事例があったこと
+若手教育ツールとしての活用や、分析・考察を業務プロセスに組み込む工夫が見られました。AIを業務の一部として設計したという点で、大きな前進です。
+
+今回の取り組みはゴールではなくスタートです。ぜひ今後も「もっと楽にできる方法はないかな？」という視点を持ち続けてください。`,
+        explanationTitle: "3. トーン＆マナーの調整",
+        explanationText: "文章の雰囲気が合わない場合、抽象的な感覚（上から目線、堅苦しい、軽いなど）を伝えると、AIがニュアンスを汲み取って書き換えてくれます。人間相手のフィードバックと同じ感覚でOKです。",
+        highlightKey: "tone"
+      },
+      {
+        id: 4,
+        userPrompt: `言い換えて。もっと業務を変えるとか、仕組み自体かわるみたいな`,
+        aiResponsePreface: "いい視点です。「業務改善の延長線にある」を、「業務の進め方や仕組みそのものを変えていく取り組みである」というニュアンスに強化しました。",
+        documentContent: `AI活用コンテスト 総括コメント（案）
+
+今回のAI活用コンテストでは、単なる「便利な使い方の紹介」にとどまらず、業務のやり方そのものを変えようとする前向きな挑戦が数多く見られました。今回特に印象的だったのが、次の3点です。
+
+① データベースや業務改善ツール作成など、新たな挑戦が生まれたこと
+これまで手作業や属人的に行われていた業務に対し、データベースを活用した情報管理の仕組み化など、一歩踏み込んだ取り組みが見られました。これらは、情報の再利用性向上や、将来的な拡張・横展開といった、継続的な業務変革の基盤づくりにつながっています。
+
+② 画像生成・資料作成など、新しい技術を積極的にキャッチアップしていたこと
+変化を前向きに捉え、自らキャッチアップしていく文化が芽生え始めていることを強く感じました。
+
+③ 業務フローに組み込み、チームで活用する事例が見られたこと
+これは単なる「AI活用」ではなく、「AIを前提とした業務フロー設計」へ一歩踏み出した取り組みです。個人の工夫がチーム全体に共有されることで、組織全体の価値向上につながります。
+
+今回のコンテストを通じて明確になったのは、AI活用は特別なスキルではなく、業務の進め方や仕組みそのものを変えていく取り組みであるということです。`,
+        explanationTitle: "4. 視座を高める・深める",
+        explanationText: "表面的な文章だけでなく、「何を伝えたいか（本質的なメッセージ）」を追加で指示することで、文章の深みや説得力を増すことができます。AIを壁打ち相手にして思考を整理できます。",
+        highlightKey: "deepen"
+      },
+      {
+        id: 5,
+        userPrompt: `なんかいい言いかえないかな？さらなる改善が進むとか仕組みがかわるとか暗黙知が形式知になるとか`,
+        aiResponsePreface: "ご要望のキーワードを盛り込み、「個人の気づきが形式知として蓄積され、組織の仕組みとして進化していく」という表現でまとめました。",
+        documentContent: `AI活用コンテスト 総括コメント（案）
+
+今回のAI活用コンテストでは、単なる「便利な使い方の紹介」にとどまらず、業務のやり方そのものを変えようとする前向きな挑戦が数多く見られました。今回特に印象的だったのが、次の3点です。
+
+① データベースや業務改善ツール作成など、新たな挑戦が生まれたこと
+属人的に行われていた業務に対し、データベースを活用した情報管理の仕組み化など、一歩踏み込んだ取り組みが見られました。情報の再利用性が向上し、継続的な業務変革の基盤となっています。
+
+② 画像生成・資料作成など、新しい技術を積極的にキャッチアップしていたこと
+変化を前向きに捉え、自らキャッチアップしていく文化が芽生え始めていることを強く感じました。
+
+③ 業務フローに組み込み、チームで活用する事例が見られたこと
+これは「AIを前提とした業務フロー設計」への一歩です。
+
+【総括】
+今回のコンテストを通じて明確になったのは、AI活用は業務の進め方や仕組みそのものを変えていく取り組みであるということです。
+
+今回紹介されたアイデアやツールが、半年後には業務の当たり前となり、暗黙知として属人化していたノウハウが形式知となり、業務の仕組みとして定着していく。
+その積み重ねが、個人の成長と組織の進化につながっていきます。
+
+皆さまの今回の挑戦に心から敬意を表するとともに、今後さらなる活用の広がりと進化を大いに期待しています。`,
+        explanationTitle: "5. 具体的な語彙の指定",
+        explanationText: "「暗黙知」「形式知」など、使いたい専門用語やキーワードを投げかけると、それを文脈に合わせて綺麗に埋め込んでくれます。自分の語彙とAIの構成力を組み合わせる最終仕上げです。",
+        highlightKey: "final"
+      }
+    ];
+
+    const AnimationState = {
+      Idle: "idle",
+      TypingPrompt: "typingPrompt",
+      Thinking: "thinking",
+      StreamingResponse: "streamingResponse"
+    };
+
+    const state = {
+      currentStepIndex: 0,
+      animState: AnimationState.Idle,
+      chatHistory: []
+    };
+
+    const el = {
+      chatList: document.getElementById("chatList"),
+      docBody: document.getElementById("docBody"),
+      docState: document.getElementById("docState"),
+      stepChip: document.getElementById("stepChip"),
+      expTitle: document.getElementById("expTitle"),
+      expText: document.getElementById("expText"),
+      progress: document.getElementById("progress"),
+      backBtn: document.getElementById("backBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+      resetBtn: document.getElementById("resetBtn")
+    };
+
+    function render() {
+      renderChat();
+      renderDoc();
+      renderFooter();
+      updateButtons();
+    }
+
+    function renderChat() {
+      if (state.chatHistory.length === 0) {
+        el.chatList.innerHTML = '<div class="empty">「次の指示を送る」を押して開始してください</div>';
+        return;
+      }
+      const html = state.chatHistory.map((msg, i) => {
+        const role = msg.role === "user" ? "user" : "ai";
+        return `
+          <div class="bubble-wrap ${role}">
+            <div class="bubble ${role}">
+              <div class="label">${role === "user" ? "YOU" : "AI ASSISTANT"}</div>
+              <div id="msg-${i}" class="msg">${escapeHtml(msg.text)}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+      el.chatList.innerHTML = html + (state.animState === AnimationState.Thinking ? '<div class="thinking">AI is thinking...</div>' : "");
+      el.chatList.scrollTop = el.chatList.scrollHeight;
+    }
+
+    function renderDoc() {
+      const content = getDisplayContent();
+      el.docState.textContent = (state.animState === AnimationState.Thinking || state.animState === AnimationState.StreamingResponse) ? "Updating..." : "Saved";
+      if (!content) {
+        el.docBody.innerHTML = '<div class="doc-empty">まだドキュメントは生成されていません。</div>';
+      } else {
+        el.docBody.textContent = content;
+      }
+      el.docBody.className = "doc-body" + ((state.animState === AnimationState.Thinking || state.animState === AnimationState.StreamingResponse) ? " blur" : "");
+    }
+
+    function renderFooter() {
+      const total = STEPS.length;
+      const isFinished = state.currentStepIndex >= total;
+      const idx = Math.min(state.currentStepIndex, total - 1);
+      const step = STEPS[idx];
+      el.stepChip.textContent = `STEP ${Math.min(state.currentStepIndex + 1, total)} / ${total}`;
+      el.expTitle.textContent = isFinished ? "完成！" : step.explanationTitle;
+      el.expText.textContent = isFinished
+        ? "最初から完璧を目指さず、対話を重ねることで文章品質を高められます。"
+        : step.explanationText;
+
+      el.progress.innerHTML = Array.from({ length: total }).map((_, i) => {
+        const cls = i < state.currentStepIndex ? "bar done" : (i === state.currentStepIndex ? "bar current" : "bar");
+        return `<div class="${cls}"></div>`;
+      }).join("");
+    }
+
+    function updateButtons() {
+      const isFinished = state.currentStepIndex >= STEPS.length;
+      const isIdle = state.animState === AnimationState.Idle;
+      el.backBtn.disabled = !isIdle || state.currentStepIndex === 0 || isFinished;
+      el.nextBtn.disabled = !isIdle || isFinished;
+      el.nextBtn.textContent = isIdle ? "次の指示を送る" : "Processing...";
+      el.nextBtn.style.display = isFinished ? "none" : "inline-block";
+      el.backBtn.style.display = isFinished ? "none" : "inline-block";
+      el.resetBtn.style.display = isFinished ? "inline-block" : "none";
+    }
+
+    function getDisplayContent() {
+      if (state.currentStepIndex === 0 && state.chatHistory.length === 0) return "";
+      if (state.animState === AnimationState.StreamingResponse) {
+        return STEPS[state.currentStepIndex].documentContent;
+      }
+      if (state.currentStepIndex > 0) {
+        return STEPS[state.currentStepIndex - 1].documentContent;
+      }
+      return "";
+    }
+
+    function nextStep() {
+      if (state.animState !== AnimationState.Idle) return;
+      if (state.currentStepIndex >= STEPS.length) return;
+
+      const step = STEPS[state.currentStepIndex];
+      state.animState = AnimationState.TypingPrompt;
+      render();
+
+      setTimeout(() => {
+        state.chatHistory.push({ role: "user", text: step.userPrompt });
+        state.animState = AnimationState.Thinking;
+        render();
+
+        setTimeout(() => {
+          state.chatHistory.push({ role: "ai", text: "" });
+          state.animState = AnimationState.StreamingResponse;
+          render();
+          typeAi(step.aiResponsePreface, () => {
+            state.animState = AnimationState.Idle;
+            state.currentStepIndex += 1;
+            render();
+          });
+        }, 700);
+      }, 250);
+    }
+
+    function prevStep() {
+      if (state.animState !== AnimationState.Idle) return;
+      if (state.currentStepIndex <= 0) return;
+      state.currentStepIndex -= 1;
+      state.chatHistory = state.chatHistory.slice(0, Math.max(0, state.chatHistory.length - 2));
+      render();
+    }
+
+    function resetAll() {
+      state.currentStepIndex = 0;
+      state.animState = AnimationState.Idle;
+      state.chatHistory = [];
+      render();
+    }
+
+    function typeAi(text, done) {
+      const targetIndex = state.chatHistory.length - 1;
+      let i = 0;
+      const timer = setInterval(() => {
+        i += 2;
+        state.chatHistory[targetIndex].text = text.slice(0, i);
+        const msgEl = document.getElementById(`msg-${targetIndex}`);
+        if (msgEl) msgEl.textContent = state.chatHistory[targetIndex].text;
+        if (i >= text.length) {
+          clearInterval(timer);
+          done();
+        }
+      }, 14);
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    el.nextBtn.addEventListener("click", nextStep);
+    el.backBtn.addEventListener("click", prevStep);
+    el.resetBtn.addEventListener("click", resetAll);
+
+    render();
+  </script>
+</body>
+</html>
+

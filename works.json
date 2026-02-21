@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "title": "AI研修ポータルサイト",
     "description": "社内向けAI研修用のWebポータル。基礎知識・事例共有・確認テスト・進捗管理をひとつのサイトにまとめ、自己学習を支援。",
@@ -52,5 +52,14 @@
     "image": "works/61_image/biz_pl_app.png",
     "alt": "事業別損益分析ツール v4.2c スクリーンショット",
     "tags": ["HTML/CSS/JS", "損益分析", "配賦シミュレーション"]
+  }
+,
+  {
+    "title": "AI Collaboration Showcase",
+    "description": "AIとの対話を段階的に進めながら、総括コメントのたたき台作成からトーン調整・表現強化までの共同編集プロセスを可視化したデモアプリ。",
+    "href": "works/ai-collaboration-showcase/",
+    "image": "works/61_image/ai-collaboration-showcase.png",
+    "alt": "AI Collaboration Showcase スクリーンショット",
+    "tags": ["HTML/CSS/JS", "生成AI", "共同編集デモ"]
   }
 ]

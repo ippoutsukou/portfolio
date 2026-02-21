@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
     /* Core Colors */
@@ -96,6 +96,19 @@ body {
     letter-spacing: -0.025em;
 }
 
+.header-left .back-link {
+    display: inline-block;
+    margin-bottom: 0.35rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.header-left .back-link:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
 /* --- Toolbar --- */
 .toolbar {
     background-color: white;
@@ -923,3 +936,4 @@ body {
     font-size: 0.95rem;
     padding: 0.5rem 0;
 }
+

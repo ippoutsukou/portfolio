@@ -47,7 +47,20 @@
     margin: 0 auto; 
     padding: 32px 24px; 
   }
-  
+
+  .back-link {
+    display: inline-block;
+    margin-bottom: 14px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .back-link:hover {
+    color: #c7d2fe;
+    text-decoration: underline;
+  }  
   h1 { 
     font-size: 32px; 
     font-weight: 700;
@@ -370,7 +383,6 @@
     .wrap {
       padding: 24px 16px;
     }
-    
     h1 {
       font-size: 24px;
     }
@@ -421,6 +433,7 @@
 </head>
 <body>
 <div class="wrap">
+  <a class="back-link" href="../../works.html">← Worksに戻る</a>
   <h1>事業別損益分析ツール v4.2c</h1>
   <div class="sub">
     損益データの人件費をそのまま使う方法と、<strong>工数比率ファイル</strong>で配賦する方法を比較できます。<br/>
@@ -908,6 +921,7 @@ els.dataMode.addEventListener('change', toggleMode);
 </script>
 </body>
 </html>
+
 
 
 

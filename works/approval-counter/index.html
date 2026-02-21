@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>承認カウンター（通知ツール） | Works</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --fg: #1f2937;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --card: #ffffff;
+      --primary: #2563eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans JP", "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.7;
+    }
+    .wrap { width: min(920px, 100%); margin: 0 auto; padding: 24px; }
+    .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .back-link { color: var(--primary); text-decoration: none; font-weight: 600; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    h1 { margin: 0 0 10px; font-size: clamp(24px, 3.6vw, 32px); }
+    .lead { color: var(--muted); margin: 0 0 20px; }
+    .thumb { width: 100%; border: 1px solid var(--line); border-radius: 10px; }
+    .section-title { font-size: 18px; margin: 22px 0 8px; }
+    .actions { margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      border: 1px solid var(--line);
+      color: var(--fg);
+      background: #fff;
+    }
+    .btn.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top-nav">
+      <a class="back-link" href="../../works.html">←Worksに戻る</a>
+    </div>
+
+    <article class="card">
+      <h1>承認カウンター（通知ツール）</h1>
+      <p class="lead">基幹システムの承認待ち件数を常駐監視し、処理完了を通知する業務支援ツールです。</p>
+
+      <img class="thumb" src="../61_image/Approval Counter.png" alt="承認カウンター スクリーンショット" loading="lazy" decoding="async" />
+
+      <h2 class="section-title">公開形態について</h2>
+      <p>
+        この作品は Python 実行環境や常駐動作を前提にしたアプリのため、
+        GitHub Pages 上ではそのまま実行できません。
+        このページでは概要と画面イメージを紹介しています。
+      </p>
+    </article>
+  </main>
+</body>
+</html>

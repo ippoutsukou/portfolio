@@ -1,65 +1,141 @@
 [
-  {
-    "title": "AI研修ポータルサイト",
-    "description": "社内向けAI研修用のWebポータル。基礎知識・事例共有・確認テスト・進捗管理をひとつのサイトにまとめ、自己学習を支援。",
-    "href": "works/ai-training-site/",
-    "noteUrl": "https://note.com/clean_whale1844/n/n995966ed3a68",
-    "image": "works/61_image/AIポータルサイト.png",
-    "alt": "AI研修ポータルサイト スクリーンショット",
-    "tags": ["HTML/CSS/JS", "社内研修", "AI活用"]
-  },
-  {
-    "title": "生成AI活用コンテスト 投票補助アプリ",
-    "description": "「仮メモ→最終決定」の2段階UIで投票時の記憶負荷と迷いを軽減。ブラウザだけで完結する静的アプリ。",
-    "href": "works/vote-app/",
-    "noteUrl": "https://note.com/clean_whale1844/n/ne81796779fa4",
-    "image": "works/61_image/投票補助アプリ.png",
-    "alt": "投票補助アプリ スクリーンショット",
-    "tags": ["HTML/CSS/JS", "UI設計", "意思決定"]
-  },
-  {
-    "title": "承認カウンター（通知ツール）",
-    "description": "基幹システムの承認待ち件数を常駐監視し、処理完了を通知するツール。「通知がない」を技術で埋めようとして失敗→現場運用の理解と可視化が先だと学んだ実験。",
-    "href": "works/approval-counter/",
-    "noteUrl": "https://note.com/clean_whale1844/n/nb55d2cf206df",
-    "image": "works/61_image/Approval Counter.png",
-    "alt": "承認カウンター スクリーンショット",
-    "tags": ["業務改善", "通知自動化", "AI壁打ち"]
-  },
-  {
-    "title": "Simple Kanban Board",
-    "description": "ドラッグ＆ドロップで進捗管理できるかんばんアプリ。カード編集、担当者/プロジェクト/期限フィルタ、ガントビュー、JSON/CSVの入出力に対応。",
-    "href": "works/Simple%20Kanban%20Board/",
-    "noteUrl": "https://note.com/clean_whale1844/n/n9a681305e857",
-    "image": "works/61_image/simple%20kaban.png",
-    "alt": "Simple Kanban Board スクリーンショット",
-    "tags": ["HTML/CSS/JS", "かんばん", "ガント表示"]
-  },
-  {
-    "title": "倉庫レイアウトチェッカー（PoC）",
-    "description": "倉庫の平面図上に通路・障害物・荷物をドラッグ配置し、収容量を自動計算するツール。自動配置機能やPNG/SVG出力にも対応。単一HTMLでオフライン動作。",
-    "href": "works/warehouse%20Layout%20Checker/",
-    "noteUrl": "https://note.com/clean_whale1844/n/na98009e75596",
-    "image": "works/61_image/倉庫レイアウト.png",
-    "alt": "倉庫レイアウトチェッカー スクリーンショット",
-    "tags": ["HTML/CSS/JS", "倉庫レイアウト", "可視化"]
-  },
-  {
-    "title": "事業別損益分析ツール v4.2c",
-    "description": "事業別の売上・粗利・営業利益を可視化し、売上比率配賦と工数比率配賦を比較できる分析ツール。サンプルデータを埋め込み済みで、単体HTMLとして動作。",
-    "href": "works/biz_pl_app/biz_pl_app_web_v4_2c_colors.html",
-    "noteUrl": "https://note.com/clean_whale1844/n/n020c5e3c2047",
-    "image": "works/61_image/biz_pl_app.png",
-    "alt": "事業別損益分析ツール v4.2c スクリーンショット",
-    "tags": ["HTML/CSS/JS", "損益分析", "配賦シミュレーション"]
-  }
-,
-  {
-    "title": "AI Collaboration Showcase",
-    "description": "AIとの対話を段階的に進めながら、総括コメントのたたき台作成からトーン調整・表現強化までの共同編集プロセスを可視化したデモアプリ。",
-    "href": "works/ai-collaboration-showcase/",
-    "image": "works/61_image/ai-collaboration-showcase.png",
-    "alt": "AI Collaboration Showcase スクリーンショット",
-    "tags": ["HTML/CSS/JS", "生成AI", "共同編集デモ"]
-  }
+    {
+        "title": "AI研修ポータルサイト",
+        "description": "社内向けAI研修用のWebポータル。基礎知識・事例共有・確認テスト・進捗管理をひとつのサイトにまとめ、自己学習を支援。",
+        "href": "works/ai-training-site/",
+        "noteUrl": "https://note.com/clean_whale1844/n/n995966ed3a68",
+        "image": "works/61_image/AIポータルサイト.png",
+        "alt": "AI研修ポータルサイト スクリーンショット",
+        "tags": [
+            "HTML/CSS/JS",
+            "社内研修",
+            "AI活用"
+        ]
+    },
+    {
+        "title": "生成AI活用コンテスト 投票補助アプリ",
+        "description": "「仮メモ→最終決定」の2段階UIで投票時の記憶負荷と迷いを軽減。ブラウザだけで完結する静的アプリ。",
+        "href": "works/vote-app/",
+        "noteUrl": "https://note.com/clean_whale1844/n/ne81796779fa4",
+        "image": "works/61_image/投票補助アプリ.png",
+        "alt": "投票補助アプリ スクリーンショット",
+        "tags": [
+            "HTML/CSS/JS",
+            "UI設計",
+            "意思決定"
+        ]
+    },
+    {
+        "title": "承認カウンター（通知ツール）",
+        "description": "基幹システムの承認待ち件数を常駐監視し、処理完了を通知するツール。「通知がない」を技術で埋めようとして失敗→現場運用の理解と可視化が先だと学んだ実験。",
+        "href": "works/approval-counter/",
+        "noteUrl": "https://note.com/clean_whale1844/n/nb55d2cf206df",
+        "image": "works/61_image/Approval Counter.png",
+        "alt": "承認カウンター スクリーンショット",
+        "tags": [
+            "業務改善",
+            "通知自動化",
+            "AI壁打ち"
+        ]
+    },
+    {
+        "title": "Simple Kanban Board",
+        "description": "ドラッグ＆ドロップで進捗管理できるかんばんアプリ。カード編集、担当者/プロジェクト/期限フィルタ、ガントビュー、JSON/CSVの入出力に対応。",
+        "href": "works/Simple%20Kanban%20Board/",
+        "noteUrl": "https://note.com/clean_whale1844/n/n9a681305e857",
+        "image": "works/61_image/simple%20kaban.png",
+        "alt": "Simple Kanban Board スクリーンショット",
+        "tags": [
+            "HTML/CSS/JS",
+            "かんばん",
+            "ガント表示"
+        ]
+    },
+    {
+        "title": "倉庫レイアウトチェッカー（PoC）",
+        "description": "倉庫の平面図上に通路・障害物・荷物をドラッグ配置し、収容量を自動計算するツール。自動配置機能やPNG/SVG出力にも対応。単一HTMLでオフライン動作。",
+        "href": "works/warehouse%20Layout%20Checker/",
+        "noteUrl": "https://note.com/clean_whale1844/n/na98009e75596",
+        "image": "works/61_image/倉庫レイアウト.png",
+        "alt": "倉庫レイアウトチェッカー スクリーンショット",
+        "tags": [
+            "HTML/CSS/JS",
+            "倉庫レイアウト",
+            "可視化"
+        ]
+    },
+    {
+        "title": "事業別損益分析ツール v4.2c",
+        "description": "事業別の売上・粗利・営業利益を可視化し、売上比率配賦と工数比率配賦を比較できる分析ツール。サンプルデータを埋め込み済みで、単体HTMLとして動作。",
+        "href": "works/biz_pl_app/biz_pl_app_web_v4_2c_colors.html",
+        "noteUrl": "https://note.com/clean_whale1844/n/n020c5e3c2047",
+        "image": "works/61_image/biz_pl_app.png",
+        "alt": "事業別損益分析ツール v4.2c スクリーンショット",
+        "tags": [
+            "HTML/CSS/JS",
+            "損益分析",
+            "配賦シミュレーション"
+        ]
+    },
+    {
+        "title": "AI Collaboration Showcase",
+        "description": "AIとの対話を段階的に進めながら、総括コメントのたたき台作成からトーン調整・表現強化までの共同編集プロセスを可視化したデモアプリ。",
+        "href": "works/ai-collaboration-showcase/",
+        "noteUrl": "https://note.com/clean_whale1844/n/n5166d103dfc5",
+        "image": "works/61_image/ai-collaboration-showcase.png",
+        "alt": "AI Collaboration Showcase スクリーンショット",
+        "tags": [
+            "HTML/CSS/JS",
+            "生成AI",
+            "共同編集デモ"
+        ]
+    },
+    {
+        "title": "筋トレ進捗管理アプリ",
+        "description": "トレーニング記録と進捗確認を行うための管理アプリの紹介ページです。",
+        "href": "works/workout-progress-app/",
+        "image": "works/61_image/【009】筋トレ進捗管理アプリ.png",
+        "alt": "筋トレ進捗管理アプリ スクリーンショット",
+        "tags": [
+            "HTML/CSS/JS",
+            "トレーニング管理",
+            "進捗可視化"
+        ]
+    },
+    {
+        "title": "フォルダ横断検索アプリ",
+        "description": "複数フォルダを横断し、キーワード一致だけでなく意味の近さでも資料を探せる検索アプリの試作。",
+        "href": "works/フォルダ横断検索アプリ/",
+        "image": "works/61_image/【010】フォルダ横断検索アプリ.png",
+        "alt": "フォルダ横断検索アプリ スクリーンショット",
+        "tags": [
+            "業務改善",
+            "検索体験",
+            "意味検索"
+        ]
+    },
+    {
+        "title": "横持ちアシスタントGPTs",
+        "description": "横持ち便の判断を経験依存からルールベースへ移し、欠品リスク・倉庫キャパ・便制約を同じ手順で比較できるようにした運用支援アプリ。",
+        "href": "works/横持ちアシスタントGPTs/",
+        "image": "works/61_image/【012】横持ちアシスタントGPTs.png",
+        "alt": "横持ちアシスタントGPTs スクリーンショット",
+        "tags": [
+            "業務改善",
+            "在庫運用",
+            "GPTs"
+        ]
+    },
+    {
+        "title": "ShiftBoard",
+        "description": "CSV\u3092\u4e2d\u5fc3\u306b\u30b7\u30d5\u30c8\u3092\u7ba1\u7406\u3057\u3001\u30b0\u30ea\u30c3\u30c9\u8868\u793a\u3068\u30ac\u30f3\u30c8\u8868\u793a\u3067\u76f4\u611f\u7684\u306b\u7de8\u96c6\u3067\u304d\u308b\u30ed\u30fc\u30ab\u30eb\u52d5\u4f5c\u306e\u30b7\u30d5\u30c8\u7ba1\u7406\u30a2\u30d7\u30ea\u3002",
+        "href": "works/ShiftBoard/",
+        "image": "works/61_image/\u3010011\u3011\u66f8\u985e\u8aad\u307f\u3068\u308a\u30a2\u30d7\u30ea.png",
+        "alt": "ShiftBoard \u30b9\u30af\u30ea\u30fc\u30f3\u30b7\u30e7\u30c3\u30c8",
+        "tags": [
+            "HTML/CSS/JS",
+            "\u30b7\u30d5\u30c8\u7ba1\u7406",
+            "CSV\u904b\u7528"
+        ]
+    }
 ]

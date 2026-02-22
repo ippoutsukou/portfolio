@@ -1,0 +1,139 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShiftBoard - シフト管理システム</title>
+  <meta name="description" content="ローカルで動作するシフト管理ツール。CSVでデータを管理し、グリッドとガントで編集できます。">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- 繝倥ャ繝繝ｼ -->
+    <header class="app-header">
+      <div class="header-left">
+        <h1 class="app-title">ShiftBoard</h1>
+        <span class="file-info" id="fileInfo">ファイル未選択</span>
+        <span class="dirty-indicator" id="dirtyIndicator" hidden>● 未保存</span>
+      </div>
+      <div class="header-center">
+        <nav class="screen-tabs">
+          <button class="tab-btn active" data-screen="grid">管理画面1（縦=工程/横=日付）</button>
+          <button class="tab-btn" data-screen="gantt">管理画面2（横ガント）</button>
+          <button class="tab-btn" data-screen="admin3">管理画面3（週次ガント）</button>
+        </nav>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-primary" id="btnLoad">CSV読込</button>
+        <button class="btn btn-success" id="btnSave" disabled>書き込み保存</button>
+        <button class="btn btn-secondary" id="btnDownload" disabled>CSVダウンロード</button>
+        <button class="btn btn-icon" id="btnHelp" title="ヘルプ">?</button>
+      </div>
+    </header>
+
+    <!-- 繝｡繧､繝ｳ繧ｳ繝ｳ繝・Φ繝・-->
+    <main class="app-main">
+      <div class="top-nav">
+        <a class="back-link" href="../../works.html">←Worksに戻る</a>
+      </div>
+      <!-- 邂｡逅・判髱｢1: 繧ｰ繝ｪ繝・ラ -->
+      <section id="screenGrid" class="screen active">
+        <div class="grid-controls">
+          <div class="control-group">
+            <label>表示モード</label>
+            <select id="gridMode">
+              <option value="process">工程 × 日付</option>
+              <option value="worker">作業者 × 日付</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>表示範囲:</label>
+            <select id="rangeMode">
+              <option value="week">週</option>
+              <option value="month">月</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>基準日:</label>
+            <input type="date" id="anchorDate">
+          </div>
+          <div class="control-group">
+            <label>フィルタ:</label>
+            <input type="text" id="filterText" placeholder="検索...">
+          </div>
+        </div>
+        <div class="grid-container" id="gridContainer">
+          <p class="placeholder-text">CSVファイルを読み込んでください</p>
+        </div>
+      </section>
+
+      <!-- 邂｡逅・判髱｢2: 繧ｬ繝ｳ繝・-->
+      <section id="screenGantt" class="screen">
+        <div class="gantt-controls">
+          <div class="control-group">
+            <label>日付</label>
+            <input type="date" id="ganttDate">
+          </div>
+        </div>
+        <div class="gantt-container" id="ganttContainer">
+          <p class="placeholder-text">CSVファイルを読み込んでください</p>
+        </div>
+      </section>
+
+            <section id="screenAdmin3" class="screen">
+        <div class="admin3-controls">
+          <div class="control-group">
+            <label>Base Date</label>
+            <input type="date" id="admin3Date">
+          </div>
+          <div class="control-group">
+            <label>Worker</label>
+            <select id="admin3WorkerFilter"></select>
+          </div>
+        </div>
+        <div class="admin3-container" id="admin3Container">
+          <p class="placeholder-text">CSVファイルを読み込んでください</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- 邱ｨ髮・ヱ繝阪Ν (繝｢繝ｼ繝繝ｫ) -->
+    <div class="modal-overlay" id="modalOverlay" hidden>
+      <div class="modal" id="editModal">
+        <div class="modal-header">
+          <h2 class="modal-title" id="modalTitle">編集</h2>
+          <button class="btn-close" id="btnCloseModal">&times;</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+          <!-- 蜍慕噪縺ｫ逕滓・ -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="btnCancelModal">キャンセル</button>
+          <button class="btn btn-primary" id="btnConfirmModal">適用</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 繝医・繧ｹ繝磯夂衍 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 繝輔ぃ繧､繝ｫ蜈･蜉・(髱櫁｡ｨ遉ｺ) -->
+    <input type="file" id="fileInput" accept=".csv" hidden>
+  </div>
+
+  <!-- Scripts -->
+  <script src="vendor/papaparse.min.js"></script>
+  <script src="src/model.js"></script>
+  <script src="src/store.js"></script>
+  <script src="src/csv_io.js"></script>
+  <script src="src/rules.js"></script>
+  <script src="src/transform.js"></script>
+  <script src="src/ui_common.js"></script>
+  <script src="src/ui_grid.js"></script>
+  <script src="src/ui_gantt.js"></script>
+  <script src="src/ui_admin3.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
+

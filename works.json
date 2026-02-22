@@ -100,7 +100,8 @@
             "HTML/CSS/JS",
             "トレーニング管理",
             "進捗可視化"
-        ]
+        ],
+        "noteUrl": "https://note.com/clean_whale1844/n/n873c89f4014a"
     },
     {
         "title": "フォルダ横断検索アプリ",
@@ -128,14 +129,14 @@
     },
     {
         "title": "ShiftBoard",
-        "description": "CSV\u3092\u4e2d\u5fc3\u306b\u30b7\u30d5\u30c8\u3092\u7ba1\u7406\u3057\u3001\u30b0\u30ea\u30c3\u30c9\u8868\u793a\u3068\u30ac\u30f3\u30c8\u8868\u793a\u3067\u76f4\u611f\u7684\u306b\u7de8\u96c6\u3067\u304d\u308b\u30ed\u30fc\u30ab\u30eb\u52d5\u4f5c\u306e\u30b7\u30d5\u30c8\u7ba1\u7406\u30a2\u30d7\u30ea\u3002",
+        "description": "CSVを中心にシフトを管理し、グリッド表示とガント表示で直感的に編集できるローカル動作のシフト管理アプリ。",
         "href": "works/ShiftBoard/",
-        "image": "works/61_image/\u3010011\u3011\u66f8\u985e\u8aad\u307f\u3068\u308a\u30a2\u30d7\u30ea.png",
-        "alt": "ShiftBoard \u30b9\u30af\u30ea\u30fc\u30f3\u30b7\u30e7\u30c3\u30c8",
+        "image": "works/61_image/【011】書類読みとりアプリ.png",
+        "alt": "ShiftBoard スクリーンショット",
         "tags": [
             "HTML/CSS/JS",
-            "\u30b7\u30d5\u30c8\u7ba1\u7406",
-            "CSV\u904b\u7528"
+            "シフト管理",
+            "CSV運用"
         ]
     }
 ]

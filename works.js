@@ -1,6 +1,7 @@
 ﻿(() => {
   const INITIAL_COUNT = 6;
   const LOAD_COUNT = 6;
+  const STORAGE_KEY = "works:listState";
 
   const cardsEl = document.getElementById("worksCards");
   const loadMoreBtn = document.getElementById("loadMoreBtn");
@@ -13,6 +14,42 @@
 
   let allWorks = [];
   let renderedCount = 0;
+  let restoredScrollY = 0;
+
+  const loadListState = () => {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      const count = Number(parsed?.renderedCount);
+      const scrollY = Number(parsed?.scrollY);
+      return {
+        renderedCount: Number.isFinite(count) ? Math.max(0, Math.floor(count)) : 0,
+        scrollY: Number.isFinite(scrollY) ? Math.max(0, Math.floor(scrollY)) : 0,
+      };
+    } catch {
+      return null;
+    }
+  };
+
+  const saveListState = () => {
+    try {
+      const payload = {
+        renderedCount,
+        scrollY: Math.max(0, Math.floor(window.scrollY || window.pageYOffset || 0)),
+      };
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch {
+      // no-op
+    }
+  };
+
+  const restoreScrollPosition = () => {
+    if (restoredScrollY <= 0) return;
+    requestAnimationFrame(() => {
+      window.scrollTo(0, restoredScrollY);
+    });
+  };
 
   const escapeHtml = (value) =>
     String(value)
@@ -74,6 +111,7 @@
     const remaining = allWorks.length - renderedCount;
     loadMoreBtn.hidden = remaining <= 0;
     statusEl.textContent = `${renderedCount} / ${allWorks.length} 件を表示中`;
+    saveListState();
   };
 
   const boot = async () => {
@@ -99,11 +137,28 @@
         return;
       }
 
-      renderNext(INITIAL_COUNT);
+      const saved = loadListState();
+      const targetCount = Math.min(
+        allWorks.length,
+        Math.max(INITIAL_COUNT, saved?.renderedCount || 0)
+      );
+      restoredScrollY = saved?.scrollY || 0;
+
+      renderNext(targetCount);
+      restoreScrollPosition();
 
       loadMoreBtn.addEventListener("click", () => {
         renderNext(LOAD_COUNT);
       });
+
+      cardsEl.addEventListener("click", (e) => {
+        const link = e.target.closest("a.card-link");
+        if (!link) return;
+        saveListState();
+      });
+
+      window.addEventListener("scroll", saveListState, { passive: true });
+      window.addEventListener("beforeunload", saveListState);
     } catch (error) {
       cardsEl.innerHTML = "";
       loadMoreBtn.hidden = true;

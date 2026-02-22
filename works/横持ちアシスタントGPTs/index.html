@@ -1,0 +1,82 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>横持ちアシスタントGPTs | Works</title>
+  <style>
+    :root{
+      --bg:#f8fafc; --fg:#1f2937; --muted:#64748b; --line:#e2e8f0;
+      --card:#ffffff; --accent:#0f766e;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:"Noto Sans JP","Segoe UI",system-ui,sans-serif;
+      background:var(--bg); color:var(--fg); line-height:1.75;
+    }
+    .wrap{width:min(960px,100%); margin:0 auto; padding:24px}
+    .top-nav{margin-bottom:16px}
+    .back-link{color:var(--accent); text-decoration:none; font-weight:700}
+    .card{
+      background:var(--card); border:1px solid var(--line);
+      border-radius:14px; padding:24px;
+    }
+    h1{margin:0 0 10px; font-size:clamp(24px,3.4vw,34px)}
+    .lead{margin:0 0 20px; color:var(--muted)}
+    .thumb{
+      width:100%; border:1px solid var(--line); border-radius:10px;
+      margin:0 0 18px;
+    }
+    h2{
+      margin:24px 0 10px; font-size:20px; padding-bottom:6px;
+      border-bottom:1px solid var(--line);
+    }
+    ul{margin:0; padding-left:20px}
+    li{margin:6px 0}
+    .note{color:var(--muted); font-size:14px; margin-top:18px}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top-nav">
+      <a class="back-link" href="../../works.html">← Worksに戻る</a>
+    </div>
+
+    <article class="card">
+      <h1>横持ちアシスタントGPTs</h1>
+      <p class="lead">横持ち便の判断を経験依存からルールベースへ移し、欠品リスク・倉庫キャパ・便制約を同じ手順で比較できるようにした運用支援アプリ。</p>
+      <img class="thumb" src="../61_image/【012】横持ちアシスタントGPTs.png" alt="横持ちアシスタントGPTs スクリーンショット" loading="lazy" decoding="async" />
+
+      <h2>課題</h2>
+      <ul>
+        <li>横持ち便の判断が経験と勘に依存し、判断条件が毎回バラつく。</li>
+        <li>欠品回避を優先して多め移動すると、別倉庫の圧迫を招きやすい。</li>
+        <li>便の締切・到着・容量・費用など、複数制約を同時に比較しづらい。</li>
+      </ul>
+
+      <h2>試作アプローチ</h2>
+      <ul>
+        <li>まず予測モデルではなく、判断ルールと優先順位を固定化する。</li>
+        <li>GPTsに禁止ルール、判断順序、出力形式を明示してブレを抑える。</li>
+        <li>判断ログを残し、例外や不足データ時の挙動を継続的に改善する。</li>
+      </ul>
+
+      <h2>分かったこと</h2>
+      <ul>
+        <li>判断プロセスを型化するだけで、確認漏れと比較時間を減らせる。</li>
+        <li>AIの精度よりも、前提条件と単位定義の明確化が運用品質を左右する。</li>
+        <li>壊れたケースをログ化すると、例外ルール追加の優先度が見える。</li>
+      </ul>
+
+      <h2>明日から試せる一歩</h2>
+      <ul>
+        <li>横持ち判断時に、到着希望日・量・欠品影響・送り元残を固定入力する。</li>
+        <li>迷ったときの優先ルールを1行で明文化し、判断ごとに記録する。</li>
+        <li>From/To・理由・結果を残し、週次で判断ブレの原因を振り返る。</li>
+      </ul>
+
+      <p class="note">本ページは公開用の要約です。詳細な検証ログは下書きノートに整理しています。</p>
+    </article>
+  </main>
+</body>
+</html>

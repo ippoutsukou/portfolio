@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>筋トレ進捗管理アプリ | Works</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --fg: #1f2937;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --card: #ffffff;
+      --primary: #2563eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans JP", "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.7;
+    }
+    .wrap { width: min(920px, 100%); margin: 0 auto; padding: 24px; }
+    .top-nav { margin-bottom: 20px; }
+    .back-link { color: var(--primary); text-decoration: none; font-weight: 600; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    h1 { margin: 0 0 10px; font-size: clamp(24px, 3.6vw, 32px); }
+    .lead { color: var(--muted); margin: 0 0 20px; }
+    .thumb { width: 100%; border: 1px solid var(--line); border-radius: 10px; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top-nav">
+      <a class="back-link" href="../../works.html">←Worksに戻る</a>
+    </div>
+
+    <article class="card">
+      <h1>筋トレ進捗管理アプリ</h1>
+      <p class="lead">トレーニング記録と進捗確認を行うための管理アプリの紹介ページです。</p>
+      <img class="thumb" src="../61_image/筋トレ進捗管理アプリ.png" alt="筋トレ進捗管理アプリ スクリーンショット" loading="lazy" decoding="async" />
+    </article>
+  </main>
+</body>
+</html>

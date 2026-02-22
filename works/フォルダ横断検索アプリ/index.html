@@ -1,0 +1,82 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>フォルダ横断検索アプリ | Works</title>
+  <style>
+    :root{
+      --bg:#f8fafc; --fg:#1f2937; --muted:#64748b; --line:#e2e8f0;
+      --card:#ffffff; --accent:#0f766e;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:"Noto Sans JP","Segoe UI",system-ui,sans-serif;
+      background:var(--bg); color:var(--fg); line-height:1.75;
+    }
+    .wrap{width:min(960px,100%); margin:0 auto; padding:24px}
+    .top-nav{margin-bottom:16px}
+    .back-link{color:var(--accent); text-decoration:none; font-weight:700}
+    .card{
+      background:var(--card); border:1px solid var(--line);
+      border-radius:14px; padding:24px;
+    }
+    h1{margin:0 0 10px; font-size:clamp(24px,3.4vw,34px)}
+    .lead{margin:0 0 20px; color:var(--muted)}
+    .thumb{
+      width:100%; border:1px solid var(--line); border-radius:10px;
+      margin:0 0 18px;
+    }
+    h2{
+      margin:24px 0 10px; font-size:20px; padding-bottom:6px;
+      border-bottom:1px solid var(--line);
+    }
+    ul{margin:0; padding-left:20px}
+    li{margin:6px 0}
+    .note{color:var(--muted); font-size:14px; margin-top:18px}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top-nav">
+      <a class="back-link" href="../../works.html">← Worksに戻る</a>
+    </div>
+
+    <article class="card">
+      <h1>フォルダ横断検索アプリ</h1>
+      <p class="lead">複数フォルダを横断し、キーワード一致だけでなく意味の近さでも資料を探せる検索アプリの試作。</p>
+      <img class="thumb" src="../61_image/【010】フォルダ横断検索アプリ.png" alt="フォルダ横断検索アプリ スクリーンショット" loading="lazy" decoding="async" />
+
+      <h2>課題</h2>
+      <ul>
+        <li>保存先フォルダが分かれ、資料の所在を思い出せない。</li>
+        <li>キーワードが一致しないとヒットせず、再検索の手間が増える。</li>
+        <li>言い換えや略語の違いで、目的に近い資料が埋もれてしまう。</li>
+      </ul>
+
+      <h2>試作アプローチ</h2>
+      <ul>
+        <li>複数フォルダを同時に検索対象にする。</li>
+        <li>一致検索に加えて、意味の近さで候補を順位付けする。</li>
+        <li>候補ごとに「なぜ出たか」の理由を短く表示する。</li>
+      </ul>
+
+      <h2>分かったこと</h2>
+      <ul>
+        <li>フォルダ横断検索だけでも、探索のやり直し回数を減らせる。</li>
+        <li>曖昧な入力でも候補が見つかりやすくなり、再作成の無駄を抑えられる。</li>
+        <li>一方で、候補過多・対応形式の差・更新鮮度の維持は運用設計が必要。</li>
+      </ul>
+
+      <h2>明日から試せる一歩</h2>
+      <ul>
+        <li>まずは「よく探すフォルダ」を3つに絞って検索対象化する。</li>
+        <li>単語ではなく文章で検索して、目的ベースで探す。</li>
+        <li>更新頻度を決め、検索用データの鮮度を維持する。</li>
+      </ul>
+
+      <p class="note">本ページは公開用の要約です。詳細な検証ログは下書きノートに整理しています。</p>
+    </article>
+  </main>
+</body>
+</html>

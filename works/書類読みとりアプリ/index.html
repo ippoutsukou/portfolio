@@ -1,0 +1,126 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>書類読みとりアプリ | Works</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --fg: #1f2937;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --card: #ffffff;
+      --accent: #0f766e;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Noto Sans JP", "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.75;
+    }
+
+    .wrap {
+      width: min(960px, 100%);
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .top-nav { margin-bottom: 16px; }
+
+    .back-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(24px, 3.4vw, 34px);
+    }
+
+    .lead {
+      margin: 0 0 20px;
+      color: var(--muted);
+    }
+
+    .thumb {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      margin: 0 0 18px;
+    }
+
+    h2 {
+      margin: 24px 0 10px;
+      font-size: 20px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    ul { margin: 0; padding-left: 20px; }
+
+    li { margin: 6px 0; }
+
+    .note {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 18px;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top-nav">
+      <a class="back-link" href="../../works.html">← Worksに戻る</a>
+    </div>
+
+    <article class="card">
+      <h1>書類読みとりアプリ</h1>
+      <p class="lead">書類から必要情報を読み取り、確認しやすい形で整理するための試作アプリです。入力と確認の手戻り削減を目的にしています。</p>
+      <img class="thumb" src="../61_image/【011】書類読みとりアプリ.png" alt="書類読みとりアプリ スクリーンショット" loading="lazy" decoding="async" />
+
+      <h2>課題</h2>
+      <ul>
+        <li>書類内容の転記作業に時間がかかり、入力ミスが発生しやすい。</li>
+        <li>確認項目が散在し、チェック漏れや差し戻しが起きやすい。</li>
+        <li>フォーマット差分があると都度判断が必要になり、作業負荷が上がる。</li>
+      </ul>
+
+      <h2>試作アプローチ</h2>
+      <ul>
+        <li>読み取り対象の項目を固定し、確認導線をシンプルにする。</li>
+        <li>抽出結果を一覧化し、必須項目の欠落をすぐ確認できるようにする。</li>
+        <li>入力前に検証ルールを適用し、誤入力を早い段階で検知する。</li>
+      </ul>
+
+      <h2>分かったこと</h2>
+      <ul>
+        <li>読み取り結果を先に見える化すると、確認作業の迷いが減る。</li>
+        <li>必須項目のチェックを自動化するだけでも差し戻しを減らせる。</li>
+        <li>一方で、書類フォーマットの揺れには運用ルールの補助が必要。</li>
+      </ul>
+
+      <h2>明日から試せる一歩</h2>
+      <ul>
+        <li>まずは高頻度の書類1種類に対象を限定して導入する。</li>
+        <li>必須項目の欠落チェックを優先し、入力ミスの削減を測定する。</li>
+        <li>差し戻し理由を収集し、検証ルールを毎週更新する。</li>
+      </ul>
+
+      <p class="note">本ページは公開用の要約です。詳細な検証ログは別途管理しています。</p>
+    </article>
+  </main>
+</body>
+</html>

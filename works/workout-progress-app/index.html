@@ -19,32 +19,76 @@
       font-family: "Noto Sans JP", "Segoe UI", system-ui, sans-serif;
       background: var(--bg);
       color: var(--fg);
-      line-height: 1.7;
+      line-height: 1.75;
     }
-    .wrap { width: min(920px, 100%); margin: 0 auto; padding: 24px; }
-    .top-nav { margin-bottom: 20px; }
-    .back-link { color: var(--primary); text-decoration: none; font-weight: 600; }
+    .wrap { width: min(960px, 100%); margin: 0 auto; padding: 24px; }
+    .top-nav { margin-bottom: 16px; }
+    .back-link { color: var(--primary); text-decoration: none; font-weight: 700; }
     .card {
       background: var(--card);
       border: 1px solid var(--line);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 24px;
     }
-    h1 { margin: 0 0 10px; font-size: clamp(24px, 3.6vw, 32px); }
+    h1 { margin: 0 0 10px; font-size: clamp(24px, 3.4vw, 34px); }
     .lead { color: var(--muted); margin: 0 0 20px; }
-    .thumb { width: 100%; border: 1px solid var(--line); border-radius: 10px; }
+    .thumb {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      margin: 0 0 18px;
+    }
+    h2 {
+      margin: 24px 0 10px;
+      font-size: 20px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+    }
+    ul { margin: 0; padding-left: 20px; }
+    li { margin: 6px 0; }
+    .note { color: var(--muted); font-size: 14px; margin-top: 18px; }
   </style>
 </head>
 <body>
   <main class="wrap">
     <div class="top-nav">
-      <a class="back-link" href="../../works.html">←Worksに戻る</a>
+      <a class="back-link" href="../../works.html">← Worksに戻る</a>
     </div>
 
     <article class="card">
       <h1>筋トレ進捗管理アプリ</h1>
-      <p class="lead">トレーニング記録と進捗確認を行うための管理アプリの紹介ページです。</p>
+      <p class="lead">「続かなかった」を減らすために、モチベより先に“つなぎの報酬”を置く発想で作った進捗管理アプリです。</p>
       <img class="thumb" src="../61_image/【009】筋トレ進捗管理アプリ.png" alt="筋トレ進捗管理アプリ スクリーンショット" loading="lazy" decoding="async" />
+
+      <h2>課題</h2>
+      <ul>
+        <li>やる気がない日に再開できず、習慣が途切れやすい。</li>
+        <li>準備や入力が重く、始める前に面倒になってしまう。</li>
+        <li>体の変化という報酬が遠く、日々の達成感が残りにくい。</li>
+      </ul>
+
+      <h2>試作アプローチ</h2>
+      <ul>
+        <li>入力を最小化し、「やった/やってない」だけでも記録できる設計にする。</li>
+        <li>「連続日数」と「今週の達成率」を前面に出し、短期の報酬を可視化する。</li>
+        <li>連続が切れても週の積み上げを残す“リカバリールール”で再開しやすくする。</li>
+      </ul>
+
+      <h2>分かったこと</h2>
+      <ul>
+        <li>記録が軽いほど継続しやすく、サボった後も戻りやすくなる。</li>
+        <li>報酬表示は増やしすぎると逆効果で、1画面で判断できる少なさが有効。</li>
+        <li>継続の本質は「毎日完璧」より「途切れても戻れる設計」にある。</li>
+      </ul>
+
+      <h2>明日から試せる一歩</h2>
+      <ul>
+        <li>最初の1週間は「やった」のチェックだけ記録する。</li>
+        <li>報酬は1つに絞る（例: 週達成率か連続日数のどちらか）。</li>
+        <li>サボり前提の再開ルールを先に決めておく。</li>
+      </ul>
+
+      <p class="note">本ページは公開用の要約です。詳細は note 記事に整理しています。</p>
     </article>
   </main>
 </body>

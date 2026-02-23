@@ -131,7 +131,7 @@
         "title": "ShiftBoard",
         "description": "CSVを中心にシフトを管理し、グリッド表示とガント表示で直感的に編集できるローカル動作のシフト管理アプリ。",
         "href": "works/ShiftBoard/",
-        "image": "works/61_image/【011】書類読みとりアプリ.png",
+        "image": "works/61_image/ShiftBoard.png",
         "alt": "ShiftBoard スクリーンショット",
         "tags": [
             "HTML/CSS/JS",

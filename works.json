@@ -1,143 +1,156 @@
 [
     {
-        "title": "AI研修ポータルサイト",
-        "description": "社内向けAI研修用のWebポータル。基礎知識・事例共有・確認テスト・進捗管理をひとつのサイトにまとめ、自己学習を支援。",
-        "href": "works/ai-training-site/",
-        "noteUrl": "https://note.com/clean_whale1844/n/n995966ed3a68",
-        "image": "works/61_image/ai-portal-site.png",
-        "alt": "AI研修ポータルサイト スクリーンショット",
-        "tags": [
-            "HTML/CSS/JS",
-            "社内研修",
-            "AI活用"
-        ]
+        "title":  "AI研修ポータルサイト",
+        "description":  "社内向けAI研修用のWebポータル。基礎知識・事例共有・確認テスト・進捗管理をひとつのサイトにまとめ、自己学習を支援。",
+        "href":  "works/ai-training-site/",
+        "noteUrl":  "https://note.com/clean_whale1844/n/n995966ed3a68",
+        "image":  "works/61_image/ai-portal-site.png",
+        "alt":  "AI研修ポータルサイト スクリーンショット",
+        "tags":  [
+                     "HTML/CSS/JS",
+                     "社内研修",
+                     "AI活用"
+                 ]
     },
     {
-        "title": "生成AI活用コンテスト 投票補助アプリ",
-        "description": "「仮メモ→最終決定」の2段階UIで投票時の記憶負荷と迷いを軽減。ブラウザだけで完結する静的アプリ。",
-        "href": "works/vote-app/",
-        "noteUrl": "https://note.com/clean_whale1844/n/ne81796779fa4",
-        "image": "works/61_image/vote-support-app.png",
-        "alt": "投票補助アプリ スクリーンショット",
-        "tags": [
-            "HTML/CSS/JS",
-            "UI設計",
-            "意思決定"
-        ]
+        "title":  "生成AI活用コンテスト 投票補助アプリ",
+        "description":  "「仮メモ→最終決定」の2段階UIで投票時の記憶負荷と迷いを軽減。ブラウザだけで完結する静的アプリ。",
+        "href":  "works/vote-app/",
+        "noteUrl":  "https://note.com/clean_whale1844/n/ne81796779fa4",
+        "image":  "works/61_image/vote-support-app.png",
+        "alt":  "投票補助アプリ スクリーンショット",
+        "tags":  [
+                     "HTML/CSS/JS",
+                     "UI設計",
+                     "意思決定"
+                 ]
     },
     {
-        "title": "承認カウンター（通知ツール）",
-        "description": "基幹システムの承認待ち件数を常駐監視し、処理完了を通知するツール。「通知がない」を技術で埋めようとして失敗→現場運用の理解と可視化が先だと学んだ実験。",
-        "href": "works/approval-counter/",
-        "noteUrl": "https://note.com/clean_whale1844/n/nb55d2cf206df",
-        "image": "works/61_image/approval-counter.png",
-        "alt": "承認カウンター スクリーンショット",
-        "tags": [
-            "業務改善",
-            "通知自動化",
-            "AI壁打ち"
-        ]
+        "title":  "承認カウンター（通知ツール）",
+        "description":  "基幹システムの承認待ち件数を常駐監視し、処理完了を通知するツール。「通知がない」を技術で埋めようとして失敗→現場運用の理解と可視化が先だと学んだ実験。",
+        "href":  "works/approval-counter/",
+        "noteUrl":  "https://note.com/clean_whale1844/n/nb55d2cf206df",
+        "image":  "works/61_image/approval-counter.png",
+        "alt":  "承認カウンター スクリーンショット",
+        "tags":  [
+                     "業務改善",
+                     "通知自動化",
+                     "AI壁打ち"
+                 ]
     },
     {
-        "title": "Simple Kanban Board",
-        "description": "ドラッグ＆ドロップで進捗管理できるかんばんアプリ。カード編集、担当者/プロジェクト/期限フィルタ、ガントビュー、JSON/CSVの入出力に対応。",
-        "href": "works/simple-kanban-board/",
-        "noteUrl": "https://note.com/clean_whale1844/n/n9a681305e857",
-        "image": "works/61_image/simple-kanban.png",
-        "alt": "Simple Kanban Board スクリーンショット",
-        "tags": [
-            "HTML/CSS/JS",
-            "かんばん",
-            "ガント表示"
-        ]
+        "title":  "Simple Kanban Board",
+        "description":  "ドラッグ＆ドロップで進捗管理できるかんばんアプリ。カード編集、担当者/プロジェクト/期限フィルタ、ガントビュー、JSON/CSVの入出力に対応。",
+        "href":  "works/simple-kanban-board/",
+        "noteUrl":  "https://note.com/clean_whale1844/n/n9a681305e857",
+        "image":  "works/61_image/simple-kanban.png",
+        "alt":  "Simple Kanban Board スクリーンショット",
+        "tags":  [
+                     "HTML/CSS/JS",
+                     "かんばん",
+                     "ガント表示"
+                 ]
     },
     {
-        "title": "倉庫レイアウトチェッカー（PoC）",
-        "description": "倉庫の平面図上に通路・障害物・荷物をドラッグ配置し、収容量を自動計算するツール。自動配置機能やPNG/SVG出力にも対応。単一HTMLでオフライン動作。",
-        "href": "works/warehouse-layout-checker/",
-        "noteUrl": "https://note.com/clean_whale1844/n/na98009e75596",
-        "image": "works/61_image/warehouse-layout.png",
-        "alt": "倉庫レイアウトチェッカー スクリーンショット",
-        "tags": [
-            "HTML/CSS/JS",
-            "倉庫レイアウト",
-            "可視化"
-        ]
+        "title":  "倉庫レイアウトチェッカー（PoC）",
+        "description":  "倉庫の平面図上に通路・障害物・荷物をドラッグ配置し、収容量を自動計算するツール。自動配置機能やPNG/SVG出力にも対応。単一HTMLでオフライン動作。",
+        "href":  "works/warehouse-layout-checker/",
+        "noteUrl":  "https://note.com/clean_whale1844/n/na98009e75596",
+        "image":  "works/61_image/warehouse-layout.png",
+        "alt":  "倉庫レイアウトチェッカー スクリーンショット",
+        "tags":  [
+                     "HTML/CSS/JS",
+                     "倉庫レイアウト",
+                     "可視化"
+                 ]
     },
     {
-        "title": "事業別損益分析ツール v4.2c",
-        "description": "事業別の売上・粗利・営業利益を可視化し、売上比率配賦と工数比率配賦を比較できる分析ツール。サンプルデータを埋め込み済みで、単体HTMLとして動作。",
-        "href": "works/biz_pl_app/biz_pl_app_web_v4_2c_colors.html",
-        "noteUrl": "https://note.com/clean_whale1844/n/n020c5e3c2047",
-        "image": "works/61_image/biz_pl_app.png",
-        "alt": "事業別損益分析ツール v4.2c スクリーンショット",
-        "tags": [
-            "HTML/CSS/JS",
-            "損益分析",
-            "配賦シミュレーション"
-        ]
+        "title":  "事業別損益分析ツール v4.2c",
+        "description":  "事業別の売上・粗利・営業利益を可視化し、売上比率配賦と工数比率配賦を比較できる分析ツール。サンプルデータを埋め込み済みで、単体HTMLとして動作。",
+        "href":  "works/biz_pl_app/biz_pl_app_web_v4_2c_colors.html",
+        "noteUrl":  "https://note.com/clean_whale1844/n/n020c5e3c2047",
+        "image":  "works/61_image/biz_pl_app.png",
+        "alt":  "事業別損益分析ツール v4.2c スクリーンショット",
+        "tags":  [
+                     "HTML/CSS/JS",
+                     "損益分析",
+                     "配賦シミュレーション"
+                 ]
     },
     {
-        "title": "AI Collaboration Showcase",
-        "description": "AIとの対話を段階的に進めながら、総括コメントのたたき台作成からトーン調整・表現強化までの共同編集プロセスを可視化したデモアプリ。",
-        "href": "works/ai-collaboration-showcase/",
-        "noteUrl": "https://note.com/clean_whale1844/n/n5166d103dfc5",
-        "image": "works/61_image/ai-collaboration-showcase.png",
-        "alt": "AI Collaboration Showcase スクリーンショット",
-        "tags": [
-            "HTML/CSS/JS",
-            "生成AI",
-            "共同編集デモ"
-        ]
+        "title":  "AI Collaboration Showcase",
+        "description":  "AIとの対話を段階的に進めながら、総括コメントのたたき台作成からトーン調整・表現強化までの共同編集プロセスを可視化したデモアプリ。",
+        "href":  "works/ai-collaboration-showcase/",
+        "noteUrl":  "https://note.com/clean_whale1844/n/n5166d103dfc5",
+        "image":  "works/61_image/ai-collaboration-showcase.png",
+        "alt":  "AI Collaboration Showcase スクリーンショット",
+        "tags":  [
+                     "HTML/CSS/JS",
+                     "生成AI",
+                     "共同編集デモ"
+                 ]
     },
     {
-        "title": "筋トレ進捗管理アプリ",
-        "description": "トレーニング記録と進捗確認を行うための管理アプリの紹介ページです。",
-        "href": "works/workout-progress-app/",
-        "image": "works/61_image/workout-progress-app.png",
-        "alt": "筋トレ進捗管理アプリ スクリーンショット",
-        "tags": [
-            "HTML/CSS/JS",
-            "トレーニング管理",
-            "進捗可視化"
-        ],
-        "noteUrl": "https://note.com/clean_whale1844/n/n873c89f4014a"
+        "title":  "筋トレ進捗管理アプリ",
+        "description":  "トレーニング記録と進捗確認を行うための管理アプリの紹介ページです。",
+        "href":  "works/workout-progress-app/",
+        "image":  "works/61_image/workout-progress-app.png",
+        "alt":  "筋トレ進捗管理アプリ スクリーンショット",
+        "tags":  [
+                     "HTML/CSS/JS",
+                     "トレーニング管理",
+                     "進捗可視化"
+                 ],
+        "noteUrl":  "https://note.com/clean_whale1844/n/n873c89f4014a"
     },
     {
-        "title": "フォルダ横断検索アプリ",
-        "description": "複数フォルダを横断し、キーワード一致だけでなく意味の近さでも資料を探せる検索アプリの試作。",
-        "href": "works/folder-search-app/",
-        "image": "works/61_image/folder-search-app.png",
-        "alt": "フォルダ横断検索アプリ スクリーンショット",
-        "noteUrl": "https://note.com/clean_whale1844/n/n1a1e0c3552bb",
-        "tags": [
-            "業務改善",
-            "検索体験",
-            "意味検索"
-        ]
+        "title":  "フォルダ横断検索アプリ",
+        "description":  "複数フォルダを横断し、キーワード一致だけでなく意味の近さでも資料を探せる検索アプリの試作。",
+        "href":  "works/folder-search-app/",
+        "image":  "works/61_image/folder-search-app.png",
+        "alt":  "フォルダ横断検索アプリ スクリーンショット",
+        "noteUrl":  "https://note.com/clean_whale1844/n/n1a1e0c3552bb",
+        "tags":  [
+                     "業務改善",
+                     "検索体験",
+                     "意味検索"
+                 ]
     },
     {
-        "title": "横持ちアシスタントGPTs",
-        "description": "横持ち便の判断を経験依存からルールベースへ移し、欠品リスク・倉庫キャパ・便制約を同じ手順で比較できるようにした運用支援アプリ。",
-        "href": "works/yokomochi-assistant-gpts/",
-        "image": "works/61_image/yokomochi-assistant-gpts.png",
-        "alt": "横持ちアシスタントGPTs スクリーンショット",
-        "tags": [
-            "業務改善",
-            "在庫運用",
-            "GPTs"
-        ]
+        "title":  "書類読みとりアプリ",
+        "description":  "書類から必要情報を読み取り、確認しやすい形で整理するための試作アプリです。入力と確認の手戻り削減を目的にしています。",
+        "href":  "works/document-reader-app/",
+        "image":  "works/61_image/document-reader-app.png",
+        "alt":  "書類読みとりアプリ スクリーンショット",
+        "noteUrl":  "https://note.com/clean_whale1844/n/nb49319d7c72e",
+        "tags":  [
+                     "業務改善",
+                     "入力効率化",
+                     "確認導線"
+                 ]
     },
     {
-        "title": "ShiftBoard",
-        "description": "CSVを中心にシフトを管理し、グリッド表示とガント表示で直感的に編集できるローカル動作のシフト管理アプリ。",
-        "href": "works/ShiftBoard/",
-        "image": "works/61_image/ShiftBoard.png",
-        "alt": "ShiftBoard スクリーンショット",
-        "tags": [
-            "HTML/CSS/JS",
-            "シフト管理",
-            "CSV運用"
-        ]
+        "title":  "横持ちアシスタントGPTs",
+        "description":  "横持ち便の判断を経験依存からルールベースへ移し、欠品リスク・倉庫キャパ・便制約を同じ手順で比較できるようにした運用支援アプリ。",
+        "href":  "works/yokomochi-assistant-gpts/",
+        "image":  "works/61_image/yokomochi-assistant-gpts.png",
+        "alt":  "横持ちアシスタントGPTs スクリーンショット",
+        "tags":  [
+                     "業務改善",
+                     "在庫運用",
+                     "GPTs"
+                 ]
+    },
+    {
+        "title":  "ShiftBoard",
+        "description":  "CSVを中心にシフトを管理し、グリッド表示とガント表示で直感的に編集できるローカル動作のシフト管理アプリ。",
+        "href":  "works/ShiftBoard/",
+        "image":  "works/61_image/ShiftBoard.png",
+        "alt":  "ShiftBoard スクリーンショット",
+        "tags":  [
+                     "HTML/CSS/JS",
+                     "シフト管理",
+                     "CSV運用"
+                 ]
     }
 ]

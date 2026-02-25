@@ -153,5 +153,17 @@
                      "シフト管理",
                      "CSV運用"
                  ]
+    },
+    {
+        "title":  "倉庫比較アプリ",
+        "description":  "欠品リスク・倉庫キャパ・便の制約など複数条件を並べて比較し、移動判断の根拠を整理しやすくする業務検証アプリ。",
+        "href":  "works/warehouse-compare-app/",
+        "image":  "works/61_image/warehouse-compare-app2.png",
+        "alt":  "倉庫比較アプリ スクリーンショット",
+        "tags":  [
+                     "業務改善",
+                     "倉庫運用",
+                     "比較検討"
+                 ]
     }
 ]

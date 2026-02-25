@@ -1,7 +1,7 @@
-[
+﻿[
     {
         "title":  "AI研修ポータルサイト",
-        "description":  "社内向けAI研修用のWebポータル。基礎知識・事例共有・確認テスト・進捗管理をひとつのサイトにまとめ、自己学習を支援。",
+        "description":  "社内業務でのAI活用に向けたWebポータル。学習導線、資料リンク、運用メモをひとつにまとめ、継続学習を支援。",
         "href":  "works/ai-training-site/",
         "noteUrl":  "https://note.com/clean_whale1844/n/n995966ed3a68",
         "image":  "works/61_image/ai-portal-site.png",
@@ -14,7 +14,7 @@
     },
     {
         "title":  "生成AI活用コンテスト 投票補助アプリ",
-        "description":  "「仮メモ→最終決定」の2段階UIで投票時の記憶負荷と迷いを軽減。ブラウザだけで完結する静的アプリ。",
+        "description":  "2軸評価で候補を比較し、投票時の判断を支援するアプリ。見やすいUIで意思決定をサポート。",
         "href":  "works/vote-app/",
         "noteUrl":  "https://note.com/clean_whale1844/n/ne81796779fa4",
         "image":  "works/61_image/vote-support-app.png",
@@ -27,46 +27,46 @@
     },
     {
         "title":  "承認カウンター（通知ツール）",
-        "description":  "基幹システムの承認待ち件数を常駐監視し、処理完了を通知するツール。「通知がない」を技術で埋めようとして失敗→現場運用の理解と可視化が先だと学んだ実験。",
+        "description":  "承認待ち件数を可視化し、通知で対応漏れを防ぐためのツール。業務の見える化と対応速度向上を支援。",
         "href":  "works/approval-counter/",
         "noteUrl":  "https://note.com/clean_whale1844/n/nb55d2cf206df",
         "image":  "works/61_image/approval-counter.png",
         "alt":  "承認カウンター スクリーンショット",
         "tags":  [
                      "業務改善",
-                     "通知自動化",
-                     "AI壁打ち"
+                     "可視化",
+                     "通知"
                  ]
     },
     {
         "title":  "Simple Kanban Board",
-        "description":  "ドラッグ＆ドロップで進捗管理できるかんばんアプリ。カード編集、担当者/プロジェクト/期限フィルタ、ガントビュー、JSON/CSVの入出力に対応。",
+        "description":  "ドラッグ＆ドロップで扱えるシンプルなカンバン。ガント表示やJSON/CSV入出力にも対応。",
         "href":  "works/simple-kanban-board/",
         "noteUrl":  "https://note.com/clean_whale1844/n/n9a681305e857",
         "image":  "works/61_image/simple-kanban.png",
         "alt":  "Simple Kanban Board スクリーンショット",
         "tags":  [
                      "HTML/CSS/JS",
-                     "かんばん",
-                     "ガント表示"
+                     "カンバン",
+                     "タスク管理"
                  ]
     },
     {
         "title":  "倉庫レイアウトチェッカー（PoC）",
-        "description":  "倉庫の平面図上に通路・障害物・荷物をドラッグ配置し、収容量を自動計算するツール。自動配置機能やPNG/SVG出力にも対応。単一HTMLでオフライン動作。",
+        "description":  "倉庫平面図上で危険箇所や通行導線をチェックし、PNG/SVG出力にも対応した検証用ツール。",
         "href":  "works/warehouse-layout-checker/",
         "noteUrl":  "https://note.com/clean_whale1844/n/na98009e75596",
         "image":  "works/61_image/warehouse-layout.png",
         "alt":  "倉庫レイアウトチェッカー スクリーンショット",
         "tags":  [
                      "HTML/CSS/JS",
-                     "倉庫レイアウト",
-                     "可視化"
+                     "レイアウト検証",
+                     "安全性"
                  ]
     },
     {
         "title":  "事業別損益分析ツール v4.2c",
-        "description":  "事業別の売上・粗利・営業利益を可視化し、売上比率配賦と工数比率配賦を比較できる分析ツール。サンプルデータを埋め込み済みで、単体HTMLとして動作。",
+        "description":  "事業別の収益・費用・利益を可視化し、比較分析できるツール。単一HTMLで運用可能。",
         "href":  "works/biz_pl_app/biz_pl_app_web_v4_2c_colors.html",
         "noteUrl":  "https://note.com/clean_whale1844/n/n020c5e3c2047",
         "image":  "works/61_image/biz_pl_app.png",
@@ -74,12 +74,12 @@
         "tags":  [
                      "HTML/CSS/JS",
                      "損益分析",
-                     "配賦シミュレーション"
+                     "シミュレーション"
                  ]
     },
     {
         "title":  "AI Collaboration Showcase",
-        "description":  "AIとの対話を段階的に進めながら、総括コメントのたたき台作成からトーン調整・表現強化までの共同編集プロセスを可視化したデモアプリ。",
+        "description":  "AIとの協働で進めた設計・実装・検証のプロセスをまとめたデモ。成果物と意思決定の流れを可視化。",
         "href":  "works/ai-collaboration-showcase/",
         "noteUrl":  "https://note.com/clean_whale1844/n/n5166d103dfc5",
         "image":  "works/61_image/ai-collaboration-showcase.png",
@@ -87,25 +87,25 @@
         "tags":  [
                      "HTML/CSS/JS",
                      "生成AI",
-                     "共同編集デモ"
+                     "協働デモ"
                  ]
     },
     {
         "title":  "筋トレ進捗管理アプリ",
-        "description":  "トレーニング記録と進捗確認を行うための管理アプリの紹介ページです。",
+        "description":  "トレーニング記録と進捗確認を行うための管理アプリ。日々の継続と振り返りを支援。",
         "href":  "works/workout-progress-app/",
         "image":  "works/61_image/workout-progress-app.png",
         "alt":  "筋トレ進捗管理アプリ スクリーンショット",
+        "noteUrl":  "https://note.com/clean_whale1844/n/n873c89f4014a",
         "tags":  [
                      "HTML/CSS/JS",
-                     "トレーニング管理",
-                     "進捗可視化"
-                 ],
-        "noteUrl":  "https://note.com/clean_whale1844/n/n873c89f4014a"
+                     "トレーニング",
+                     "進捗管理"
+                 ]
     },
     {
         "title":  "フォルダ横断検索アプリ",
-        "description":  "複数フォルダを横断し、キーワード一致だけでなく意味の近さでも資料を探せる検索アプリの試作。",
+        "description":  "複数フォルダを横断して検索し、キーワード一致だけでなく関連度の高い候補も見つけやすくする試作アプリ。",
         "href":  "works/folder-search-app/",
         "image":  "works/61_image/folder-search-app.png",
         "alt":  "フォルダ横断検索アプリ スクリーンショット",
@@ -118,7 +118,7 @@
     },
     {
         "title":  "書類読みとりアプリ",
-        "description":  "書類から必要情報を読み取り、確認しやすい形で整理するための試作アプリです。入力と確認の手戻り削減を目的にしています。",
+        "description":  "書類から必要情報を読み取り、確認しながら整理するための試作アプリ。入力と確認の手戻り削減を目指す。",
         "href":  "works/document-reader-app/",
         "image":  "works/61_image/document-reader-app.png",
         "alt":  "書類読みとりアプリ スクリーンショット",
@@ -135,6 +135,7 @@
         "href":  "works/yokomochi-assistant-gpts/",
         "image":  "works/61_image/yokomochi-assistant-gpts.png",
         "alt":  "横持ちアシスタントGPTs スクリーンショット",
+        "noteUrl":  "https://note.com/clean_whale1844/n/n3c35e6c7c5f5",
         "tags":  [
                      "業務改善",
                      "在庫運用",

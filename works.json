@@ -181,4 +181,18 @@
                      "Excel運用"
                  ]
     }
+,
+    {
+        "title":  "WorkTrace",
+        "description":  "前面アプリ名とウィンドウタイトルを5分間隔で記録し、作業ブロックに集約して工数の偏りを言語化する業務可視化アプリ。",
+        "href":  "works/worktrace/",
+        "noteUrl":  "https://note.com/clean_whale1844/n/n64d4b906e2d6",
+        "image":  "works/61_image/WorkTrace.png",
+        "alt":  "WorkTrace スクリーンショット",
+        "tags":  [
+                     "業務改善",
+                     "工数可視化",
+                     "ログ分析"
+                 ]
+    }
 ]

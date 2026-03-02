@@ -180,8 +180,7 @@
                      "進捗可視化",
                      "Excel運用"
                  ]
-    }
-,
+    },
     {
         "title":  "WorkTrace",
         "description":  "前面アプリ名とウィンドウタイトルを5分間隔で記録し、作業ブロックに集約して工数の偏りを言語化する業務可視化アプリ。",
@@ -193,6 +192,19 @@
                      "業務改善",
                      "工数可視化",
                      "ログ分析"
+                 ]
+    },
+    {
+        "title":  "もう「アプリ」を作らなくていい。Skill運用実験",
+        "description":  "課題解決を「アプリ完成」から切り離し、相談→整理→次の一手を回すSkill運用へ切り替えた実践記録。初速向上と運用上の失敗・改善までを整理。",
+        "href":  "works/import-doc-reader－SKILL/",
+        "noteUrl":  "https://note.com/clean_whale1844/n/n1982daa5c095",
+        "image":  "works/61_image/import-doc-reader－SKILL.png",
+        "alt":  "Skill運用実験 スクリーンショット",
+        "tags":  [
+                     "業務改善",
+                     "Skill運用",
+                     "対話設計"
                  ]
     }
 ]

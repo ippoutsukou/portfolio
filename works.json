@@ -206,5 +206,19 @@
                      "Skill運用",
                      "対話設計"
                  ]
+    },
+    {
+        "title":  "新人向け業務ナレッジカード型アシスタント",
+        "description":  "AIなしでも、質問を「結論 → 適用条件 → 出典 → 次アクション」に整理して返すカード型の判断支援PoC。",
+        "href":  "works/Poc_CardKnowledge_App/",
+        "noteUrl":  "https://note.com/clean_whale1844/n/n6b895ffc71f4",
+        "image":  "works/61_image/Poc_CardKnowledge_App.png",
+        "alt":  "新人向け業務ナレッジカード型アシスタント スクリーンショット",
+        "tags":  [
+                     "業務改善",
+                     "ナレッジ運用",
+                     "PoC"
+                 ]
     }
 ]
+

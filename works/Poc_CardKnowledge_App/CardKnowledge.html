@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>新人向け業務ナレッジ PoC</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #121c2f;
+      --panel-2: #18253d;
+      --line: rgba(255,255,255,0.09);
+      --text: #eef4ff;
+      --muted: #9eb0cc;
+      --accent: #64d2ff;
+      --ok: #57d28c;
+      --warn: #ffb454;
+      --danger: #ff6b7a;
+      --shadow: 0 18px 40px rgba(0,0,0,0.28);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(100,210,255,0.16), transparent 28%),
+        linear-gradient(180deg, #0b1220 0%, #0d1424 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 24px;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(18,28,47,0.96), rgba(16,24,40,0.94));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-main {
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(100,210,255,0.18), transparent 68%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(100,210,255,0.12);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 {
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.18;
+      margin-bottom: 12px;
+    }
+
+    .hero-sub {
+      color: var(--muted);
+      max-width: 58ch;
+      margin-bottom: 18px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .hero-side {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      justify-content: center;
+    }
+
+    .kpi {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .kpi-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .kpi-card strong {
+      display: block;
+      font-size: 26px;
+      margin-bottom: 2px;
+    }
+
+    .kpi-card span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .form-panel, .result-panel, .catalog-panel {
+      padding: 22px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      margin-bottom: 6px;
+    }
+
+    .section-desc {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 18px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    input, select {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font: inherit;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: rgba(100,210,255,0.7);
+      box-shadow: 0 0 0 4px rgba(100,210,255,0.12);
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: linear-gradient(180deg, #75ddff, #54c8ff);
+      color: #00141d;
+      flex: 1;
+    }
+
+    .secondary {
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .result-stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .status.ok { background: rgba(87,210,140,0.12); color: var(--ok); }
+    .status.warn { background: rgba(255,180,84,0.12); color: var(--warn); }
+    .status.danger { background: rgba(255,107,122,0.12); color: var(--danger); }
+
+    .answer-card, .catalog-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .answer-card h3, .catalog-card h3 { margin-bottom: 8px; }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .meta span {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .catalog-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    ul.clean {
+      padding-left: 18px;
+      margin: 8px 0 0;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 960px) {
+      .hero, .layout { grid-template-columns: 1fr; }
+      .catalog-grid, .kpi { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="panel hero-main">
+        <div class="eyebrow">GitHub Pages向け PoC</div>
+        <h1>新人向け業務ナレッジ<br>カード型アシスタント</h1>
+        <p class="hero-sub">
+          AIなしでも、新人の質問を「結論 → 適用条件 → 出典 → 次アクション」に整理して返せるかを確認するPoCです。
+          目的は、会話の自然さではなく、事故りにくい判断支援の型を見せることです。
+        </p>
+        <div class="chips">
+          <div class="chip">静的HTML</div>
+          <div class="chip">カード検索</div>
+          <div class="chip">条件分岐</div>
+          <div class="chip">禁止領域ガード</div>
+          <div class="chip">GitHub Pages公開向け</div>
+        </div>
+      </div>
+      <div class="panel hero-side">
+        <div class="kpi">
+          <div class="kpi-card"><strong>10</strong><span>商品カード</span></div>
+          <div class="kpi-card"><strong>10</strong><span>顧客カード</span></div>
+          <div class="kpi-card"><strong>4</strong><span>定番パターン</span></div>
+        </div>
+        <p class="small">
+          このPoCでは「自由会話」はやらず、質問カテゴリ・商品・顧客・状況を入力すると、該当カードを返します。
+          危ない領域は自動回答せず、確認フローに逃がします。
+        </p>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="panel form-panel">
+        <h2 class="section-title">質問入力</h2>
+        <p class="section-desc">フォームで条件を揃え、AIなしでも答えられる形に寄せています。</p>
+
+        <div class="field">
+          <label for="category">質問カテゴリ</label>
+          <select id="category">
+            <option value="product">商品について知りたい</option>
+            <option value="customer">顧客対応について知りたい</option>
+            <option value="exception">例外対応を確認したい</option>
+            <option value="term">用語を確認したい</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="product">商品</label>
+          <select id="product"></select>
+        </div>
+
+        <div class="field">
+          <label for="customer">顧客</label>
+          <select id="customer"></select>
+        </div>
+
+        <div class="field">
+          <label for="situation">状況</label>
+          <select id="situation">
+            <option value="standard">通常問い合わせ</option>
+            <option value="rush">急ぎ依頼</option>
+            <option value="spec">仕様確認</option>
+            <option value="complaint">不具合・クレーム</option>
+            <option value="price">価格・契約・納期確約</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="keyword">補足キーワード</label>
+          <input id="keyword" type="text" placeholder="例：互換 / 代替 / 禁句 / 返答トーン" />
+        </div>
+
+        <div class="button-row">
+          <button class="primary" id="runBtn">判定する</button>
+          <button class="secondary" id="sampleBtn">サンプル入力</button>
+          <button class="secondary" id="resetBtn">リセット</button>
+        </div>
+
+        <p class="footer-note">
+          目的：この入力方式で「登録済みナレッジだけを安全に返せるか」を確認する。
+        </p>
+      </div>
+
+      <div class="result-stack">
+        <div class="panel result-panel">
+          <h2 class="section-title">回答結果</h2>
+          <p class="section-desc">表示順は常に固定です。結論 → 適用条件 → 出典 → 次アクション。</p>
+          <div id="result"></div>
+        </div>
+
+        <div class="panel catalog-panel">
+          <h2 class="section-title">登録カードの例</h2>
+          <p class="section-desc">PoCでは少数データに絞り、成立性だけ確認します。</p>
+          <div class="catalog-grid" id="catalog"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const products = [
+      { id: "P-01", name: "標準A", summary: "主力の標準品。互換質問が多い。", conditions: ["標準用途", "通常納期", "既存顧客向け説明"], pitfalls: ["旧仕様との混同", "類似型番の誤案内"], nextAction: "型番末尾まで確認してから案内する", source: "商品カード / 更新日 2026-03-01", updatedBy: "営業企画" },
+      { id: "P-02", name: "標準B", summary: "標準Aの代替候補として聞かれやすい。", conditions: ["軽負荷用途", "代替提案", "価格重視"], pitfalls: ["上位品と誤認", "顧客要求不足のまま提案"], nextAction: "要求条件3点を確認してから代替提案する", source: "商品カード / 更新日 2026-02-25", updatedBy: "商品管理" },
+      { id: "P-03", name: "特注C", summary: "特注扱い。回答前に確認が必要。", conditions: ["個別見積", "仕様確認必須"], pitfalls: ["即答", "価格確約"], nextAction: "担当者へ確認依頼", source: "特注ルール / 2026-02-20", updatedBy: "技術窓口" },
+      { id: "P-04", name: "廉価D", summary: "価格感で比較されやすい。", conditions: ["通常用途", "比較提案"], pitfalls: ["性能差の説明不足"], nextAction: "比較表を添えて説明", source: "比較表 / 2026-02-18", updatedBy: "商品管理" },
+      { id: "P-05", name: "高耐久E", summary: "長寿命が強み。", conditions: ["耐久重視", "交換頻度削減"], pitfalls: ["初期価格だけで比較"], nextAction: "総コスト視点で説明", source: "営業資料 / 2026-02-12", updatedBy: "営業企画" },
+      { id: "P-06", name: "短納期F", summary: "急ぎ案件向け。", conditions: ["在庫あり", "通常仕様"], pitfalls: ["確約表現"], nextAction: "在庫確認後に回答", source: "在庫運用 / 2026-03-03", updatedBy: "物流担当" },
+      { id: "P-07", name: "旧型G", summary: "旧型で誤案内リスクあり。", conditions: ["保守対応", "既存機器向け"], pitfalls: ["新型と混同"], nextAction: "現行/旧型を明示", source: "保守FAQ / 2026-01-30", updatedBy: "保守窓口" },
+      { id: "P-08", name: "汎用H", summary: "最初に紹介しやすい汎用品。", conditions: ["標準提案", "情報不足時の暫定候補"], pitfalls: ["確定提案化"], nextAction: "暫定提案であることを明示", source: "提案テンプレ / 2026-02-21", updatedBy: "営業企画" },
+      { id: "P-09", name: "限定I", summary: "対象顧客が限定される。", conditions: ["契約顧客のみ"], pitfalls: ["対象外顧客への案内"], nextAction: "顧客区分を確認", source: "契約条件 / 2026-02-10", updatedBy: "営業管理" },
+      { id: "P-10", name: "新製品J", summary: "説明資料が少なく更新頻度が高い。", conditions: ["最新版資料参照必須"], pitfalls: ["古い説明の転用"], nextAction: "最新版リンク確認", source: "新製品ページ / 2026-03-05", updatedBy: "商品企画" }
+    ];
+
+    const customers = [
+      { id: "C-01", name: "北星商事", profile: "価格より安定供給を重視。", danger: ["納期の断定"], askFirst: ["使用用途", "必要数", "希望時期"], source: "顧客カード / 2026-02-24" },
+      { id: "C-02", name: "青葉工業", profile: "比較検討が多く、代替案提示に反応しやすい。", danger: ["性能差未説明"], askFirst: ["比較対象", "重視項目"], source: "顧客カード / 2026-02-19" },
+      { id: "C-03", name: "東西テック", profile: "急ぎ案件が多い。", danger: ["在庫未確認の即答"], askFirst: ["納期優先か", "仕様優先か"], source: "顧客カード / 2026-02-11" },
+      { id: "C-04", name: "みなと産業", profile: "クレーム時は窓口固定。", danger: ["現場判断での謝罪確約"], askFirst: ["発生日時", "現品状況"], source: "顧客カード / 2026-02-27" },
+      { id: "C-05", name: "未来設備", profile: "新製品への関心が高い。", danger: ["未公開情報の開示"], askFirst: ["導入時期", "評価条件"], source: "顧客カード / 2026-02-17" },
+      { id: "C-06", name: "中央物流", profile: "帳票表現に厳しい。", danger: ["略称の多用"], askFirst: ["正式名称", "提出形式"], source: "顧客カード / 2026-02-08" },
+      { id: "C-07", name: "光南電機", profile: "旧型保守の相談が多い。", danger: ["現行品で上書き提案"], askFirst: ["現行機種", "切替可否"], source: "顧客カード / 2026-01-29" },
+      { id: "C-08", name: "山川商会", profile: "価格交渉が多い。", danger: ["口頭値引き"], askFirst: ["契約条件", "数量条件"], source: "顧客カード / 2026-02-28" },
+      { id: "C-09", name: "新都開発", profile: "初回説明を丁寧に行う必要あり。", danger: ["専門用語の連発"], askFirst: ["導入目的", "既存環境"], source: "顧客カード / 2026-02-16" },
+      { id: "C-10", name: "西浜パーツ", profile: "交換部品の確認頻度が高い。", danger: ["型番省略"], askFirst: ["部品番号", "設備名"], source: "顧客カード / 2026-02-14" }
+    ];
+
+    const terms = {
+      "互換": "完全な置き換えではなく、条件一致時のみ代替候補として扱う。",
+      "暫定": "現時点の候補であり、確定提案ではない。",
+      "エスカレーション": "自分で確定せず、担当者・責任者に確認を回すこと。",
+      "旧型": "現行品ではない。保守条件や在庫可否の確認が必要。"
+    };
+
+    const patterns = [
+      { title: "代替提案", text: "要求条件 → 比較対象 → 性能差説明 → 暫定提示 → 確認依頼" },
+      { title: "急ぎ案件", text: "納期優先確認 → 在庫確認 → 確約回避 → 代替案併記" },
+      { title: "クレーム初動", text: "事実確認 → 現品確認 → 担当窓口固定 → 判断の持ち帰り" },
+      { title: "旧型相談", text: "現行/旧型確認 → 保守可否確認 → 代替は条件付きで提示" }
+    ];
+
+    const productEl = document.getElementById('product');
+    const customerEl = document.getElementById('customer');
+    const resultEl = document.getElementById('result');
+    const catalogEl = document.getElementById('catalog');
+
+    function fillSelect(select, items) {
+      select.innerHTML = items.map(item => `<option value="${item.name}">${item.name}</option>`).join('');
+    }
+
+    function renderCatalog() {
+      const topProducts = products.slice(0, 2).map(p => `
+        <div class="catalog-card">
+          <h3>${p.name}</h3>
+          <p class="small">${p.summary}</p>
+          <div class="meta"><span>${p.id}</span><span>${p.source}</span></div>
+        </div>
+      `).join('');
+
+      const topCustomers = customers.slice(0, 2).map(c => `
+        <div class="catalog-card">
+          <h3>${c.name}</h3>
+          <p class="small">${c.profile}</p>
+          <div class="meta"><span>${c.id}</span><span>${c.source}</span></div>
+        </div>
+      `).join('');
+
+      catalogEl.innerHTML = topProducts + topCustomers;
+    }
+
+    function renderIntro() {
+      resultEl.innerHTML = `
+        <div class="status ok">待機中</div>
+        <div class="answer-card">
+          <h3>このPoCで確認したいこと</h3>
+          <ul class="clean">
+            <li>AIなしでも新人向け回答の型が作れるか</li>
+            <li>危ない質問を自動回答せずに逃がせるか</li>
+            <li>商品カード・顧客カードの組み合わせで十分説明できるか</li>
+          </ul>
+        </div>
+      `;
+    }
+
+    function detectRisk(situation, product, customer, keyword, category) {
+      const riskWords = ['価格', '契約', '納期確約', '保証', '責任', '値引き'];
+      const key = `${situation} ${keyword}`;
+      if (situation === 'price' || riskWords.some(word => key.includes(word))) return 'danger';
+      if (category === 'exception' || situation === 'complaint' || product.name === '特注C') return 'warn';
+      if (customer.danger.some(word => key.includes(word))) return 'warn';
+      return 'ok';
+    }
+
+    function runJudge() {
+      const category = document.getElementById('category').value;
+      const product = products.find(p => p.name === productEl.value) || products[0];
+      const customer = customers.find(c => c.name === customerEl.value) || customers[0];
+      const situation = document.getElementById('situation').value;
+      const keyword = document.getElementById('keyword').value.trim();
+      const risk = detectRisk(situation, product, customer, keyword, category);
+
+      if (category === 'term') {
+        const matchedTerm = Object.keys(terms).find(term => keyword.includes(term)) || '互換';
+        resultEl.innerHTML = `
+          <div class="status ok">用語回答</div>
+          <div class="answer-card">
+            <h3>結論</h3>
+            <p>「${matchedTerm}」は、${terms[matchedTerm]}</p>
+          </div>
+          <div class="answer-card">
+            <h3>適用条件</h3>
+            <p>意味が曖昧になりやすい用語を新人が確認したいとき。</p>
+          </div>
+          <div class="answer-card">
+            <h3>出典</h3>
+            <p>用語辞書 / 更新日 2026-03-02</p>
+          </div>
+          <div class="answer-card">
+            <h3>次アクション</h3>
+            <p>返答時は用語をそのまま使わず、条件付きかどうかを一言添える。</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (risk === 'danger') {
+        resultEl.innerHTML = `
+          <div class="status danger">自動回答禁止</div>
+          <div class="answer-card">
+            <h3>結論</h3>
+            <p>この質問は価格・契約・納期確約などの禁止領域に入るため、アプリで確定回答しません。</p>
+          </div>
+          <div class="answer-card">
+            <h3>適用条件</h3>
+            <p>価格、契約条件、納期確約、保証、責任範囲に触れる相談。</p>
+          </div>
+          <div class="answer-card">
+            <h3>出典</h3>
+            <p>回答ガードルール / 更新日 2026-03-04</p>
+          </div>
+          <div class="answer-card">
+            <h3>次アクション</h3>
+            <p>担当者へ確認依頼。入力内容をそのまま転記し、「確約が必要な相談」と明記する。</p>
+          </div>
+        `;
+        return;
+      }
+
+      const pattern = risk === 'warn'
+        ? patterns.find(p => p.title.includes('急ぎ') || p.title.includes('クレーム') || p.title.includes('旧型'))
+        : patterns[0];
+
+      const statusClass = risk === 'warn' ? 'warn' : 'ok';
+      const statusText = risk === 'warn' ? '条件付き回答' : '通常回答';
+
+      const conclusion = category === 'customer'
+        ? `${customer.name}向けには「${customer.profile}」を前提に、${product.name}の案内を行います。`
+        : `${product.name}は「${product.summary}」として案内できます。`;
+
+      const conditions = category === 'customer'
+        ? customer.askFirst.join(' / ')
+        : product.conditions.join(' / ');
+
+      const nextAction = risk === 'warn'
+        ? `先に確認すべき項目：${customer.askFirst.join(' / ')}。必要なら担当者へエスカレーション。`
+        : product.nextAction;
+
+      resultEl.innerHTML = `
+        <div class="status ${statusClass}">${statusText}</div>
+        <div class="answer-card">
+          <h3>結論</h3>
+          <p>${conclusion}</p>
+        </div>
+        <div class="answer-card">
+          <h3>適用条件</h3>
+          <p>${conditions}</p>
+          <ul class="clean">
+            ${product.pitfalls.map(item => `<li>${item}</li>`).join('')}
+          </ul>
+        </div>
+        <div class="answer-card">
+          <h3>出典</h3>
+          <p>${product.source} / ${customer.source}</p>
+        </div>
+        <div class="answer-card">
+          <h3>次アクション</h3>
+          <p>${nextAction}</p>
+          <p class="small">定番パターン：${pattern.title} — ${pattern.text}</p>
+        </div>
+      `;
+    }
+
+    function fillSample() {
+      document.getElementById('category').value = 'customer';
+      productEl.value = '標準B';
+      customerEl.value = '青葉工業';
+      document.getElementById('situation').value = 'spec';
+      document.getElementById('keyword').value = '代替提案の注意点を知りたい';
+      runJudge();
+    }
+
+    function resetAll() {
+      document.getElementById('category').value = 'product';
+      productEl.selectedIndex = 0;
+      customerEl.selectedIndex = 0;
+      document.getElementById('situation').value = 'standard';
+      document.getElementById('keyword').value = '';
+      renderIntro();
+    }
+
+    fillSelect(productEl, products);
+    fillSelect(customerEl, customers);
+    renderCatalog();
+    renderIntro();
+
+    document.getElementById('runBtn').addEventListener('click', runJudge);
+    document.getElementById('sampleBtn').addEventListener('click', fillSample);
+    document.getElementById('resetBtn').addEventListener('click', resetAll);
+  </script>
+</body>
+</html>

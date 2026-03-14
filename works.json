@@ -231,6 +231,19 @@
                      "価格設計",
                      "PoC"
                  ]
+    },
+    {
+        "title":  "Stock Satellite",
+        "description":  "高配当株の監視を毎日の確認作業から切り離し、利回りトリガーで通知することで判断のブレを減らす運用支援PoC。",
+        "href":  "works/stock_satellite/",
+        "noteUrl":  "https://note.com/clean_whale1844/n/nfda292d5907a",
+        "image":  "works/61_image/stock_satellite.png",
+        "alt":  "Stock Satellite スクリーンショット",
+        "tags":  [
+                     "業務改善",
+                     "投資運用",
+                     "PoC"
+                 ]
     }
 ]
 

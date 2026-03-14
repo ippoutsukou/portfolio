@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PriceFlow | Rule-Based Pricing PoC</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --bg2:#11182d;
+      --panel:#121a30;
+      --panel-soft:#18233f;
+      --line:#2a3557;
+      --text:#eef4ff;
+      --muted:#9fb0d1;
+      --accent:#67e8f9;
+      --accent-2:#60a5fa;
+      --good:#4ade80;
+      --warn:#fbbf24;
+      --danger:#fb7185;
+      --shadow:0 20px 50px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      color:var(--text);
+      font-family:"Segoe UI","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(96,165,250,.15), transparent 28%),
+        radial-gradient(circle at top left, rgba(103,232,249,.1), transparent 22%),
+        linear-gradient(160deg, #08101f 0%, #0b1020 45%, #0f1730 100%);
+    }
+
+    .container{
+      max-width:1280px;
+      margin:0 auto;
+      padding:28px 20px 48px;
+    }
+
+    .hero{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:20px;
+      margin-bottom:24px;
+      flex-wrap:wrap;
+    }
+
+    .brand{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+    }
+
+    .logo{
+      width:54px;
+      height:54px;
+      border-radius:16px;
+      background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      color:#062133;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      box-shadow:0 10px 30px rgba(96,165,250,.25);
+      flex:0 0 auto;
+    }
+
+    .hero h1{
+      margin:0;
+      font-size:34px;
+      letter-spacing:.3px;
+    }
+
+    .hero p{
+      margin:8px 0 0;
+      color:var(--muted);
+      line-height:1.7;
+      max-width:760px;
+    }
+
+    .hero-badges{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .badge{
+      padding:8px 12px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      font-size:12px;
+      color:var(--muted);
+      background:rgba(255,255,255,.03);
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:380px 1fr;
+      gap:20px;
+      align-items:start;
+    }
+
+    .panel{
+      background:linear-gradient(180deg, rgba(18,26,48,.95), rgba(16,23,42,.95));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+
+    .panel-head{
+      padding:18px 18px 8px;
+      border-bottom:1px solid rgba(255,255,255,.05);
+    }
+
+    .panel-head h2{
+      margin:0;
+      font-size:18px;
+    }
+
+    .panel-head p{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .panel-body{
+      padding:18px;
+    }
+
+    .sticky{
+      position:sticky;
+      top:20px;
+    }
+
+    .section{
+      margin-bottom:22px;
+    }
+
+    .section:last-child{
+      margin-bottom:0;
+    }
+
+    .section-title{
+      font-size:13px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--accent);
+      margin:0 0 12px;
+      font-weight:800;
+    }
+
+    label{
+      display:block;
+      font-size:13px;
+      color:var(--muted);
+      margin:0 0 7px;
+    }
+
+    .field{
+      margin-bottom:14px;
+    }
+
+    input, select{
+      width:100%;
+      padding:12px 13px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#0b1328;
+      color:var(--text);
+      font-size:14px;
+      outline:none;
+      transition:.18s ease;
+    }
+
+    input:focus, select:focus{
+      border-color:var(--accent-2);
+      box-shadow:0 0 0 3px rgba(96,165,250,.12);
+    }
+
+    input[type="number"]{
+      appearance:textfield;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .preset-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .preset-btn, .ghost-btn, .primary-btn, .tab{
+      border:none;
+      cursor:pointer;
+      transition:.18s ease;
+      font-weight:700;
+    }
+
+    .preset-btn{
+      background:#0d1730;
+      color:var(--text);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      text-align:left;
+      min-height:78px;
+    }
+
+    .preset-btn:hover,
+    .ghost-btn:hover{
+      transform:translateY(-1px);
+      border-color:#4562a0;
+    }
+
+    .preset-btn small{
+      display:block;
+      color:var(--muted);
+      margin-top:6px;
+      font-weight:500;
+      line-height:1.5;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+
+    .primary-btn{
+      padding:12px 14px;
+      border-radius:12px;
+      background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      color:#072030;
+      box-shadow:0 12px 30px rgba(96,165,250,.18);
+    }
+
+    .ghost-btn{
+      padding:12px 14px;
+      border-radius:12px;
+      background:#0d1730;
+      color:var(--text);
+      border:1px solid var(--line);
+    }
+
+    .kpi-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    .kpi{
+      background:linear-gradient(180deg, rgba(13,19,40,.95), rgba(18,28,54,.95));
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:16px;
+      min-height:108px;
+    }
+
+    .kpi .label{
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:10px;
+    }
+
+    .kpi .value{
+      font-size:28px;
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+
+    .kpi .sub{
+      margin-top:8px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .kpi.price{
+      border-color:rgba(103,232,249,.4);
+      box-shadow:0 0 0 1px rgba(103,232,249,.12) inset;
+    }
+
+    .explain{
+      display:grid;
+      grid-template-columns:1.3fr .9fr;
+      gap:16px;
+      margin-bottom:18px;
+    }
+
+    .summary-box{
+      background:#0c1430;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:16px;
+    }
+
+    .summary-box h3{
+      margin:0 0 10px;
+      font-size:15px;
+    }
+
+    .formula{
+      display:grid;
+      gap:10px;
+    }
+
+    .formula-row{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding-bottom:10px;
+      border-bottom:1px dashed rgba(255,255,255,.08);
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .formula-row strong{
+      color:var(--text);
+    }
+
+    .formula-row.total{
+      color:var(--text);
+      font-weight:800;
+      font-size:15px;
+      border-bottom:none;
+      padding-top:2px;
+    }
+
+    .status-card{
+      background:#0c1430;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:16px;
+    }
+
+    .status-card h3{
+      margin:0 0 12px;
+      font-size:15px;
+    }
+
+    .status-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .status-item{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .dot{
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      margin-top:5px;
+      background:var(--accent);
+      flex:0 0 auto;
+    }
+
+    .tabs{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .tab{
+      padding:10px 14px;
+      border-radius:999px;
+      background:#0d1730;
+      border:1px solid var(--line);
+      color:var(--muted);
+    }
+
+    .tab.active{
+      background:rgba(96,165,250,.14);
+      color:var(--text);
+      border-color:#4b74c8;
+    }
+
+    .tab-panel{
+      display:none;
+    }
+
+    .tab-panel.active{
+      display:block;
+    }
+
+    .table-wrap{
+      overflow:auto;
+      border:1px solid rgba(255,255,255,.05);
+      border-radius:14px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:760px;
+    }
+
+    th, td{
+      padding:12px 12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      text-align:left;
+      vertical-align:top;
+      font-size:14px;
+    }
+
+    th{
+      font-size:12px;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      color:var(--muted);
+      background:#0b1328;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      line-height:1;
+      white-space:nowrap;
+    }
+
+    .tag.proc{ background:rgba(74,222,128,.12); color:#9ef0b8; }
+    .tag.mat{ background:rgba(251,191,36,.14); color:#ffd978; }
+    .tag.rule{ background:rgba(103,232,249,.12); color:#9ff1fb; }
+
+    .reason{
+      color:var(--muted);
+      line-height:1.6;
+      font-size:13px;
+    }
+
+    .empty{
+      padding:24px 10px;
+      color:var(--muted);
+      text-align:center;
+    }
+
+    .footer-note{
+      margin-top:16px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .mini{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    @media (max-width: 1080px){
+      .layout{
+        grid-template-columns:1fr;
+      }
+      .sticky{
+        position:static;
+      }
+      .kpi-grid{
+        grid-template-columns:1fr 1fr;
+      }
+      .explain{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 700px){
+      .container{
+        padding:20px 14px 36px;
+      }
+      .hero h1{
+        font-size:28px;
+      }
+      .grid-2,
+      .preset-grid,
+      .kpi-grid{
+        grid-template-columns:1fr;
+      }
+      .panel-body,
+      .panel-head{
+        padding:16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <div>
+        <div class="brand">
+          <div class="logo">PF</div>
+          <div>
+            <h1>PriceFlow</h1>
+            <p>
+              Rule-Based Pricing PoC。<br>
+              製品タイプ・仕様・数量・顧客条件から、工程・資材・費用構成を自動判定し、
+              売価の根拠まで一目で追えるようにした静的HTMLデモです。
+            </p>
+            <div class="hero-badges">
+              <span class="badge">Static HTML</span>
+              <span class="badge">GitHub Pages Ready</span>
+              <span class="badge">Rule-Based Pricing</span>
+              <span class="badge">Explainable Costing</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main class="layout">
+      <aside class="panel sticky">
+        <div class="panel-head">
+          <h2>条件入力</h2>
+          <p>左で条件を変えると、右側の売価と構成がすぐ更新されます。</p>
+        </div>
+        <div class="panel-body">
+          <div class="section">
+            <div class="section-title">Quick Presets</div>
+            <div class="preset-grid">
+              <button class="preset-btn" onclick="applyPreset('standardA')">
+                標準A
+                <small>製品A / 数量50 / 標準仕様</small>
+              </button>
+              <button class="preset-btn" onclick="applyPreset('massB')">
+                大量B
+                <small>製品B / 数量150 / 仕様B</small>
+              </button>
+              <button class="preset-btn" onclick="applyPreset('premiumC')">
+                高耐久C
+                <small>製品C / 数量80 / 高耐久</small>
+              </button>
+              <button class="preset-btn" onclick="applyPreset('specialA')">
+                特殊顧客A
+                <small>製品A / 特殊顧客 / Lサイズ</small>
+              </button>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Basic Inputs</div>
+
+            <div class="field">
+              <label for="productType">製品タイプ</label>
+              <select id="productType">
+                <option value="A">製品A</option>
+                <option value="B">製品B</option>
+                <option value="C">製品C</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="quantity">数量</label>
+              <input id="quantity" type="number" min="1" value="50" />
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label for="spec">仕様</label>
+                <select id="spec">
+                  <option value="standard">標準</option>
+                  <option value="B">仕様B</option>
+                  <option value="premium">高耐久</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="size">サイズ</label>
+                <select id="size">
+                  <option value="S">S</option>
+                  <option value="M" selected>M</option>
+                  <option value="L">L</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="customerType">顧客区分</label>
+              <select id="customerType">
+                <option value="general">一般</option>
+                <option value="priority">重点顧客</option>
+                <option value="special">特殊顧客</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Pricing Controls</div>
+            <div class="grid-2">
+              <div class="field">
+                <label for="profitRate">利益率（%）</label>
+                <input id="profitRate" type="number" min="0" step="1" value="20" />
+              </div>
+              <div class="field">
+                <label for="overheadRate">管理費率（%）</label>
+                <input id="overheadRate" type="number" min="0" step="1" value="15" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="extraCost">個別加算額（円）</label>
+              <input id="extraCost" type="number" min="0" step="1" value="0" />
+              <div class="mini">特急対応や個別条件など、手動加算を想定。</div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="primary-btn" onclick="copySummary()">結果要約をコピー</button>
+            <button class="ghost-btn" onclick="resetForm()">初期値に戻す</button>
+          </div>
+        </div>
+      </aside>
+
+      <section>
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="label">材料費</div>
+            <div class="value" id="materialTotal">¥0</div>
+            <div class="sub">資材単価 × 使用数量</div>
+          </div>
+          <div class="kpi">
+            <div class="label">作業費</div>
+            <div class="value" id="processTotal">¥0</div>
+            <div class="sub">工程費 + 個別加算</div>
+          </div>
+          <div class="kpi">
+            <div class="label">原価合計</div>
+            <div class="value" id="costTotal">¥0</div>
+            <div class="sub">直接原価 + 管理費</div>
+          </div>
+          <div class="kpi price">
+            <div class="label">売価</div>
+            <div class="value" id="priceTotal">¥0</div>
+            <div class="sub">原価 ÷ (1 - 利益率)</div>
+          </div>
+        </div>
+
+        <div class="explain">
+          <div class="summary-box panel">
+            <div class="panel-head">
+              <h2>計算の内訳</h2>
+              <p>売価がどのように組み上がったかを、式の流れで確認できます。</p>
+            </div>
+            <div class="panel-body">
+              <div class="formula">
+                <div class="formula-row">
+                  <span>材料費</span>
+                  <strong id="fMaterial">¥0</strong>
+                </div>
+                <div class="formula-row">
+                  <span>作業費</span>
+                  <strong id="fProcess">¥0</strong>
+                </div>
+                <div class="formula-row">
+                  <span>個別加算</span>
+                  <strong id="fExtra">¥0</strong>
+                </div>
+                <div class="formula-row">
+                  <span>管理費</span>
+                  <strong id="fOverhead">¥0</strong>
+                </div>
+                <div class="formula-row">
+                  <span>利益額</span>
+                  <strong id="fProfit">¥0</strong>
+                </div>
+                <div class="formula-row total">
+                  <span>最終売価</span>
+                  <strong id="fPrice">¥0</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="status-card panel">
+            <div class="panel-head">
+              <h2>今回の判断ポイント</h2>
+              <p>どこで構成が変わったかを短く表示します。</p>
+            </div>
+            <div class="panel-body">
+              <div class="status-list" id="statusList"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>構成の根拠</h2>
+            <p>「何が適用されたか」だけでなく、「なぜそうなったか」まで追えるようにしています。</p>
+          </div>
+          <div class="panel-body">
+            <div class="tabs">
+              <button class="tab active" data-tab="rules">発動ルール</button>
+              <button class="tab" data-tab="processes">工程</button>
+              <button class="tab" data-tab="materials">資材</button>
+            </div>
+
+            <div class="tab-panel active" id="tab-rules">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ルールID</th>
+                      <th>条件</th>
+                      <th>結果</th>
+                      <th>区分</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ruleTable"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="tab-panel" id="tab-processes">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>工程コード</th>
+                      <th>工程名</th>
+                      <th>単価</th>
+                      <th>理由</th>
+                    </tr>
+                  </thead>
+                  <tbody id="processTable"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="tab-panel" id="tab-materials">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>資材コード</th>
+                      <th>資材名</th>
+                      <th>数量</th>
+                      <th>単価</th>
+                      <th>金額</th>
+                      <th>理由</th>
+                    </tr>
+                  </thead>
+                  <tbody id="materialTable"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="footer-note">
+              このPoCは「売価を自動算出すること」よりも、<strong>工程・資材・条件分岐の根拠を説明できること</strong>を重視しています。<br>
+              実運用版では、ここに単価マスタ更新履歴、例外承認、案件保存機能を追加する想定です。
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const processMaster = {
+      P1: { name: "切断", cost: 300 },
+      P2: { name: "穴あけ", cost: 250 },
+      P3: { name: "追加検査", cost: 180 },
+      P4: { name: "表面処理", cost: 400 },
+      P5: { name: "組立", cost: 500 },
+      P6: { name: "特別梱包", cost: 220 },
+      P7: { name: "高耐久仕上げ", cost: 350 }
+    };
+
+    const materialMaster = {
+      M1: { name: "鋼板A", unitCost: 120 },
+      M2: { name: "ボルトB", unitCost: 15 },
+      M3: { name: "補強材C", unitCost: 60 },
+      M4: { name: "表面処理剤D", unitCost: 45 },
+      M5: { name: "梱包材E", unitCost: 25 },
+      MX: { name: "特殊資材X", unitCost: 90 }
+    };
+
+    const presets = {
+      standardA: {
+        productType:"A", quantity:50, spec:"standard", size:"M", customerType:"general",
+        profitRate:20, overheadRate:15, extraCost:0
+      },
+      massB: {
+        productType:"B", quantity:150, spec:"B", size:"M", customerType:"general",
+        profitRate:20, overheadRate:15, extraCost:0
+      },
+      premiumC: {
+        productType:"C", quantity:80, spec:"premium", size:"M", customerType:"priority",
+        profitRate:22, overheadRate:16, extraCost:300
+      },
+      specialA: {
+        productType:"A", quantity:120, spec:"B", size:"L", customerType:"special",
+        profitRate:25, overheadRate:18, extraCost:500
+      }
+    };
+
+    function yen(v){
+      return "¥" + Math.round(v).toLocaleString("ja-JP");
+    }
+
+    function addUniqueProcess(map, code, reason){
+      if (!map[code]) map[code] = [];
+      map[code].push(reason);
+    }
+
+    function addMaterial(map, code, qty, reason){
+      if (!map[code]) map[code] = { qty: 0, reasons: [] };
+      map[code].qty += qty;
+      map[code].reasons.push(reason);
+    }
+
+    function getInputs(){
+      return {
+        productType: document.getElementById("productType").value,
+        quantity: Math.max(1, Number(document.getElementById("quantity").value || 1)),
+        spec: document.getElementById("spec").value,
+        size: document.getElementById("size").value,
+        customerType: document.getElementById("customerType").value,
+        profitRate: Number(document.getElementById("profitRate").value || 0) / 100,
+        overheadRate: Number(document.getElementById("overheadRate").value || 0) / 100,
+        extraCost: Number(document.getElementById("extraCost").value || 0)
+      };
+    }
+
+    function evaluateRules(input){
+      const processMap = {};
+      const materialMap = {};
+      const firedRules = [];
+      const statusMessages = [];
+
+      if (input.productType === "A") {
+        addUniqueProcess(processMap, "P1", "製品Aの標準工程");
+        addUniqueProcess(processMap, "P2", "製品Aの標準工程");
+        addUniqueProcess(processMap, "P5", "製品Aの標準工程");
+        addMaterial(materialMap, "M1", 2 * input.quantity, "製品Aの標準資材");
+        addMaterial(materialMap, "M2", 4 * input.quantity, "製品Aの標準資材");
+        firedRules.push({ id:"R001", condition:"製品=A", result:"工程P1,P2,P5 / 資材M1,M2", type:"標準構成" });
+        statusMessages.push("製品Aの標準構成として、切断・穴あけ・組立が適用されました。");
+      }
+
+      if (input.productType === "B") {
+        addUniqueProcess(processMap, "P1", "製品Bの標準工程");
+        addUniqueProcess(processMap, "P4", "製品Bの標準工程");
+        addUniqueProcess(processMap, "P5", "製品Bの標準工程");
+        addMaterial(materialMap, "M1", 1.5 * input.quantity, "製品Bの標準資材");
+        addMaterial(materialMap, "M3", 2 * input.quantity, "製品Bの標準資材");
+        firedRules.push({ id:"R002", condition:"製品=B", result:"工程P1,P4,P5 / 資材M1,M3", type:"標準構成" });
+        statusMessages.push("製品Bの標準構成として、表面処理を含む工程が適用されました。");
+      }
+
+      if (input.productType === "C") {
+        addUniqueProcess(processMap, "P2", "製品Cの標準工程");
+        addUniqueProcess(processMap, "P5", "製品Cの標準工程");
+        addMaterial(materialMap, "M3", 3 * input.quantity, "製品Cの標準資材");
+        addMaterial(materialMap, "M5", 1 * input.quantity, "製品Cの標準資材");
+        firedRules.push({ id:"R003", condition:"製品=C", result:"工程P2,P5 / 資材M3,M5", type:"標準構成" });
+        statusMessages.push("製品Cの標準構成として、補強材主体の資材構成になりました。");
+      }
+
+      if (input.spec === "B") {
+        addMaterial(materialMap, "MX", 1 * input.quantity, "仕様Bで特殊資材追加");
+        firedRules.push({ id:"R010", condition:"仕様=B", result:"資材MX追加", type:"仕様" });
+        statusMessages.push("仕様Bのため、特殊資材Xが追加されました。");
+      }
+
+      if (input.spec === "premium") {
+        addUniqueProcess(processMap, "P7", "高耐久仕様で追加");
+        addMaterial(materialMap, "M4", 1 * input.quantity, "高耐久仕様で表面処理剤追加");
+        firedRules.push({ id:"R011", condition:"仕様=高耐久", result:"工程P7追加 / 資材M4追加", type:"仕様" });
+        statusMessages.push("高耐久仕様のため、追加仕上げ工程と表面処理剤が適用されました。");
+      }
+
+      if (input.quantity > 100) {
+        addUniqueProcess(processMap, "P3", "数量100超で追加検査");
+        firedRules.push({ id:"R020", condition:"数量 > 100", result:"工程P3追加", type:"数量" });
+        statusMessages.push("数量が100を超えているため、追加検査工程が発動しました。");
+      }
+
+      if (input.size === "L") {
+        addMaterial(materialMap, "M3", 1 * input.quantity, "サイズLで補強材追加");
+        firedRules.push({ id:"R030", condition:"サイズ=L", result:"資材M3追加", type:"サイズ" });
+        statusMessages.push("Lサイズのため、補強材Cが追加されています。");
+      }
+
+      if (input.customerType === "priority") {
+        addUniqueProcess(processMap, "P6", "重点顧客向け梱包");
+        addMaterial(materialMap, "M5", 1 * input.quantity, "重点顧客向け梱包材追加");
+        firedRules.push({ id:"R040", condition:"顧客=重点", result:"工程P6追加 / 資材M5追加", type:"顧客" });
+        statusMessages.push("重点顧客向け対応として、特別梱包が追加されました。");
+      }
+
+      if (input.customerType === "special") {
+        addUniqueProcess(processMap, "P6", "特殊顧客で特別梱包");
+        addUniqueProcess(processMap, "P3", "特殊顧客で追加検査");
+        addMaterial(materialMap, "M5", 2 * input.quantity, "特殊顧客向け梱包材追加");
+        firedRules.push({ id:"R041", condition:"顧客=特殊", result:"工程P6,P3追加 / 資材M5追加", type:"顧客" });
+        statusMessages.push("特殊顧客向け条件により、検査と梱包が強化されました。");
+      }
+
+      return { processMap, materialMap, firedRules, statusMessages };
+    }
+
+    function renderTables(processRows, materialRows, firedRules, extraCost){
+      const processTable = document.getElementById("processTable");
+      processTable.innerHTML = processRows.length
+        ? processRows.map(r => `
+          <tr>
+            <td><span class="tag proc">${r.code}</span></td>
+            <td>${r.name}</td>
+            <td>${yen(r.cost)}</td>
+            <td class="reason">${r.reason}</td>
+          </tr>
+        `).join("") + (extraCost > 0 ? `
+          <tr>
+            <td><span class="tag proc">EX</span></td>
+            <td>個別加算</td>
+            <td>${yen(extraCost)}</td>
+            <td class="reason">手動で加算された追加費用です。</td>
+          </tr>
+        ` : "")
+        : `<tr><td colspan="4" class="empty">適用工程はありません。</td></tr>`;
+
+      const materialTable = document.getElementById("materialTable");
+      materialTable.innerHTML = materialRows.length
+        ? materialRows.map(r => `
+          <tr>
+            <td><span class="tag mat">${r.code}</span></td>
+            <td>${r.name}</td>
+            <td>${r.qty}</td>
+            <td>${yen(r.unitCost)}</td>
+            <td>${yen(r.amount)}</td>
+            <td class="reason">${r.reason}</td>
+          </tr>
+        `).join("")
+        : `<tr><td colspan="6" class="empty">適用資材はありません。</td></tr>`;
+
+      const ruleTable = document.getElementById("ruleTable");
+      ruleTable.innerHTML = firedRules.length
+        ? firedRules.map(r => `
+          <tr>
+            <td><span class="tag rule">${r.id}</span></td>
+            <td>${r.condition}</td>
+            <td>${r.result}</td>
+            <td>${r.type}</td>
+          </tr>
+        `).join("")
+        : `<tr><td colspan="4" class="empty">発動したルールはありません。</td></tr>`;
+    }
+
+    function renderStatus(messages, input, priceTotal){
+      const statusList = document.getElementById("statusList");
+      const base = [
+        `現在の条件は「製品${input.productType} / 数量${input.quantity} / ${specLabel(input.spec)} / サイズ${input.size} / ${customerLabel(input.customerType)}」です。`,
+        ...messages,
+        `この条件での試算売価は ${yen(priceTotal)} です。`
+      ];
+      statusList.innerHTML = base.map(msg => `
+        <div class="status-item">
+          <span class="dot"></span>
+          <div>${msg}</div>
+        </div>
+      `).join("");
+    }
+
+    function specLabel(v){
+      if (v === "standard") return "標準";
+      if (v === "B") return "仕様B";
+      if (v === "premium") return "高耐久";
+      return v;
+    }
+
+    function customerLabel(v){
+      if (v === "general") return "一般顧客";
+      if (v === "priority") return "重点顧客";
+      if (v === "special") return "特殊顧客";
+      return v;
+    }
+
+    function calculate(){
+      const input = getInputs();
+      document.getElementById("quantity").value = input.quantity;
+
+      const { processMap, materialMap, firedRules, statusMessages } = evaluateRules(input);
+
+      let processTotal = 0;
+      const processRows = Object.keys(processMap).map(code => {
+        const proc = processMaster[code];
+        processTotal += proc.cost;
+        return { code, name: proc.name, cost: proc.cost, reason: processMap[code].join(" / ") };
+      });
+
+      let materialTotal = 0;
+      const materialRows = Object.keys(materialMap).map(code => {
+        const mat = materialMaster[code];
+        const qty = materialMap[code].qty;
+        const amount = qty * mat.unitCost;
+        materialTotal += amount;
+        return {
+          code,
+          name: mat.name,
+          qty,
+          unitCost: mat.unitCost,
+          amount,
+          reason: materialMap[code].reasons.join(" / ")
+        };
+      });
+
+      const directCost = materialTotal + processTotal + input.extraCost;
+      const overheadTotal = directCost * input.overheadRate;
+      const costTotal = directCost + overheadTotal;
+      const priceTotal = costTotal / (1 - input.profitRate);
+      const profitAmount = priceTotal - costTotal;
+
+      document.getElementById("materialTotal").textContent = yen(materialTotal);
+      document.getElementById("processTotal").textContent = yen(processTotal + input.extraCost);
+      document.getElementById("costTotal").textContent = yen(costTotal);
+      document.getElementById("priceTotal").textContent = yen(priceTotal);
+
+      document.getElementById("fMaterial").textContent = yen(materialTotal);
+      document.getElementById("fProcess").textContent = yen(processTotal);
+      document.getElementById("fExtra").textContent = yen(input.extraCost);
+      document.getElementById("fOverhead").textContent = yen(overheadTotal);
+      document.getElementById("fProfit").textContent = yen(profitAmount);
+      document.getElementById("fPrice").textContent = yen(priceTotal);
+
+      renderTables(processRows, materialRows, firedRules, input.extraCost);
+      renderStatus(statusMessages, input, priceTotal);
+
+      window.latestSummary = [
+        "PriceFlow 試算結果",
+        `製品タイプ: ${input.productType}`,
+        `数量: ${input.quantity}`,
+        `仕様: ${specLabel(input.spec)}`,
+        `サイズ: ${input.size}`,
+        `顧客区分: ${customerLabel(input.customerType)}`,
+        `材料費: ${yen(materialTotal)}`,
+        `作業費: ${yen(processTotal)}`,
+        `管理費: ${yen(overheadTotal)}`,
+        `売価: ${yen(priceTotal)}`,
+        `発動ルール数: ${firedRules.length}`
+      ].join("\n");
+    }
+
+    function applyPreset(name){
+      const p = presets[name];
+      if (!p) return;
+      document.getElementById("productType").value = p.productType;
+      document.getElementById("quantity").value = p.quantity;
+      document.getElementById("spec").value = p.spec;
+      document.getElementById("size").value = p.size;
+      document.getElementById("customerType").value = p.customerType;
+      document.getElementById("profitRate").value = p.profitRate;
+      document.getElementById("overheadRate").value = p.overheadRate;
+      document.getElementById("extraCost").value = p.extraCost;
+      calculate();
+    }
+
+    function resetForm(){
+      applyPreset("standardA");
+    }
+
+    async function copySummary(){
+      calculate();
+      try{
+        await navigator.clipboard.writeText(window.latestSummary || "");
+        alert("結果要約をコピーしました。");
+      }catch(e){
+        alert("コピーに失敗しました。ブラウザの制限の可能性があります。");
+      }
+    }
+
+    document.querySelectorAll("input, select").forEach(el => {
+      el.addEventListener("input", calculate);
+      el.addEventListener("change", calculate);
+    });
+
+    document.querySelectorAll(".tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach(x => x.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+      });
+    });
+
+    applyPreset("standardA");
+  </script>
+</body>
+</html>

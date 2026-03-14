@@ -219,6 +219,18 @@
                      "ナレッジ運用",
                      "PoC"
                  ]
+    },
+    {
+        "title":  "PriceFlow",
+        "description":  "条件に応じた価格計算の根拠を可視化し、工程・資材・条件分岐を説明可能にする Rule-Based Pricing PoC。",
+        "href":  "works/PriceFlow/",
+        "image":  "works/61_image/PriceFlow.png",
+        "alt":  "PriceFlow スクリーンショット",
+        "tags":  [
+                     "HTML/CSS/JS",
+                     "価格設計",
+                     "PoC"
+                 ]
     }
 ]
 

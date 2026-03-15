@@ -244,6 +244,18 @@
                      "投資運用",
                      "PoC"
                  ]
+    },
+    {
+        "title":  "新人が迷うのは暗記量じゃない。ポータル設計で解く",
+        "description":  "製品・工場・出荷先の関係をまとめて見られる新人向け業務ポータル。検索、詳細導線、学習モードをひとつにまとめ、判断の迷いを減らすPoC。",
+        "href":  "works/ProdNavigator/",
+        "image":  "works/61_image/PriceFlow.png",
+        "alt":  "ProdNavigator スクリーンショット",
+        "tags":  [
+                     "業務改善",
+                     "新人教育",
+                     "PoC"
+                 ]
     }
 ]
 

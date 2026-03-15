@@ -1,0 +1,82 @@
+[
+  {
+    "id": "MIS-001",
+    "title": "高耐熱フィルムAとBの取り違え",
+    "category": "商品取り違え",
+    "relatedProductIds": ["PRD-001", "PRD-002"],
+    "relatedFactoryIds": ["FAC-001", "FAC-002"],
+    "relatedDestinationIds": ["DST-002"],
+    "description": "商品名が似ているため、国内向けと輸出向けを混同しやすい。",
+    "prevention": "商品コードと出荷先ルールを同時に確認する。"
+  },
+  {
+    "id": "MIS-002",
+    "title": "汎用保護シートCの厚み指定漏れ",
+    "category": "商品選択ミス",
+    "relatedProductIds": ["PRD-003"],
+    "relatedFactoryIds": ["FAC-003"],
+    "relatedDestinationIds": ["DST-003"],
+    "description": "標準品のため確認を省略し、厚み違いで手配してしまうケースがある。",
+    "prevention": "受注時に厚みと納入ロット表記を必ず照合する。"
+  },
+  {
+    "id": "MIS-003",
+    "title": "欧州D顧客向けラベル言語の確認漏れ",
+    "category": "仕向け先ルール差分",
+    "relatedProductIds": ["PRD-004"],
+    "relatedFactoryIds": ["FAC-004"],
+    "relatedDestinationIds": ["DST-004"],
+    "description": "欧州向けに必要な多言語ラベル条件を見落として再出荷になることがある。",
+    "prevention": "出荷前に仕向け先ルールと添付書類をチェックリストで確認する。"
+  },
+  {
+    "id": "MIS-004",
+    "title": "低摩擦シートEの表裏逆使用",
+    "category": "現場取り扱いミス",
+    "relatedProductIds": ["PRD-005"],
+    "relatedFactoryIds": ["FAC-003", "FAC-007"],
+    "relatedDestinationIds": ["DST-005"],
+    "description": "滑り面と固定面を逆に案内し、現場で貼り直しが発生する。",
+    "prevention": "作業指示書に表裏図を付けて案内する。"
+  },
+  {
+    "id": "MIS-005",
+    "title": "耐久シートFの重量表示漏れ",
+    "category": "梱包ミス",
+    "relatedProductIds": ["PRD-006"],
+    "relatedFactoryIds": ["FAC-007"],
+    "relatedDestinationIds": ["DST-006"],
+    "description": "重量物であるにもかかわらず通常ラベルで出荷し、受入で差し戻しになる。",
+    "prevention": "重量物フラグ商品は出荷前に梱包表示を再確認する。"
+  },
+  {
+    "id": "MIS-006",
+    "title": "耐湿フィルムGの保管条件案内不足",
+    "category": "条件確認漏れ",
+    "relatedProductIds": ["PRD-007"],
+    "relatedFactoryIds": ["FAC-002", "FAC-008"],
+    "relatedDestinationIds": ["DST-008"],
+    "description": "高湿度地域向けなのに通常保管条件だけを案内してしまう。",
+    "prevention": "輸出高湿地域案件は保管条件テンプレートを必ず添付する。"
+  },
+  {
+    "id": "MIS-007",
+    "title": "再剥離シートIを高粘着用途に提案する",
+    "category": "提案ミス",
+    "relatedProductIds": ["PRD-009", "PRD-010"],
+    "relatedFactoryIds": ["FAC-003", "FAC-004"],
+    "relatedDestinationIds": ["DST-009", "DST-010"],
+    "description": "用途確認不足で再剥離タイプを固定用途に提案してしまう。",
+    "prevention": "用途ヒアリング時に再剥離か高粘着かを必須確認項目にする。"
+  },
+  {
+    "id": "MIS-008",
+    "title": "帯電防止フィルムKのクリーン梱包漏れ",
+    "category": "工程条件漏れ",
+    "relatedProductIds": ["PRD-011"],
+    "relatedFactoryIds": ["FAC-006"],
+    "relatedDestinationIds": ["DST-011"],
+    "description": "電子部材向けなのに通常梱包で出荷してしまう。",
+    "prevention": "電子部材用途の案件はクリーン梱包チェックを必須にする。"
+  }
+]

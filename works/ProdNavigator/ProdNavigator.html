@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新人教育ポータル</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="site-header">
+      <div>
+        <p class="eyebrow">Manufacturing Learning Portal</p>
+        <h1>新人教育ポータル</h1>
+      </div>
+      <nav class="global-nav" aria-label="グローバルナビゲーション">
+        <a href="#/top">トップ</a>
+        <a href="#/products">商品</a>
+        <a href="#/factories">工場</a>
+        <a href="#/destinations">仕向け先</a>
+        <a href="#/learning">学習モード</a>
+      </nav>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <section class="panel">
+          <h2>ナビゲーション</h2>
+          <div id="side-nav"></div>
+        </section>
+        <section class="panel">
+          <h2>クイック検索</h2>
+          <label class="field">
+            <span>キーワード</span>
+            <input id="global-search" type="search" placeholder="商品名・コード・工場名など">
+          </label>
+          <button id="global-search-button" class="button button-primary" type="button">検索</button>
+        </section>
+      </aside>
+
+      <section class="content">
+        <div id="status-banner" class="status-banner" hidden></div>
+        <div id="app"></div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

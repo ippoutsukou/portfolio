@@ -256,6 +256,19 @@
                      "新人教育",
                      "PoC"
                  ]
+    },
+    {
+        "title":  "在庫判断 PoC",
+        "description":  "在庫日数、需要変動、入荷遅延などの状況をもとに、判断理由と対応ログを同じ画面で整理できる在庫判断支援PoC。",
+        "href":  "works/Inventory-judgment-poc/",
+        "noteUrl":  "https://note.com/clean_whale1844/n/ncdfad48da9d5",
+        "image":  "works/61_image/Inventory-judgment-poc.png",
+        "alt":  "在庫判断 PoC スクリーンショット",
+        "tags":  [
+                     "業務改善",
+                     "在庫運用",
+                     "PoC"
+                 ]
     }
 ]
 

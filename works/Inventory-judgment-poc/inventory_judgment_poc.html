@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>在庫判断 PoC</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121933;
+      --panel2: #182247;
+      --panel3: #0f1734;
+      --text: #edf2ff;
+      --muted: #98a6c9;
+      --line: #2a3767;
+      --accent: #5eead4;
+      --accent2: #60a5fa;
+      --ok: #34d399;
+      --warn: #f59e0b;
+      --danger: #f87171;
+      --radius: 18px;
+      --shadow: 0 12px 32px rgba(0,0,0,.28);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Meiryo UI", "Hiragino Sans", sans-serif;
+      background: linear-gradient(180deg, #0a0f1e 0%, #0f1730 100%);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(94,234,212,.35);
+      background: rgba(94,234,212,.08);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.3;
+    }
+
+    .lead {
+      color: var(--muted);
+      margin-top: 8px;
+      line-height: 1.8;
+      font-size: 14px;
+      max-width: 900px;
+    }
+
+    .top-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(140px, 1fr));
+      gap: 12px;
+      min-width: 440px;
+      flex: 1;
+    }
+
+    .metric, .panel {
+      background: rgba(18,25,51,.94);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .metric {
+      padding: 14px;
+    }
+
+    .metric .k {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .metric .v {
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .metric .s {
+      font-size: 12px;
+      margin-top: 4px;
+      color: var(--muted);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr 1.1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .panel h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      margin-bottom: 14px;
+    }
+
+    .section-label {
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: .04em;
+      margin-bottom: 8px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    button, select, input, textarea {
+      font: inherit;
+    }
+
+    button, select {
+      border: 1px solid var(--line);
+      background: var(--panel2);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, #0ea5e9, #14b8a6);
+      border: none;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .ghost.active {
+      outline: 2px solid rgba(94,234,212,.38);
+      background: #1d2a57;
+    }
+
+    .table-wrap {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #162042;
+      color: #c8d2f0;
+      font-size: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,.03); }
+    tr.selected td { background: rgba(96,165,250,.12); }
+
+    .status-pill, .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid var(--line);
+      background: #162042;
+    }
+
+    .st-normal { color: var(--ok); }
+    .st-watch { color: #facc15; }
+    .st-risk { color: #fb923c; }
+    .st-critical { color: var(--danger); }
+
+    .tag.demand { color: #93c5fd; }
+    .tag.lead { color: #fdba74; }
+    .tag.supplier { color: #fca5a5; }
+    .tag.priority { color: #86efac; }
+    .tag.none { color: #c4b5fd; }
+
+    .event-card, .log-card, .summary-card {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.025);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+
+    .event-card.active {
+      outline: 2px solid rgba(94,234,212,.35);
+      background: rgba(94,234,212,.06);
+    }
+
+    .event-top, .log-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .event-title, .log-title {
+      font-weight: 800;
+    }
+
+    .body-text {
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: var(--panel3);
+      color: var(--text);
+      padding: 11px 12px;
+      border-radius: 12px;
+    }
+
+    textarea { min-height: 82px; resize: vertical; }
+
+    .prompt-box, .ai-box {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: var(--panel3);
+      white-space: pre-wrap;
+      line-height: 1.8;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: rgba(94,234,212,.06);
+      padding: 12px 14px;
+      border-radius: 0 12px 12px 0;
+      color: #d9fffb;
+      font-size: 13px;
+      line-height: 1.8;
+      margin-bottom: 12px;
+    }
+
+    .small-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .small-item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,.025);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 1200px) {
+      .layout { grid-template-columns: 1fr; }
+      .top-metrics { min-width: 0; }
+    }
+
+    @media (max-width: 760px) {
+      .top-metrics, .form-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 560px) {
+      .top-metrics, .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div>
+        <div class="badge">1画面PoC / 在庫一覧 + 例外発生 + 判断ログ</div>
+        <h1>在庫の状態から、例外判断の記録までを<br>1画面でたどれる静的PoC</h1>
+        <div class="lead">左で在庫の危険度を見る → 中央でその品目に対する例外イベントを確認する → 右で判断ログとAIへの問いを確認する構成です。記事の「人の判断を先に言語化する」をそのまま触れる形にしています。</div>
+      </div>
+      <div class="top-metrics">
+        <div class="metric"><div class="k">対象品目</div><div class="v" id="metricItems">0</div><div class="s">在庫一覧</div></div>
+        <div class="metric"><div class="k">要注意品目</div><div class="v" id="metricRisk">0</div><div class="s">Watch以上</div></div>
+        <div class="metric"><div class="k">例外イベント</div><div class="v" id="metricEvents">0</div><div class="s">直近想定</div></div>
+        <div class="metric"><div class="k">判断ログ</div><div class="v" id="metricLogs">0</div><div class="s">蓄積された記録</div></div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <section class="panel">
+        <div class="section-label">01 / 在庫一覧</div>
+        <h2>在庫の状態を見る</h2>
+        <div class="sub">まず見るのはAIではなく、今どの品目が通常運転で、どの品目が例外判断の対象なのかです。行を選ぶと、中央と右の内容が連動します。</div>
+        <div class="toolbar">
+          <button class="ghost active" data-filter="all">全件</button>
+          <button class="ghost" data-filter="risk">要注意のみ</button>
+          <button class="ghost" data-filter="critical">危険のみ</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>品目</th>
+                <th>在庫日数</th>
+                <th>入荷予定</th>
+                <th>優先顧客</th>
+                <th>状態</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-label">02 / 例外発生</div>
+        <h2>何が起きたかを見る</h2>
+        <div class="sub">通常判断では処理しきれない出来事だけをイベントとして表示します。記事でいう「まず例外メモを残す」に対応します。</div>
+        <div class="callout" id="selectedSummary"></div>
+        <div class="toolbar">
+          <button class="primary" id="loadDemand">需要増イベント</button>
+          <button class="primary" id="loadDelay">納期遅延イベント</button>
+          <button class="primary" id="loadPriority">優先顧客イベント</button>
+        </div>
+        <div id="eventList"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-label">03 / 判断ログ</div>
+        <h2>どう判断したかを残す</h2>
+        <div class="sub">右側では、その例外に対して人が何を見て、どう動いたかを残します。ここが将来AIに渡す材料です。</div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="logStock">何の在庫が</label>
+            <input id="logStock" readonly />
+          </div>
+          <div class="field">
+            <label for="logAction">どう動いたか</label>
+            <input id="logAction" placeholder="例：追加発注を前倒しした" />
+          </div>
+          <div class="field full">
+            <label for="logReason">何の理由で</label>
+            <textarea id="logReason" placeholder="例：大型案件の引き合い増と、入荷遅延が重なり安全在庫を下回る見込み"></textarea>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <button class="primary" id="addLogBtn">判断ログを追加</button>
+          <button class="ghost active" data-mode="before">整理前のAI問い</button>
+          <button class="ghost" data-mode="after">整理後のAI問い</button>
+        </div>
+
+        <div class="prompt-box" id="promptBox"></div>
+        <div class="ai-box" id="aiBox"></div>
+
+        <div style="height:14px"></div>
+        <div id="logList"></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const inventory = [
+      { id: 1, item: '成形材A', days: 8, eta: '3/31', priority: '顧客X', status: 'critical' },
+      { id: 2, item: '梱包材B', days: 13, eta: '4/02', priority: 'なし', status: 'risk' },
+      { id: 3, item: '部品D', days: 22, eta: '4/05', priority: '顧客Y', status: 'watch' },
+      { id: 4, item: '資材E', days: 29, eta: '4/07', priority: 'なし', status: 'normal' },
+      { id: 5, item: '製品F', days: 11, eta: '4/01', priority: '顧客Z', status: 'risk' }
+    ];
+
+    const statusLabel = {
+      normal: '通常',
+      watch: 'Watch',
+      risk: 'Risk',
+      critical: 'Critical'
+    };
+
+    const eventTemplates = {
+      demand: (item) => ({
+        type: 'demand',
+        title: `${item.item}で需要増見込み`,
+        detail: `月末案件の引き合い増により、通常より出庫ペースが上がる見込み。現在の在庫日数 ${item.days}日。`,
+        impact: '追加発注または前倒し手配の検討が必要'
+      }),
+      lead: (item) => ({
+        type: 'lead',
+        title: `${item.item}で納期遅延`,
+        detail: `仕入先から入荷遅延の連絡。次回入荷予定 ${item.eta} まで持たない可能性あり。`,
+        impact: '代替仕入先確認、引当調整が必要'
+      }),
+      priority: (item) => ({
+        type: 'priority',
+        title: `${item.item}で優先顧客対応`,
+        detail: `${item.priority}向けの緊急案件が入り、通常配分では不足の可能性。`,
+        impact: '優先配分と他案件への影響確認が必要'
+      })
+    };
+
+    let logs = [
+      { itemId: 1, type: 'demand', stock: '成形材Aの在庫が来週10日分を切る見込み', reason: '月末向け需要増で通常より出庫ペースが上がっている', action: '追加発注を前倒しした', owner: '佐藤' },
+      { itemId: 2, type: 'lead', stock: '梱包材Bの在庫が安全在庫に接近', reason: '仕入先Cの納期が通常より7日遅れる連絡が入った', action: '代替仕入先の在庫確認を開始した', owner: '田中' },
+      { itemId: 3, type: 'priority', stock: '部品Dの引当が逼迫', reason: '優先顧客向けの緊急案件が入り通常配分では不足する見込み', action: '優先顧客向けに引当を先行した', owner: '鈴木' }
+    ];
+
+    let selectedItemId = 1;
+    let selectedFilter = 'all';
+    let activeEventType = 'demand';
+    let promptMode = 'before';
+
+    function getSelectedItem() {
+      return inventory.find(i => i.id === selectedItemId) || inventory[0];
+    }
+
+    function filteredInventory() {
+      if (selectedFilter === 'risk') return inventory.filter(i => ['watch','risk','critical'].includes(i.status));
+      if (selectedFilter === 'critical') return inventory.filter(i => i.status === 'critical');
+      return inventory;
+    }
+
+    function typeLabel(type) {
+      return {
+        demand: '需要増見込み',
+        lead: '納期起因',
+        priority: '優先顧客対応',
+        supplier: '仕入れ先リスク',
+        none: '未分類'
+      }[type] || '未分類';
+    }
+
+    function classifyText(text) {
+      if (/需要|案件|引き合い|出庫|季節/.test(text)) return 'demand';
+      if (/納期|遅れ|延伸|入荷/.test(text)) return 'lead';
+      if (/優先|緊急|重要顧客|引当/.test(text)) return 'priority';
+      if (/供給|生産計画|不安定|キャパ|仕入先/.test(text)) return 'supplier';
+      return 'none';
+    }
+
+    function renderMetrics() {
+      document.getElementById('metricItems').textContent = inventory.length;
+      document.getElementById('metricRisk').textContent = inventory.filter(i => ['watch','risk','critical'].includes(i.status)).length;
+      document.getElementById('metricEvents').textContent = 3;
+      document.getElementById('metricLogs').textContent = logs.length;
+    }
+
+    function renderInventory() {
+      const body = document.getElementById('inventoryBody');
+      body.innerHTML = '';
+      filteredInventory().forEach(item => {
+        const tr = document.createElement('tr');
+        if (item.id === selectedItemId) tr.classList.add('selected');
+        tr.innerHTML = `
+          <td><strong>${item.item}</strong></td>
+          <td>${item.days}日</td>
+          <td>${item.eta}</td>
+          <td>${item.priority}</td>
+          <td><span class="status-pill st-${item.status}">${statusLabel[item.status]}</span></td>
+        `;
+        tr.addEventListener('click', () => {
+          selectedItemId = item.id;
+          syncInputs();
+          renderAll();
+        });
+        body.appendChild(tr);
+      });
+    }
+
+    function renderSummary() {
+      const item = getSelectedItem();
+      document.getElementById('selectedSummary').textContent = `${item.item} を選択中 / 在庫日数 ${item.days}日 / 次回入荷 ${item.eta} / 優先顧客 ${item.priority} / 状態 ${statusLabel[item.status]}`;
+    }
+
+    function renderEvents() {
+      const item = getSelectedItem();
+      const list = document.getElementById('eventList');
+      list.innerHTML = '';
+      ['demand','lead','priority'].forEach(type => {
+        const ev = eventTemplates[type](item);
+        const card = document.createElement('div');
+        card.className = 'event-card' + (activeEventType === type ? ' active' : '');
+        card.innerHTML = `
+          <div class="event-top">
+            <div class="event-title">${ev.title}</div>
+            <span class="tag ${type}">${typeLabel(type)}</span>
+          </div>
+          <div class="body-text">${ev.detail}</div>
+          <div class="muted" style="margin-top:8px">想定アクション: ${ev.impact}</div>
+        `;
+        card.addEventListener('click', () => {
+          activeEventType = type;
+          autofillReason();
+          renderAll();
+        });
+        list.appendChild(card);
+      });
+    }
+
+    function syncInputs() {
+      const item = getSelectedItem();
+      document.getElementById('logStock').value = `${item.item}の在庫が例外判断対象`;
+      autofillReason();
+    }
+
+    function autofillReason() {
+      const item = getSelectedItem();
+      const ev = eventTemplates[activeEventType](item);
+      document.getElementById('logReason').value = ev.detail;
+    }
+
+    function relatedLogs() {
+      return logs.filter(l => l.itemId === selectedItemId).reverse();
+    }
+
+    function renderLogs() {
+      const list = document.getElementById('logList');
+      list.innerHTML = '';
+      const rows = relatedLogs();
+      if (!rows.length) {
+        list.innerHTML = '<div class="summary-card">まだこの品目の判断ログはありません。</div>';
+        return;
+      }
+      rows.forEach(log => {
+        const type = log.type || classifyText(`${log.stock} ${log.reason} ${log.action}`);
+        const card = document.createElement('div');
+        card.className = 'log-card';
+        card.innerHTML = `
+          <div class="log-top">
+            <div class="log-title">${log.stock}</div>
+            <span class="tag ${type}">${typeLabel(type)}</span>
+          </div>
+          <div class="body-text">何の理由で：${log.reason}<br>どう動いたか：${log.action}</div>
+          <div class="muted" style="margin-top:8px">記録者: ${log.owner}</div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function renderPrompt() {
+      const item = getSelectedItem();
+      const ev = eventTemplates[activeEventType](item);
+      const promptBox = document.getElementById('promptBox');
+      const aiBox = document.getElementById('aiBox');
+
+      if (promptMode === 'before') {
+        promptBox.textContent = `整理前のAIへの問い\n\n${item.item}の在庫判断をどうすればいいですか？例外が多くて判断に迷います。`;
+        aiBox.textContent = `AIの返答イメージ\n\n需要予測、リードタイム、安全在庫、仕入先状況、顧客優先度などを確認してください。例外パターンを整理すると判断しやすくなります。`;
+      } else {
+        const recent = relatedLogs()[0];
+        const reasonText = recent ? recent.reason : ev.detail;
+        promptBox.textContent = `整理後のAIへの問い\n\n品目: ${item.item}\n在庫日数: ${item.days}日\n例外分類: ${typeLabel(activeEventType)}\n発生事象: ${ev.detail}\n直近の人の判断: ${recent ? recent.action : '未記録'}\n\nこの条件で追加確認すべき項目を3つ、判断ミスを防ぐ観点を2つ、簡潔に出してください。`;
+        aiBox.textContent = `AIの返答イメージ\n\n確認すべき項目\n- 今回の需要/遅延が一時要因か継続要因か\n- 次回入荷までの実消費見込みと不足幅\n- 他顧客・他案件へのしわ寄せ有無\n\n判断ミスを防ぐ観点\n- 例外対応後の結果確認条件を先に決める\n- 優先対応の影響を別品目/別顧客まで見る`;
+      }
+    }
+
+    function addLog() {
+      const stock = document.getElementById('logStock').value.trim();
+      const reason = document.getElementById('logReason').value.trim();
+      const action = document.getElementById('logAction').value.trim();
+      if (!stock || !reason || !action) return;
+      logs.push({ itemId: selectedItemId, type: activeEventType, stock, reason, action, owner: 'あなた' });
+      document.getElementById('logAction').value = '';
+      renderAll();
+    }
+
+    function renderAll() {
+      renderMetrics();
+      renderInventory();
+      renderSummary();
+      renderEvents();
+      renderLogs();
+      renderPrompt();
+    }
+
+    document.getElementById('addLogBtn').addEventListener('click', addLog);
+    document.getElementById('loadDemand').addEventListener('click', () => { activeEventType = 'demand'; autofillReason(); renderAll(); });
+    document.getElementById('loadDelay').addEventListener('click', () => { activeEventType = 'lead'; autofillReason(); renderAll(); });
+    document.getElementById('loadPriority').addEventListener('click', () => { activeEventType = 'priority'; autofillReason(); renderAll(); });
+
+    document.querySelectorAll('[data-filter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedFilter = btn.dataset.filter;
+        document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const visible = filteredInventory();
+        if (!visible.some(v => v.id === selectedItemId) && visible.length) selectedItemId = visible[0].id;
+        syncInputs();
+        renderAll();
+      });
+    });
+
+    document.querySelectorAll('[data-mode]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        promptMode = btn.dataset.mode;
+        document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderPrompt();
+      });
+    });
+
+    syncInputs();
+    renderAll();
+  </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Smart Team Builder | Works</title>
+  <style>
+    :root{
+      --bg:#f8fafc; --fg:#1f2937; --muted:#64748b; --line:#e2e8f0;
+      --card:#ffffff; --accent:#0f766e;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:"Noto Sans JP","Segoe UI",system-ui,sans-serif;
+      background:var(--bg); color:var(--fg); line-height:1.75;
+    }
+    .wrap{width:min(960px,100%); margin:0 auto; padding:24px}
+    .top-nav{margin-bottom:16px}
+    .back-link{color:var(--accent); text-decoration:none; font-weight:700}
+    .card{
+      background:var(--card); border:1px solid var(--line);
+      border-radius:14px; padding:24px;
+    }
+    h1{margin:0 0 10px; font-size:clamp(24px,3.4vw,34px)}
+    .lead{margin:0 0 20px; color:var(--muted)}
+    .thumb{
+      width:100%; border:1px solid var(--line); border-radius:10px;
+      margin:0 0 18px;
+    }
+    .actions{
+      display:flex; gap:12px; flex-wrap:wrap; margin:0 0 20px;
+    }
+    .button{
+      display:inline-block; padding:10px 16px; border-radius:999px;
+      background:var(--accent); color:#fff; text-decoration:none; font-weight:700;
+    }
+    h2{
+      margin:24px 0 10px; font-size:20px; padding-bottom:6px;
+      border-bottom:1px solid var(--line);
+    }
+    ul{margin:0; padding-left:20px}
+    li{margin:6px 0}
+    .note{color:var(--muted); font-size:14px; margin-top:18px}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top-nav">
+      <a class="back-link" href="../../works.html">← Worksに戻る</a>
+    </div>
+
+    <article class="card">
+      <h1>Smart Team Builder</h1>
+      <p class="lead">チーム編成を整理しながら、役割の組み合わせや配置検討を進めやすくする試作ページです。</p>
+      <img class="thumb" src="../61_image/Smart Team Builder.png" alt="Smart Team Builder スクリーンショット" loading="lazy" decoding="async" />
+
+      <div class="actions">
+        <a class="button" href="https://ais-pre-6qmvi6xxvetzgysx3auww2-107121295845.asia-northeast1.run.app" target="_blank" rel="noopener noreferrer">アプリを開く</a>
+      </div>
+
+      <h2>概要</h2>
+      <ul>
+        <li>チーム構成を見直すときに、役割の整理と比較をしやすくすることを目的にした試作です。</li>
+        <li>構成案を並べて確認しながら、検討の抜け漏れを減らす使い方を想定しています。</li>
+        <li>公開URLから誰でも試せる状態として、作品ページから直接アクセスできるようにしています。</li>
+      </ul>
+
+      <h2>このページについて</h2>
+      <ul>
+        <li>Works 一覧から遷移できる紹介ページとして整備しています。</li>
+        <li>作品概要と公開URLへの導線を優先し、説明を最小構成に絞っています。</li>
+        <li>今後、説明文や公開記事に合わせて内容を更新しやすい形にしています。</li>
+      </ul>
+
+      <p class="note">note記事は未公開のため、このページにはnoteへの外部リンクを設定していません。</p>
+    </article>
+  </main>
+</body>
+</html>

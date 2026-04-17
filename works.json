@@ -269,6 +269,18 @@
                      "在庫運用",
                      "PoC"
                  ]
+    },
+    {
+        "title":  "Smart Team Builder",
+        "description":  "チーム編成を整理しながら、役割の組み合わせや配置検討を進めやすくする試作アプリ。",
+        "href":  "works/Smart Team Builder/",
+        "image":  "works/61_image/Smart Team Builder.png",
+        "alt":  "Smart Team Builder スクリーンショット",
+        "tags":  [
+                     "業務改善",
+                     "チーム設計",
+                     "PoC"
+                 ]
     }
 ]
 

@@ -281,6 +281,18 @@
                      "チーム設計",
                      "PoC"
                  ]
+    },
+    {
+        "title":  "ETC明細PDF自動作成",
+        "description":  "ETC利用明細照会サービスをPlaywrightで操作し、対象月の条件一致行をチェックしてPDFを自動保存。件数を手作業で数える申請作業の手間を撤廃。",
+        "href":  "works/ETC_PDF_AUTO/",
+        "image":  "works/61_image/ETC_PDF_AUTO.png",
+        "alt":  "ETC明細PDF自動作成 スクリーンショット",
+        "tags":  [
+                     "Python",
+                     "Playwright",
+                     "業務自動化"
+                 ]
     }
 ]
 

@@ -224,6 +224,7 @@
         "title":  "PriceFlow",
         "description":  "条件に応じた価格計算の根拠を可視化し、工程・資材・条件分岐を説明可能にする Rule-Based Pricing PoC。",
         "href":  "works/PriceFlow/",
+        "noteUrl":  "https://note.com/clean_whale1844/n/n9007dd004a75",
         "image":  "works/61_image/PriceFlow.png",
         "alt":  "PriceFlow スクリーンショット",
         "tags":  [
@@ -275,6 +276,7 @@
         "title":  "Smart Team Builder",
         "description":  "チーム編成を整理しながら、役割の組み合わせや配置検討を進めやすくする試作アプリ。",
         "href":  "works/Smart Team Builder/",
+        "noteUrl":  "https://note.com/clean_whale1844/n/n86c7fbb02141",
         "image":  "works/61_image/Smart Team Builder.png",
         "alt":  "Smart Team Builder スクリーンショット",
         "tags":  [

@@ -90,6 +90,32 @@
       text-decoration: none;
     }
 
+    .actions {
+      margin-top: 22px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .link-btn {
+      display: inline-block;
+      padding: 11px 16px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .secondary {
+      border: 1px solid var(--line);
+      color: var(--fg);
+      background: #ffffff;
+    }
+
     .note {
       color: var(--muted);
       font-size: 14px;
@@ -137,6 +163,11 @@
         <a class="inline-link" href="./ProdNavigator.html">ProdNavigator.html</a>
         で確認できます。
       </p>
+
+      <div class="actions">
+        <a class="link-btn primary" href="https://note.com/clean_whale1844/n/n6b895ffc71f4" target="_blank" rel="noopener noreferrer">note記事を見る</a>
+        <a class="link-btn secondary" href="../../works.html">作品一覧へ戻る</a>
+      </div>
 
       <p class="note">
         Works一覧から遷移したあとも、要点を確認してから本体画面へ進めるようにしています。

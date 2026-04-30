@@ -296,6 +296,17 @@
                      "Playwright",
                      "業務自動化"
                  ]
+    },
+    {
+        "title":  "Smart Warehouse Transfer Planner",
+        "description":  "搬入・搬出依頼に対して、在庫数、保管面積、移動計画、廃棄計画を反映し、候補倉庫と判断理由を提示する倉庫移動判断支援PoC。",
+        "href":  "works/Smart_Warehouse_Transfer_Planner/detail.html",
+        "image":  "works/61_image/Smart_Warehouse_Transfer_Planner.png",
+        "alt":  "Smart Warehouse Transfer Planner スクリーンショット",
+        "tags":  [
+                     "業務改善",
+                     "倉庫運用",
+                     "PoC"
+                 ]
     }
 ]
-

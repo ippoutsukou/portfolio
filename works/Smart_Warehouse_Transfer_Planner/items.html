@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>品目別サマリー | Smart Warehouse Transfer Planner</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <nav class="top-nav">
+        <a href="index.html">単品判定</a>
+        <a href="batch.html">複数明細判定</a>
+        <a href="dashboard.html">倉庫サマリー</a>
+        <a href="items.html">品目別サマリー</a>
+        <a href="history.html">判定履歴</a>
+      </nav>
+
+      <section class="hero">
+        <p class="eyebrow">Item Dashboard</p>
+        <h1>品目別サマリー</h1>
+        <p class="lead">
+          品目を軸に、有効計画反映後の保管場所、在庫推移、移動・廃却計画を確認できます。
+        </p>
+        <p class="demo-banner">
+          これは GitHub Pages 用のデモサンプルです。値は固定です。
+        </p>
+      </section>
+
+      <section class="panel">
+        <div class="result-header">
+          <h2>品目一覧</h2>
+          <p id="item-summary-status">読み込み前です。</p>
+        </div>
+        <p
+          id="item-summary-coverage-label"
+          class="coverage-label plan-coverage-label"
+          data-endpoint="/dashboard/plans/coverage"
+        >
+          有効計画反映状況を確認中です。
+        </p>
+        <table id="item-summary-table" class="summary-table" data-endpoint="/dashboard/items/summary">
+          <thead>
+            <tr>
+              <th>品目</th>
+              <th>合計在庫</th>
+              <th>使用面積合計</th>
+              <th>保管倉庫数</th>
+              <th>1山面積</th>
+              <th>段積み可能数</th>
+            </tr>
+          </thead>
+          <tbody id="item-summary-body"></tbody>
+        </table>
+      </section>
+
+      <section class="panel">
+        <div class="result-header">
+          <h2>品目別 有効計画グラフ</h2>
+          <p id="item-plan-status">品目を選択してください。</p>
+        </div>
+        <p id="item-plan-title" class="lead">まだ品目が選択されていません。</p>
+        <div class="chart-shell">
+          <canvas
+            id="item-plan-chart"
+            width="960"
+            height="420"
+            data-endpoint-template="/dashboard/items/{item_name}/plans"
+          ></canvas>
+          <div id="item-plan-tooltip" class="chart-tooltip" hidden></div>
+        </div>
+        <div class="chart-legend" aria-label="グラフ凡例">
+          <span><i class="legend-line stock"></i>在庫推移</span>
+          <span><i class="legend-bar transfer-in"></i>移動入庫</span>
+          <span><i class="legend-bar transfer-out"></i>移動出庫</span>
+          <span><i class="legend-bar disposal"></i>廃却</span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="result-header">
+          <h2>倉庫別保管内訳</h2>
+          <p id="item-warehouse-status">品目を選択してください。</p>
+        </div>
+        <p
+          id="item-warehouse-coverage-label"
+          class="coverage-label plan-coverage-label"
+          data-endpoint="/dashboard/plans/coverage"
+        >
+          有効計画反映状況を確認中です。
+        </p>
+        <p id="item-warehouse-title" class="lead">まだ品目が選択されていません。</p>
+        <table
+          id="item-warehouse-table"
+          class="summary-table"
+          data-endpoint-template="/dashboard/items/{item_name}/warehouses"
+        >
+          <thead>
+            <tr>
+              <th>倉庫ID</th>
+              <th>倉庫名</th>
+              <th>種別</th>
+              <th>エリア</th>
+              <th>有効在庫</th>
+              <th>使用面積</th>
+            </tr>
+          </thead>
+          <tbody id="item-warehouse-body"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <script src="mock-data.js" defer></script>
+    <script src="mock-api.js" defer></script>
+    <script src="items.js" defer></script>
+  </body>
+</html>

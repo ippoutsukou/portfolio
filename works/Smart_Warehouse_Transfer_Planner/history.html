@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>判定履歴 | Smart Warehouse Transfer Planner</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <nav class="top-nav">
+        <a href="index.html">単品判定</a>
+        <a href="batch.html">複数明細判定</a>
+        <a href="dashboard.html">倉庫サマリー</a>
+        <a href="items.html">品目別サマリー</a>
+        <a href="history.html">判定履歴</a>
+      </nav>
+      <section class="hero">
+        <p class="eyebrow">History Viewer</p>
+        <h1>判定履歴</h1>
+        <p class="lead">保存済みの複数明細判定を一覧と詳細で確認できます。</p>
+        <p class="demo-banner">
+          これは GitHub Pages 用のデモサンプルです。値は固定です。
+        </p>
+      </section>
+
+      <section class="panel">
+        <div class="result-header">
+          <h2>依頼一覧</h2>
+          <p id="history-status">読み込み前です。</p>
+        </div>
+        <table id="batch-history-table" class="summary-table" data-endpoint="/history/batch">
+          <thead>
+            <tr>
+              <th>依頼ID</th>
+              <th>依頼名</th>
+              <th>成立</th>
+              <th>警告数</th>
+              <th>明細数</th>
+              <th>割当数</th>
+              <th>作成日時</th>
+            </tr>
+          </thead>
+          <tbody id="batch-history-body"></tbody>
+        </table>
+      </section>
+
+      <section class="panel">
+        <div class="result-header">
+          <h2>依頼詳細</h2>
+          <p id="history-detail-status">依頼を選択してください。</p>
+        </div>
+        <div id="batch-history-detail" class="batch-line-results"></div>
+      </section>
+    </main>
+
+    <script src="mock-data.js" defer></script>
+    <script src="mock-api.js" defer></script>
+    <script src="history.js" defer></script>
+  </body>
+</html>

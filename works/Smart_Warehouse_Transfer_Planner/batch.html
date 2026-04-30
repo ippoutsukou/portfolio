@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>複数明細判定 | Smart Warehouse Transfer Planner</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <nav class="top-nav">
+        <a href="index.html">単品判定</a>
+        <a href="batch.html">複数明細判定</a>
+        <a href="dashboard.html">倉庫サマリー</a>
+        <a href="items.html">品目別サマリー</a>
+        <a href="history.html">判定履歴</a>
+      </nav>
+      <section class="hero">
+        <p class="eyebrow">Batch Decision Console</p>
+        <h1>複数明細判定</h1>
+        <p class="lead">
+          複数の搬入・搬出明細をまとめて判定し、分割引当や面積不足を依頼単位で確認できます。
+        </p>
+        <p class="demo-banner">
+          これは GitHub Pages 用のデモサンプルです。値は固定で、簡易判定ロジックで動作します。
+        </p>
+      </section>
+
+      <section class="panel">
+        <form id="batch-form" data-endpoint="/warehouse-judge/batch">
+          <div class="batch-header-grid">
+            <label>
+              <span>依頼ID</span>
+              <input name="request_id" type="text" value="REQ-UI-001" required maxlength="64" />
+            </label>
+            <label>
+              <span>依頼名</span>
+              <input name="request_name" type="text" value="画面確認" maxlength="255" />
+            </label>
+          </div>
+
+          <div class="line-toolbar">
+            <h2>明細</h2>
+            <button id="add-line-button" class="secondary-button" type="button">明細を追加</button>
+          </div>
+
+          <div id="line-items" class="line-items"></div>
+
+          <div class="form-actions">
+            <button type="submit">一括判定する</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel results" aria-live="polite">
+        <div class="result-header">
+          <h2>依頼結果</h2>
+          <p id="batch-status-message">明細を入力して一括判定してください。</p>
+        </div>
+
+        <article class="candidate-panel">
+          <h3>依頼サマリー</h3>
+          <div id="batch-summary" class="empty">まだ結果がありません。</div>
+        </article>
+
+        <article class="candidate-panel">
+          <h3>明細結果</h3>
+          <div id="batch-line-results" class="batch-line-results"></div>
+        </article>
+      </section>
+    </main>
+
+    <script src="mock-data.js" defer></script>
+    <script src="mock-api.js" defer></script>
+    <script src="batch.js" defer></script>
+  </body>
+</html>

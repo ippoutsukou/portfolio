@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Smart Warehouse Transfer Planner | Works</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --fg: #1f2937;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --card: #ffffff;
+      --accent: #0f766e;
+      --accent-dark: #115e59;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Noto Sans JP", "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.75;
+    }
+
+    .wrap {
+      width: min(960px, 100%);
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .top-nav { margin-bottom: 16px; }
+
+    .back-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(24px, 3.4vw, 34px);
+      line-height: 1.35;
+    }
+
+    .lead {
+      margin: 0 0 20px;
+      color: var(--muted);
+    }
+
+    .thumb {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      margin: 0 0 18px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0 0 18px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .button.primary {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .button:hover {
+      border-color: var(--accent-dark);
+      color: var(--accent-dark);
+    }
+
+    .button.primary:hover {
+      background: var(--accent-dark);
+      color: #ffffff;
+    }
+
+    h2 {
+      margin: 24px 0 10px;
+      font-size: 20px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    li { margin: 6px 0; }
+
+    .note {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 18px;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top-nav">
+      <a class="back-link" href="../../works.html">Worksに戻る</a>
+    </div>
+
+    <article class="card">
+      <h1>Smart Warehouse Transfer Planner</h1>
+      <p class="lead">
+        搬入・搬出依頼に対して、在庫数、保管面積、移動計画、廃棄計画を反映し、候補倉庫と判断理由を提示する倉庫移動判断支援PoC。
+      </p>
+
+      <img class="thumb" src="../61_image/Smart_Warehouse_Transfer_Planner.png" alt="Smart Warehouse Transfer Planner スクリーンショット" loading="lazy" decoding="async" />
+
+      <div class="actions">
+        <a class="button primary" href="index.html">アプリを開く</a>
+      </div>
+
+      <h2>課題</h2>
+      <ul>
+        <li>搬入・搬出判断に必要な情報が、在庫、移動計画、廃棄計画など複数の資料に分散していた。</li>
+        <li>担当者の経験やExcel確認に依存しやすく、判断基準のばらつきや確認漏れが起きやすかった。</li>
+        <li>倉庫別・品目別に、最新計画を反映した保管状況を追いにくかった。</li>
+      </ul>
+
+      <h2>アプローチ</h2>
+      <ul>
+        <li>搬入は保管面積ベース、搬出は数量ベースで候補倉庫を判定するルールに整理。</li>
+        <li>有効な移動計画と廃棄計画を反映し、実質在庫・実質空き面積をもとに候補をスコアリング。</li>
+        <li>DifyやLLM常時利用ではなく、軽量なHTML/JavaScriptモックで判断ロジックと画面体験を検証。</li>
+      </ul>
+
+      <h2>できること</h2>
+      <ul>
+        <li>単品の搬入・搬出条件を入力し、第1候補と候補順位を確認できる。</li>
+        <li>複数明細の判定、倉庫別サマリー、品目別サマリー、判断履歴を画面で切り替えられる。</li>
+        <li>候補理由を表示し、判断結果だけでなく根拠も確認できる。</li>
+      </ul>
+
+      <h2>気づき</h2>
+      <ul>
+        <li>AI化の前に、判断材料と優先順位をルールとして固定するだけでも業務の再現性は上げられる。</li>
+        <li>搬入と搬出で見るべき指標が違うため、同じ「倉庫選定」でも判定軸を分ける必要がある。</li>
+        <li>公開用デモでは実データを使わず、固定モックで仕様と画面導線を見せる構成が安全だった。</li>
+      </ul>
+
+      <p class="note">
+        このページは作品紹介用です。実際のデモ画面は「アプリを開く」から確認できます。
+      </p>
+    </article>
+  </main>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Garden Planner | Works</title>
+  <style>
+    :root{
+      --bg:#f8fafc; --fg:#1f2937; --muted:#64748b; --line:#e2e8f0;
+      --card:#ffffff; --accent:#0f766e;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:"Noto Sans JP","Segoe UI",system-ui,sans-serif;
+      background:var(--bg); color:var(--fg); line-height:1.75;
+    }
+    .wrap{width:min(960px,100%); margin:0 auto; padding:24px}
+    .top-nav{margin-bottom:16px}
+    .back-link{color:var(--accent); text-decoration:none; font-weight:700}
+    .card{
+      background:var(--card); border:1px solid var(--line);
+      border-radius:14px; padding:24px;
+    }
+    h1{margin:0 0 10px; font-size:clamp(24px,3.4vw,34px)}
+    .lead{margin:0 0 20px; color:var(--muted)}
+    .thumb{
+      width:100%; border:1px solid var(--line); border-radius:10px;
+      margin:0 0 18px;
+    }
+    .actions{
+      display:flex; gap:12px; flex-wrap:wrap; margin:0 0 20px;
+    }
+    .button{
+      display:inline-block; padding:10px 16px; border-radius:999px;
+      background:var(--accent); color:#fff; text-decoration:none; font-weight:700;
+    }
+    h2{
+      margin:24px 0 10px; font-size:20px; padding-bottom:6px;
+      border-bottom:1px solid var(--line);
+    }
+    ul{margin:0; padding-left:20px}
+    li{margin:6px 0}
+    .note{color:var(--muted); font-size:14px; margin-top:18px}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top-nav">
+      <a class="back-link" href="../../works.html">← Worksに戻る</a>
+    </div>
+
+    <article class="card">
+      <h1>Garden Planner</h1>
+      <p class="lead">年・季節ごとに菜園レイアウトを記録し、作物の配置やプリセットをブラウザ上で管理できるガーデンプランニングアプリ。</p>
+      <img class="thumb" src="../61_image/garden-planner.png" alt="Garden Planner 紹介画像" loading="lazy" decoding="async" />
+
+      <div class="actions">
+        <a class="button" href="https://garden-planner-327175876709.us-west1.run.app" target="_blank" rel="noopener noreferrer">アプリを開く</a>
+      </div>
+
+      <h2>課題</h2>
+      <ul>
+        <li>菜園やプランターの作付けを、季節や年ごとに振り返れる形で残しにくい。</li>
+        <li>どの区画に何を植えたかを紙やメモで管理すると、過去の配置を探しづらい。</li>
+        <li>作物ごとの色分けや独自プリセットを毎回作り直す手間がある。</li>
+      </ul>
+
+      <h2>アプリのアプローチ</h2>
+      <ul>
+        <li>行数・列数を調整できるグリッドで、実際の畑やプランターに近いレイアウトを表現。</li>
+        <li>春・夏・秋・冬と年を切り替えながら、作付け履歴を継続管理。</li>
+        <li>野菜プリセットやカスタム作物プリセットを使い、色と絵文字で区画を直感的に識別。</li>
+      </ul>
+
+      <h2>主な機能</h2>
+      <ul>
+        <li>グリッドをタップして作物を追加し、配置済み区画の詳細を確認・編集。</li>
+        <li>作物名に応じた絵文字表示と、作物ごとの色分けに対応。</li>
+        <li>グリッドサイズ、作付けデータ、カスタムプリセットをローカルストレージに自動保存。</li>
+      </ul>
+
+      <h2>技術スタック</h2>
+      <ul>
+        <li>React / TypeScript で構築したフロントエンドアプリ。</li>
+        <li>Tailwind CSS で画面のスタイルを整理。</li>
+        <li>Vite を利用し、軽量な開発環境で実装。</li>
+      </ul>
+
+      <p class="note">データはブラウザのローカルストレージに保存されます。外部APIやnoteリンクは使用していません。</p>
+    </article>
+  </main>
+</body>
+</html>

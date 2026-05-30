@@ -250,7 +250,7 @@
         "title":  "新人が迷うのは暗記量じゃない。ポータル設計で解く",
         "description":  "製品・工場・出荷先の関係をまとめて見られる新人向け業務ポータル。検索、詳細導線、学習モードをひとつにまとめ、判断の迷いを減らすPoC。",
         "href":  "works/ProdNavigator/",
-        "noteUrl":  "https://note.com/clean_whale1844/n/n6b895ffc71f4",
+        "noteUrl":  "https://note.com/clean_whale1844/n/n3afa3cfde33b",
         "image":  "works/61_image/ProdNavigator.png",
         "alt":  "ProdNavigator スクリーンショット",
         "tags":  [
@@ -289,6 +289,7 @@
         "title":  "ETC明細PDF自動作成",
         "description":  "ETC利用明細照会サービスをPlaywrightで操作し、対象月の条件一致行をチェックしてPDFを自動保存。件数を手作業で数える申請作業の手間を撤廃。",
         "href":  "works/ETC_PDF_AUTO/",
+        "noteUrl":  "https://note.com/clean_whale1844/n/n400e588acd4d",
         "image":  "works/61_image/ETC_PDF_AUTO.png",
         "alt":  "ETC明細PDF自動作成 スクリーンショット",
         "tags":  [
@@ -298,9 +299,22 @@
                  ]
     },
     {
+        "title":  "Garden Planner",
+        "description":  "年・季節ごとに菜園レイアウトを記録し、作物の配置やプリセットをブラウザ上で管理できるガーデンプランニングアプリ。",
+        "href":  "works/Garden_Planner/",
+        "image":  "works/61_image/garden-planner.png",
+        "alt":  "Garden Planner 紹介画像",
+        "tags":  [
+                     "React",
+                     "TypeScript",
+                     "菜園管理"
+                 ]
+    },
+    {
         "title":  "Smart Warehouse Transfer Planner",
         "description":  "搬入・搬出依頼に対して、在庫数、保管面積、移動計画、廃棄計画を反映し、候補倉庫と判断理由を提示する倉庫移動判断支援PoC。",
         "href":  "works/Smart_Warehouse_Transfer_Planner/detail.html",
+        "noteUrl":  "https://note.com/clean_whale1844/n/n5eb1e8bc80d9",
         "image":  "works/61_image/Smart_Warehouse_Transfer_Planner.png",
         "alt":  "Smart Warehouse Transfer Planner スクリーンショット",
         "tags":  [

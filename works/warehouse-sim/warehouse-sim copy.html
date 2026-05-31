@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>倉庫格納シミュレーター</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Saira:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#15181c; --panel:#1c2026; --panel2:#23282f; --line:#323943;
+    --ink:#e8ebef; --ink-dim:#9aa3ad; --ink-faint:#646d78;
+    --accent:#f0a93b; --accent-2:#ff7a45; --good:#5fd39a; --bad:#ff6b6b;
+    --floor:#efeae0; --floor-line:#d9d2c4; --floor-edge:#b9af9c;
+    --mono:"JetBrains Mono",ui-monospace,"SF Mono","Cascadia Code",monospace;
+    --disp:"Saira Condensed","Saira",system-ui,sans-serif;
+    --body:"Saira",system-ui,"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);color:var(--ink);font-family:var(--body);
+    font-size:14px;display:flex;flex-direction:column;overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* ── header ── */
+  header{
+    height:50px;flex:0 0 auto;display:flex;align-items:center;gap:14px;
+    padding:0 18px;background:linear-gradient(180deg,#1d2228,#15181c);
+    border-bottom:1px solid var(--line);
+  }
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo .mark{
+    width:26px;height:26px;border-radius:5px;
+    background:repeating-linear-gradient(45deg,var(--accent) 0 5px,#1b1e22 5px 10px);
+    box-shadow:inset 0 0 0 1px #00000040;
+  }
+  .logo h1{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.06em;text-transform:uppercase}
+  .logo h1 b{color:var(--accent)}
+  .logo .sub{font-family:var(--mono);font-size:10px;color:var(--ink-faint);letter-spacing:.18em;margin-left:2px}
+  .head-spacer{flex:1}
+  .hbtn{
+    font-family:var(--disp);font-size:13px;font-weight:600;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--ink-dim);background:var(--panel2);
+    border:1px solid var(--line);border-radius:5px;padding:7px 13px;cursor:pointer;
+    transition:.14s;display:inline-flex;align-items:center;gap:7px;
+  }
+  .hbtn:hover{color:var(--ink);border-color:#48515d;background:#2a3038}
+  .hbtn.warn:hover{color:var(--bad);border-color:var(--bad)}
+  /* ボタン識別用の色分け（押し間違い防止） */
+  .hbtn.c-blue   {color:#8fc0ff;border-color:#3a4a63;background:#1e2632}
+  .hbtn.c-blue:hover{color:#bcd9ff;border-color:#5a82b8;background:#243246}
+  .hbtn.c-violet {color:#bd9bff;border-color:#4a3f63;background:#241f30}
+  .hbtn.c-violet:hover{color:#d6c2ff;border-color:#7a63b8;background:#2c2640}
+  .hbtn.c-amber  {color:#f0b85a;border-color:#5a4a2a;background:#2a2418}
+  .hbtn.c-amber:hover{color:#ffd07a;border-color:#b88a3a;background:#352c1c}
+  .hbtn.c-cyan   {color:#5fcfe0;border-color:#2a505a;background:#162a30}
+  .hbtn.c-cyan:hover{color:#8fe3f0;border-color:#3a8aa0;background:#1c3640}
+  .hbtn.c-green  {color:#6fd9a8;border-color:#2a5a44;background:#16281f}
+  .hbtn.c-green:hover{color:#9be8c4;border-color:#3aa078;background:#1c3528}
+  .hbtn.c-orange {color:#ff9d5c;border-color:#5a3a2a;background:#2a1d16}
+  .hbtn.c-orange:hover{color:#ffb787;border-color:#b8623a;background:#35261c}
+  /* ── layout ── */
+  .stage{flex:1;display:flex;min-height:0}
+  aside{
+    width:308px;flex:0 0 auto;background:var(--panel);border-right:1px solid var(--line);
+    overflow-y:auto;display:flex;flex-direction:column;
+  }
+  aside::-webkit-scrollbar{width:9px}
+  aside::-webkit-scrollbar-thumb{background:#333a44;border-radius:4px;border:2px solid var(--panel)}
+  .sect{border-bottom:1px solid var(--line);padding:14px 16px}
+  .sect h2{
+    font-family:var(--disp);font-size:12px;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--accent);margin-bottom:11px;display:flex;
+    align-items:center;gap:8px;
+  }
+  .sect h2 .n{font-family:var(--mono);font-size:10px;color:var(--ink-faint);background:var(--panel2);
+    border:1px solid var(--line);border-radius:3px;padding:1px 5px;letter-spacing:.05em}
+  /* fields */
+  .row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+  .fld{flex:1}
+  .fld label{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ink-faint);margin-bottom:3px;font-family:var(--mono)}
+  input[type=number],input[type=text]{
+    width:100%;background:var(--bg);border:1px solid var(--line);border-radius:4px;
+    color:var(--ink);font-family:var(--mono);font-size:13px;padding:6px 8px;outline:none;
+  }
+  input:focus{border-color:var(--accent);box-shadow:0 0 0 2px #f0a93b22}
+  select{background:var(--bg);border:1px solid var(--line);border-radius:4px;color:var(--ink);
+    font-family:var(--mono);font-size:12px;padding:5px 6px;outline:none;cursor:pointer}
+  select:focus{border-color:var(--accent)}
+  .toggle{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-dim);cursor:pointer;user-select:none}
+  .toggle input{appearance:none;width:34px;height:18px;background:var(--line);border-radius:10px;position:relative;cursor:pointer;transition:.16s}
+  .toggle input:checked{background:var(--accent)}
+  .toggle input::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:.16s}
+  .toggle input:checked::after{left:18px}
+  /* preset list */
+  .preset{
+    display:flex;align-items:center;gap:9px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:6px;padding:8px 9px;margin-bottom:7px;cursor:grab;transition:.12s;touch-action:none;
+  }
+  .preset:hover{border-color:#4a5360;transform:translateX(2px)}
+  .preset:active{cursor:grabbing}
+  .preset .sw{width:22px;height:22px;border-radius:4px;flex:0 0 auto;box-shadow:inset 0 0 0 1px #0006}
+  .preset .meta{flex:1;min-width:0}
+  .preset .meta .nm{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .preset .meta .dm{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint)}
+  .preset .grip{color:var(--ink-faint);font-family:var(--mono);font-size:13px}
+  .preset .x{color:var(--ink-faint);cursor:pointer;font-size:15px;padding:0 2px;line-height:1}
+  .preset .x:hover{color:var(--bad)}
+  .miniadd{display:flex;gap:6px;margin-top:9px}
+  .miniadd input{font-size:12px;padding:5px 6px}
+  .addbtn{font-family:var(--disp);font-weight:600;letter-spacing:.05em;background:var(--accent);color:#1a1206;
+    border:none;border-radius:4px;padding:6px 11px;cursor:pointer;font-size:12px;text-transform:uppercase;white-space:nowrap}
+  .addbtn:hover{background:#ffbb52}
+  .hint{font-size:11px;color:var(--ink-faint);line-height:1.5;margin-top:3px}
+  /* selected item controls */
+  #selPanel{display:none}
+  #selPanel.on{display:block}
+  .selname{font-family:var(--disp);font-size:15px;font-weight:600;margin-bottom:9px;display:flex;align-items:center;gap:8px}
+  .selname .sw{width:16px;height:16px;border-radius:3px}
+  .stepper{display:flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:5px;overflow:hidden;width:fit-content}
+  .stepper button{width:32px;height:30px;background:var(--panel2);color:var(--ink);border:none;cursor:pointer;font-size:17px;font-family:var(--mono)}
+  .stepper button:hover{background:#2d343d;color:var(--accent)}
+  .stepper .val{min-width:48px;text-align:center;font-family:var(--mono);font-size:16px;font-weight:700;background:var(--bg);height:30px;line-height:30px}
+  .selrow{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
+  .sbtn{flex:1;min-width:64px;font-family:var(--disp);font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+    font-size:11.5px;background:var(--panel2);border:1px solid var(--line);color:var(--ink-dim);border-radius:5px;padding:8px;cursor:pointer;transition:.12s}
+  .sbtn:hover{color:var(--ink);border-color:#4a5360}
+  .sbtn.del:hover{color:var(--bad);border-color:var(--bad)}
+  .capnote{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);margin-top:7px}
+  .alignbox{display:none;margin-bottom:11px;border:1px dashed var(--line);border-radius:7px;padding:10px;background:#1a1e24}
+  .aligrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .aligrid .sbtn{min-width:0;flex:none;padding:7px 4px;font-size:11px}
+  .arraybox{margin-top:11px;border:1px dashed var(--line);border-radius:7px;padding:10px;background:#1a1e24}
+  .arr-h{font-family:var(--disp);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:9px;display:flex;align-items:center;gap:7px}
+  .arr-h .ic{font-size:13px}
+  /* metrics */
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .metric{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:9px 10px}
+  .metric .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint)}
+  .metric .v{font-family:var(--mono);font-size:21px;font-weight:700;line-height:1.15;margin-top:2px}
+  .metric .v small{font-size:11px;color:var(--ink-dim);font-weight:400}
+  .metric.wide{grid-column:1/3}
+  .bar{height:7px;background:var(--bg);border-radius:4px;overflow:hidden;margin-top:7px;border:1px solid var(--line)}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
+  /* before/after */
+  .cmp{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;margin-top:4px}
+  .cmp th,.cmp td{padding:6px 6px;text-align:right;border-bottom:1px solid var(--line)}
+  .cmp th{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:500}
+  .cmp td:first-child,.cmp th:first-child{text-align:left;color:var(--ink-dim)}
+  .cmp .d-up{color:var(--good)}.cmp .d-dn{color:var(--bad)}.cmp .d-0{color:var(--ink-faint)}
+  .nobefore{font-size:11.5px;color:var(--ink-faint);line-height:1.55}
+  /* ── workspace ── */
+  main{flex:1;position:relative;background:
+      radial-gradient(circle at 30% 20%,#1b2026,#101317 70%);overflow:hidden;display:flex;flex-direction:column}
+  .wbar{height:38px;flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:0 16px;border-bottom:1px solid var(--line);
+    background:#13161a;font-family:var(--mono);font-size:11px;color:var(--ink-dim)}
+  .wbar .tag{color:var(--ink-faint);letter-spacing:.08em}
+  .wbar b{color:var(--accent);font-weight:700}
+  .zoomctl{display:flex;align-items:center;border:1px solid var(--line);border-radius:5px;overflow:hidden}
+  .zoomctl button{background:var(--panel2);color:var(--ink-dim);border:none;cursor:pointer;font-family:var(--mono);font-size:13px;height:24px;padding:0 9px;line-height:1}
+  .zoomctl button:hover{background:#2d343d;color:var(--accent)}
+  .zoomctl #zPct{min-width:44px;display:inline-block;text-align:center;font-size:11px}
+  /* 小さい時は中央寄せ・大きい時はmargin autoで見切れずスクロール可能 */
+  .scroller{flex:1;overflow:auto;display:flex;padding:34px}
+  #floorWrap{margin:auto}
+  .scroller::-webkit-scrollbar{width:11px;height:11px}
+  .scroller::-webkit-scrollbar-thumb{background:#2b323b;border-radius:5px;border:3px solid #101317}
+  #floorWrap{position:relative}
+  #floor{
+    position:relative;background:var(--floor);border:2px solid var(--floor-edge);
+    box-shadow:0 24px 60px -20px #000a, inset 0 0 0 1px #fff5;
+  }
+  #floor .ruler-x,#floor .ruler-y{position:absolute;font-family:var(--mono);font-size:9px;color:var(--floor-edge)}
+  .ruler-top{position:absolute;left:0;right:0;top:-19px;height:16px}
+  .ruler-left{position:absolute;top:0;bottom:0;left:-26px;width:22px}
+  .rk{position:absolute;font-family:var(--mono);font-size:9px;color:#9a917f;transform:translateX(-50%)}
+  .rky{position:absolute;font-family:var(--mono);font-size:9px;color:#9a917f;right:2px;transform:translateY(-50%)}
+  /* placed item */
+  .item{
+    position:absolute;border-radius:3px;cursor:grab;box-shadow:0 2px 5px #0003,inset 0 0 0 1px #ffffff55;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;
+    color:#1a1206;touch-action:none;transition:box-shadow .12s;user-select:none;
+  }
+  .item:active{cursor:grabbing}
+  .item.sel{outline:2.5px solid #1a1d21;box-shadow:0 0 0 3px var(--accent),0 5px 14px #0006;z-index:50}
+  .item.collide{box-shadow:0 0 0 2px var(--bad),0 2px 6px #0004}
+  .item .lbl{font-family:var(--body);font-weight:600;font-size:11px;line-height:1.1;text-align:center;padding:0 3px;text-shadow:0 1px 0 #ffffff66;pointer-events:none;white-space:nowrap;overflow:hidden;max-width:100%;text-overflow:ellipsis}
+  .item .stk{font-family:var(--mono);font-weight:700;font-size:12px;background:#1a1d21;color:var(--accent);border-radius:3px;padding:0 5px;margin-top:2px;pointer-events:none}
+  .item .dim{font-family:var(--mono);font-size:8.5px;color:#00000099;pointer-events:none;margin-top:1px}
+  .item.ghost{opacity:.32;background-image:repeating-linear-gradient(45deg,#0000 0 6px,#00000018 6px 12px)!important;
+    cursor:default;outline:1.5px dashed #8a8170;box-shadow:none;z-index:1}
+  .item.ghost .stk,.item.ghost .dim{display:none}
+  .item.obst{color:#fff;box-shadow:inset 0 0 0 1px #ffffff33,0 2px 5px #0003}
+  .item.obst .lbl{color:#fff;text-shadow:0 1px 2px #0009}
+  .item.pillar{background-image:repeating-linear-gradient(45deg,transparent 0 6px,#ffffff1f 6px 12px)}
+  .item.aisle{background-image:repeating-linear-gradient(45deg,#ffffff26 0 9px,transparent 9px 18px);
+    box-shadow:inset 0 0 0 1.5px #ffffff55}
+  .item.aisle .lbl{letter-spacing:.18em;font-size:10px;opacity:.92}
+  #dragGhost{position:fixed;pointer-events:none;z-index:999;opacity:.78;border-radius:3px;display:none;
+    box-shadow:0 8px 22px #0007;align-items:center;justify-content:center;color:#1a1206;font-weight:600;font-size:11px}
+  .marquee{position:absolute;z-index:80;pointer-events:none;border:1.5px dashed var(--accent);
+    background:#f0a93b1f;border-radius:2px}
+  .empty-note{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;
+    color:#a89e8b;font-family:var(--mono);font-size:13px;pointer-events:none;text-align:center}
+  .empty-note span{font-size:11px;color:#bcb3a0}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:#23282f;border:1px solid var(--line);
+    color:var(--ink);padding:9px 16px;border-radius:7px;font-size:13px;opacity:0;transition:.25s;z-index:1000;box-shadow:0 8px 24px #0007}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .hbtn:disabled{opacity:.4;cursor:not-allowed}
+  .hbtn:disabled:hover{color:var(--ink-dim);border-color:var(--line);background:var(--panel2)}
+  .hdiv{width:1px;height:22px;background:var(--line);margin:0 2px}
+  /* 確認モーダル */
+  .modal-bg{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:2000}
+  .modal-bg.on{display:flex}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;max-width:380px;box-shadow:0 20px 60px #000a}
+  .modal-msg{font-size:14px;line-height:1.6;color:var(--ink);margin-bottom:16px}
+  .modal-btns{display:flex;gap:9px;justify-content:flex-end}
+  /* 一覧画面 */
+  #listView{flex:1;flex-direction:column;min-height:0;display:none;background:radial-gradient(circle at 30% 20%,#1b2026,#101317 70%)}
+  .listhead{height:50px;flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:0 18px;border-bottom:1px solid var(--line);background:#13161a}
+  .listhead h2{font-family:var(--disp);font-size:17px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+  .listbody{flex:1;overflow:auto;padding:24px}
+  .listbody::-webkit-scrollbar{width:11px}.listbody::-webkit-scrollbar-thumb{background:#2b323b;border-radius:5px;border:3px solid #101317}
+  .reg{width:100%;max-width:980px;margin:0 auto;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .reg th,.reg td{padding:11px 14px;text-align:right;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:13px}
+  .reg thead th{font-family:var(--disp);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);background:var(--panel2);font-weight:700}
+  .reg td.nm,.reg th.nm{text-align:left;font-family:var(--body);font-size:14px;color:var(--ink)}
+  .reg td.dt{color:var(--ink-faint);font-size:11px}
+  .reg tbody tr:hover{background:#22272e}
+  .util-pill{display:inline-block;font-family:var(--mono);font-weight:700;padding:2px 8px;border-radius:11px;font-size:12px}
+  .lnk{font-family:var(--disp);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;background:var(--panel2);
+    border:1px solid var(--line);color:var(--ink-dim);border-radius:5px;padding:5px 9px;cursor:pointer;margin-left:5px}
+  .lnk:hover{color:var(--ink);border-color:#4a5360}
+  .lnk.del:hover{color:var(--bad);border-color:var(--bad)}
+  .reg-empty{max-width:560px;margin:40px auto;text-align:center;color:var(--ink-faint);font-family:var(--mono);font-size:13px;line-height:1.7}
+  .reg tfoot td{font-family:var(--disp);font-weight:700;color:var(--ink-dim);background:var(--panel2);text-transform:uppercase;font-size:11px;letter-spacing:.06em}
+  @media(max-width:760px){aside{width:260px}.logo .sub{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="mark"></div>
+    <h1>格納<b>SIM</b></h1>
+    <span class="sub">WAREHOUSE LAYOUT SIMULATOR</span>
+  </div>
+  <div class="head-spacer"></div>
+  <span id="editorActions" style="display:flex;align-items:center;gap:10px">
+    <button class="hbtn c-blue" id="btnUndo" disabled title="操作を取り消す（Ctrl+Z）">↶ 戻す</button>
+    <button class="hbtn c-blue" id="btnRedo" disabled title="取り消した操作をやり直す（Ctrl+Shift+Z）">↷ やり直し</button>
+    <button class="hbtn c-violet" id="btnSnapshot" title="現在のレイアウトをBeforeとして保存">⮕ Before</button>
+    <span class="hdiv"></span>
+    <button class="hbtn c-amber" id="btnRecord" title="現在の倉庫を一覧に記録">⊞ 一覧に記録</button>
+    <button class="hbtn c-cyan" id="btnList" title="記録一覧を開く">▤ 一覧</button>
+    <span class="hdiv"></span>
+    <button class="hbtn c-green" id="btnSave">↓ 保存</button>
+    <button class="hbtn c-orange" id="btnLoad">↑ 読込</button>
+    <button class="hbtn warn" id="btnClear">✕ 全消去</button>
+  </span>
+  <input type="file" id="fileIn" accept="application/json" style="display:none">
+</header>
+
+<div class="stage">
+  <aside>
+    <!-- 倉庫設定 -->
+    <div class="sect">
+      <h2>倉庫設定 <span class="n">FLOOR</span></h2>
+      <div class="row">
+        <div class="fld" style="flex:1"><label>倉庫名 / ロケーション名</label>
+          <input type="text" id="fName" placeholder="例：第1倉庫 Aエリア"></div>
+      </div>
+      <div class="row">
+        <div class="fld"><label>幅 W (m)</label><input type="number" id="fW" value="20" min="1" step="0.5"></div>
+        <div class="fld"><label>奥行 D (m)</label><input type="number" id="fD" value="14" min="1" step="0.5"></div>
+      </div>
+      <div class="row">
+        <div class="fld"><label>グリッド (m)</label><input type="number" id="fGrid" value="1" min="0.1" step="0.1"></div>
+        <div class="fld" style="display:flex;gap:14px;align-items:flex-end;padding-bottom:5px">
+          <label class="toggle"><input type="checkbox" id="fGridShow" checked>格子</label>
+          <label class="toggle"><input type="checkbox" id="fSnap" checked>荷物吸着</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- プリセット -->
+    <div class="sect">
+      <h2>荷物プリセット <span class="n">DRAG →</span></h2>
+      <div id="presetList"></div>
+      <div class="hint">⬑ チップを右の床へドラッグして配置</div>
+      <div class="miniadd">
+        <input type="text" id="pName" placeholder="名称" style="flex:1.4">
+        <input type="number" id="pW" placeholder="W" step="0.1" min="0.1" style="flex:.8">
+        <input type="number" id="pD" placeholder="D" step="0.1" min="0.1" style="flex:.8">
+        <input type="number" id="pStk" placeholder="段" min="1" value="1" style="flex:.6">
+      </div>
+      <div class="miniadd">
+        <select id="pKind" style="flex:1">
+          <option value="load">荷物（段積み可）</option>
+          <option value="pillar">柱（障害物）</option>
+          <option value="aisle">通路（確保エリア）</option>
+        </select>
+        <button class="addbtn" id="pAdd" style="flex:1.2">+ プリセット追加</button>
+      </div>
+    </div>
+
+    <!-- 選択中 -->
+    <div class="sect" id="selPanel">
+      <h2>選択中の荷物 <span class="n">EDIT</span></h2>
+      <div class="selname" id="selName"><span class="sw"></span><span class="t"></span></div>
+      <div class="alignbox" id="alignBox">
+        <div class="arr-h"><span class="ic">▥</span>整列・分配</div>
+        <div class="aligrid">
+          <button class="sbtn" id="alL" title="左端を揃える">⤛ 左</button>
+          <button class="sbtn" id="alCx" title="左右中央を揃える">↔ 中央</button>
+          <button class="sbtn" id="alR" title="右端を揃える">右 ⤜</button>
+          <button class="sbtn" id="alT" title="上端を揃える">⤒ 上</button>
+          <button class="sbtn" id="alCy" title="上下中央を揃える">↕ 中央</button>
+          <button class="sbtn" id="alB" title="下端を揃える">下 ⤓</button>
+          <button class="sbtn" id="alDx" title="横方向に等間隔で分配">⇿ 横分配</button>
+          <button class="sbtn" id="alDy" title="縦方向に等間隔で分配">⇳ 縦分配</button>
+        </div>
+        <div class="capnote">選択した荷物の外接範囲を基準に整列。分配は3個以上で有効。</div>
+      </div>
+      <div class="fld" id="stkField"><label>段積み数</label>
+        <div class="stepper">
+          <button id="stkDn">−</button><div class="val" id="stkVal">1</div><button id="stkUp">＋</button>
+        </div>
+        <div class="capnote" id="capNote"></div>
+      </div>
+      <div class="row" id="posField">
+        <div class="fld"><label>X座標 (m)</label><input type="number" id="selX" step="0.1" min="0"></div>
+        <div class="fld"><label>Y座標 (m)</label><input type="number" id="selY" step="0.1" min="0"></div>
+      </div>
+      <div class="selrow">
+        <button class="sbtn" id="selCopy">⧉ コピー</button>
+        <button class="sbtn" id="selRot">⟳ 90°回転</button>
+        <button class="sbtn" id="selDup">＋ 複製</button>
+        <button class="sbtn del" id="selDel">🗑 削除</button>
+      </div>
+      <div class="arraybox">
+        <div class="arr-h"><span class="ic">⊞</span>格子状に複製</div>
+        <div class="row">
+          <div class="fld"><label>列数 → (X)</label><input type="number" id="arrCols" value="3" min="1" max="50"></div>
+          <div class="fld"><label>行数 ↓ (Y)</label><input type="number" id="arrRows" value="1" min="1" max="50"></div>
+        </div>
+        <div class="row">
+          <div class="fld"><label>列間隔 X (m)</label><input type="number" id="arrGapX" value="0" min="0" step="0.1"></div>
+          <div class="fld"><label>行間隔 Y (m)</label><input type="number" id="arrGapY" value="0" min="0" step="0.1"></div>
+        </div>
+        <button class="addbtn" id="arrGo" style="width:100%">格子複製を実行</button>
+        <div class="capnote">選択ブロックを基点に +X／+Y へ展開。間隔は隙間（通路幅）。床外になる区画は自動スキップ。</div>
+      </div>
+      <div class="capnote" style="margin-top:8px">コピー後 <b style="color:var(--ink-dim)">Ctrl/⌘ + V</b> で床のカーソル位置に貼付</div>
+    </div>
+
+    <!-- 集計 -->
+    <div class="sect">
+      <h2>収容集計 <span class="n">LIVE</span></h2>
+      <div class="metrics">
+        <div class="metric"><div class="k">設置数</div><div class="v" id="mPlaced">0<small> 個口</small></div></div>
+        <div class="metric"><div class="k">総収容数</div><div class="v" id="mUnits">0<small> 段口</small></div></div>
+        <div class="metric"><div class="k">使用床面積</div><div class="v" id="mUsed">0<small> ㎡</small></div></div>
+        <div class="metric"><div class="k">空き有効床</div><div class="v" id="mFree">0<small> ㎡</small></div></div>
+        <div class="metric wide"><div class="k">床占有率（有効床比）</div><div class="v" id="mUtil">0<small> %</small></div>
+          <div class="bar"><i id="mBar" style="width:0%"></i></div>
+          <div class="capnote" id="mNote" style="margin-top:6px"></div></div>
+      </div>
+    </div>
+
+    <!-- Before/After -->
+    <div class="sect">
+      <h2>Before / After <span class="n">DIFF</span></h2>
+      <div id="cmpWrap">
+        <div class="nobefore" id="noBefore">上部「Beforeに保存」で現状を記録すると、変更後との差分がここに表示されます。</div>
+        <table class="cmp" id="cmpTable" style="display:none">
+          <thead><tr><th>項目</th><th>Before</th><th>After</th><th>差分</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <label class="toggle" id="ghostToggleWrap" style="margin-top:10px;display:none">
+          <input type="checkbox" id="showGhost">Before配置を重ねて表示
+        </label>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="wbar">
+      <span class="tag">SCALE</span> <b id="scaleTxt">1m</b>
+      <span class="tag">FLOOR</span> <b id="dimTxt">20 × 14 m</b>
+      <span class="tag">ITEMS</span> <b id="cntTxt">0</b>
+      <span class="zoomctl">
+        <button id="zOut" title="縮小">−</button>
+        <button id="zFit" title="全体表示にフィット"><span id="zPct">100%</span></button>
+        <button id="zIn" title="拡大">＋</button>
+      </span>
+      <span style="flex:1"></span>
+      <span class="tag">空白ドラッグ=範囲選択 / Shift+クリック=追加選択 / Ctrl+C/V=区画コピー / Delete=削除</span>
+    </div>
+    <div class="scroller" id="scroller">
+      <div id="floorWrap">
+        <div class="ruler-top" id="rulerTop"></div>
+        <div class="ruler-left" id="rulerLeft"></div>
+        <div id="floor">
+          <div class="empty-note" id="emptyNote">プリセットをここへドラッグ<span>または左でプリセットを追加</span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="listView">
+  <div class="listhead">
+    <button class="hbtn c-blue" id="btnBack">← エディタへ戻る</button>
+    <h2>記録一覧</h2>
+    <div class="head-spacer"></div>
+    <button class="hbtn c-amber" id="btnListCsv">⤓ CSV出力</button>
+    <button class="hbtn c-green" id="btnListSave">↓ 一覧JSON保存</button>
+    <button class="hbtn c-orange" id="btnListLoad">↑ 一覧JSON読込</button>
+    <input type="file" id="listFileIn" accept="application/json" style="display:none">
+  </div>
+  <div class="listbody">
+    <div class="reg-empty" id="regEmpty">まだ記録がありません。エディタで倉庫名を入力し、「一覧に記録」を押すとここに集計が並びます。</div>
+    <table class="reg" id="regTable" style="display:none">
+      <thead><tr>
+        <th class="nm">倉庫名 / ロケーション</th>
+        <th>全床面積 (㎡)</th><th>有効床 (㎡)</th><th>使用床 (㎡)</th><th>空き有効床 (㎡)</th>
+        <th>占有率</th><th>記録日</th><th></th>
+      </tr></thead>
+      <tbody></tbody>
+      <tfoot><tr id="regFoot"></tr></tfoot>
+    </table>
+  </div>
+</div>
+
+<div id="dragGhost"></div>
+<div class="toast" id="toast"></div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="modal-msg" id="modalMsg"></div>
+    <div class="modal-btns">
+      <button class="sbtn" id="modalCancel" style="flex:0 0 auto;min-width:90px">キャンセル</button>
+      <button class="addbtn" id="modalOk" style="min-width:90px">OK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ───────────────── 状態 ───────────────── */
+const S = {
+  name:"",
+  floor:{ w:20, d:14 },
+  grid:1, gridShow:true, snap:true,
+  presets:[
+    {id:"p1", name:"パレット",   w:1.1, d:1.1, maxStack:4, color:"#f0a93b", kind:"load"},
+    {id:"p2", name:"大型",       w:2.0, d:1.2, maxStack:3, color:"#ff7a45", kind:"load"},
+    {id:"p3", name:"小型",       w:0.6, d:0.4, maxStack:8, color:"#5fd39a", kind:"load"},
+    {id:"p4", name:"長物",       w:3.0, d:0.5, maxStack:2, color:"#56a8e8", kind:"load"},
+    {id:"p5", name:"ネステナー", w:1.2, d:1.1, maxStack:4, color:"#c98bff", kind:"load"},
+    {id:"o1", name:"柱",        w:0.5, d:0.5, maxStack:1, color:"#3c424b", kind:"pillar"},
+    {id:"o2", name:"通路",      w:2.0, d:4.0, maxStack:1, color:"#7d93a8", kind:"aisle"}
+  ],
+  items:[],
+  before:null,
+  showGhost:false,
+  zoom:1                 // ズーム倍率（1=全体フィット）
+};
+let PXM = 28;            // px / m （= フィット倍率 × zoom）
+let fitPXM = 28;         // 床全体が収まる基準倍率
+let selSet = new Set();  // 選択中 item id の集合（複数選択対応）
+let uid = 1;
+let undoStack = [];      // Undo用スナップショット（多段）
+let redoStack = [];      // Redo用スナップショット
+const UNDO_MAX = 60;     // 履歴の上限
+let registry = [];       // 記録一覧
+const selOne = ()=> selSet.size===1 ? [...selSet][0] : null;
+const nid = ()=>"i"+(uid++);
+
+/* ───────────────── DOM ───────────────── */
+const $ = s=>document.querySelector(s);
+const floor = $("#floor"), floorWrap = $("#floorWrap"), scroller = $("#scroller");
+const dragGhost = $("#dragGhost");
+
+/* ───────────────── スケール ───────────────── */
+function computeScale(){
+  const availW = scroller.clientWidth - 90;
+  const availH = scroller.clientHeight - 90;
+  const sx = availW / S.floor.w, sy = availH / S.floor.d;
+  fitPXM = Math.max(10, Math.min(sx, sy));
+  PXM = Math.max(6, Math.min(400, fitPXM * (S.zoom||1)));
+}
+// ズーム適用（中心を保持して再描画）
+function setZoom(z){
+  S.zoom = Math.max(0.2, Math.min(8, z));
+  const cxFrac = scroller.scrollWidth ? (scroller.scrollLeft+scroller.clientWidth/2)/scroller.scrollWidth : .5;
+  const cyFrac = scroller.scrollHeight ? (scroller.scrollTop+scroller.clientHeight/2)/scroller.scrollHeight : .5;
+  drawFloor(); drawItems();
+  scroller.scrollLeft = cxFrac*scroller.scrollWidth - scroller.clientWidth/2;
+  scroller.scrollTop  = cyFrac*scroller.scrollHeight - scroller.clientHeight/2;
+}
+function updateZoomLabel(){ const el=$("#zPct"); if(el) el.textContent = Math.round((PXM/fitPXM)*100)+"%"; }
+/* ───────────────── 描画 ───────────────── */
+function drawFloor(){
+  computeScale();
+  const W = S.floor.w*PXM, H = S.floor.d*PXM;
+  floor.style.width = W+"px"; floor.style.height = H+"px";
+  // グリッド
+  if(S.gridShow){
+    const g = S.grid*PXM;
+    floor.style.backgroundImage =
+      `linear-gradient(to right, var(--floor-line) 1px, transparent 1px),
+       linear-gradient(to bottom, var(--floor-line) 1px, transparent 1px)`;
+    floor.style.backgroundSize = `${g}px ${g}px`;
+  } else { floor.style.backgroundImage="none"; }
+  // 目盛り
+  const rt = $("#rulerTop"), rl = $("#rulerLeft");
+  rt.innerHTML=""; rl.innerHTML="";
+  const step = niceStep(S.floor.w);
+  for(let x=0;x<=S.floor.w+0.001;x+=step){
+    const e=document.createElement("div"); e.className="rk"; e.style.left=(x*PXM)+"px"; e.style.top="2px";
+    e.textContent=fmt(x); rt.appendChild(e);
+  }
+  const stepy = niceStep(S.floor.d);
+  for(let y=0;y<=S.floor.d+0.001;y+=stepy){
+    const e=document.createElement("div"); e.className="rky"; e.style.top=(y*PXM)+"px";
+    e.textContent=fmt(y); rl.appendChild(e);
+  }
+  $("#scaleTxt").textContent = `1m ≈ ${PXM.toFixed(0)}px`;
+  $("#dimTxt").textContent = `${fmt(S.floor.w)} × ${fmt(S.floor.d)} m`;
+  updateZoomLabel();
+}
+function niceStep(span){ const t=span/8; const p=Math.pow(10,Math.floor(Math.log10(t)));
+  const c=[1,2,2.5,5,10]; for(const k of c) if(p*k>=t) return p*k; return p*10; }
+
+function drawItems(){
+  // 既存 .item 削除（emptyNote は残す）
+  [...floor.querySelectorAll(".item")].forEach(n=>n.remove());
+  // ghost(before)
+  if(S.showGhost && S.before){
+    S.before.items.forEach(it=>{
+      const p = presetById(it.presetId, S.before.presets); if(!p) return;
+      floor.appendChild(makeItemEl(it,p,true));
+    });
+  }
+  // current
+  S.items.forEach(it=>{
+    const p = presetById(it.presetId); if(!p) return;
+    floor.appendChild(makeItemEl(it,p,false));
+  });
+  // collision check
+  markCollisions();
+  $("#emptyNote").style.display = S.items.length? "none":"flex";
+  $("#cntTxt").textContent = S.items.length;
+  refreshMetrics();
+}
+function dims(it,p){ // 回転考慮の実寸(m)
+  return it.rot? {w:p.d, d:p.w} : {w:p.w, d:p.d};
+}
+function makeItemEl(it,p,ghost){
+  const {w,d}=dims(it,p);
+  const ob=isObstacle(p);
+  const el=document.createElement("div");
+  el.className="item"+(ob?" obst "+p.kind:"")+(ghost?" ghost":"")+(!ghost&&selSet.has(it.id)?" sel":"");
+  el.style.left=(it.x*PXM)+"px"; el.style.top=(it.y*PXM)+"px";
+  el.style.width=(w*PXM)+"px"; el.style.height=(d*PXM)+"px";
+  el.style.background=p.color;
+  el.dataset.id=it.id;
+  const small = (w*PXM<54||d*PXM<40);
+  el.innerHTML = `<div class="lbl">${esc(p.name)}</div>`+
+    ((small||ob)?``:`<div class="dim">${fmt(w)}×${fmt(d)}m</div>`)+
+    ((ghost||ob)?``:`<div class="stk">×${it.stack}</div>`);
+  if(!ghost) attachItemDrag(el,it);
+  return el;
+}
+function isObstacle(p){ return !!(p && p.kind && p.kind!=="load"); }
+function presetById(id,arr){ return (arr||S.presets).find(p=>p.id===id); }
+
+/* ───────────────── 衝突表示 ───────────────── */
+function rectOf(it){ const p=presetById(it.presetId); const {w,d}=dims(it,p); return {x:it.x,y:it.y,w,d}; }
+function overlap(a,b){ return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.d && a.y+a.d>b.y; }
+function markCollisions(){
+  const els=[...floor.querySelectorAll(".item:not(.ghost)")];
+  const rs=S.items.map(rectOf);
+  S.items.forEach((it,i)=>{
+    let col=false;
+    for(let j=0;j<S.items.length;j++){ if(i!==j && overlap(rs[i],rs[j])){col=true;break;} }
+    const el=els.find(e=>e.dataset.id===it.id); if(el) el.classList.toggle("collide",col);
+  });
+}
+
+/* ───────────────── プリセット UI ───────────────── */
+function drawPresets(){
+  const list=$("#presetList"); list.innerHTML="";
+  S.presets.forEach(p=>{
+    const el=document.createElement("div"); el.className="preset"; el.dataset.id=p.id;
+    const dm = isObstacle(p)
+      ? `${fmt(p.w)}×${fmt(p.d)}m · ${p.kind==="pillar"?"柱":"通路"}`
+      : `${fmt(p.w)}×${fmt(p.d)}m · 最大${p.maxStack}段`;
+    el.innerHTML=`<div class="sw" style="background:${p.color}"></div>
+      <div class="meta"><div class="nm">${esc(p.name)}</div>
+      <div class="dm">${dm}</div></div>
+      <span class="grip">⠿</span><span class="x" title="削除">×</span>`;
+    el.querySelector(".x").addEventListener("pointerdown",e=>{e.stopPropagation();});
+    el.querySelector(".x").addEventListener("click",e=>{
+      e.stopPropagation();
+      S.presets=S.presets.filter(x=>x.id!==p.id); drawPresets();
+    });
+    attachPresetDrag(el,p);
+    list.appendChild(el);
+  });
+}
+
+/* ───────────────── ドラッグ：プリセット→床（新規配置） ───────────────── */
+function attachPresetDrag(el,p){
+  el.addEventListener("pointerdown",ev=>{
+    if(ev.target.classList.contains("x")) return;
+    ev.preventDefault();
+    const {w,d}=dims({rot:0},p);
+    dragGhost.style.width=(w*PXM)+"px"; dragGhost.style.height=(d*PXM)+"px";
+    dragGhost.style.background=p.color; dragGhost.textContent=p.name; dragGhost.style.display="flex";
+    moveGhost(ev);
+    const move=e=>moveGhost(e);
+    const up=e=>{
+      window.removeEventListener("pointermove",move);
+      window.removeEventListener("pointerup",up);
+      dragGhost.style.display="none";
+      const pt=floorPoint(e, w, d);
+      if(pt){ // 床内に落とした
+        pushUndo();
+        const it={id:nid(),presetId:p.id,x:pt.x,y:pt.y,rot:0,stack:1};
+        S.items.push(it); selSet=new Set([it.id]); drawItems(); syncSelPanel();
+      }
+    };
+    window.addEventListener("pointermove",move);
+    window.addEventListener("pointerup",up);
+  });
+}
+function moveGhost(e){
+  dragGhost.style.left=(e.clientX - dragGhost.offsetWidth/2)+"px";
+  dragGhost.style.top=(e.clientY - dragGhost.offsetHeight/2)+"px";
+}
+// クライアント座標→床内ローカル(m)・左上基準。範囲外は null
+function floorPoint(e,w,d){
+  const r=floor.getBoundingClientRect();
+  let mx=(e.clientX-r.left)/PXM - w/2;
+  let my=(e.clientY-r.top)/PXM - d/2;
+  if(e.clientX<r.left-30||e.clientX>r.right+30||e.clientY<r.top-30||e.clientY>r.bottom+30) return null;
+  return place(null,mx,my,w,d);
+}
+function clampToFloor(mx,my,w,d){
+  mx=Math.max(0,Math.min(S.floor.w-w,mx));
+  my=Math.max(0,Math.min(S.floor.d-d,my));
+  return {x:mx,y:my};
+}
+// 除外指定（id・Set・null いずれも可）
+function isExcluded(ex,id){ return ex!=null && (ex instanceof Set ? ex.has(id) : ex===id); }
+// 他アイテムの実寸矩形（除外対象を除く）
+function itemRects(ex){
+  return S.items.filter(o=>!isExcluded(ex,o.id)).map(o=>{
+    const p=presetById(o.presetId); const {w,d}=dims(o,p); return {x:o.x,y:o.y,w,d};
+  });
+}
+// 配置確定：荷物吸着ONなら 辺吸着→重なり押し出し、OFFなら床内クランプのみ
+function place(ex,mx,my,w,d){
+  let c=clampToFloor(mx,my,w,d); mx=c.x; my=c.y;
+  if(!S.snap) return {x:+mx.toFixed(3),y:+my.toFixed(3)};
+  const others=itemRects(ex);
+  // 1) 近接する辺（隣接配置・整列）と壁に吸着
+  const T=Math.max(0.25, 16/PXM); // 約16px相当
+  let bx=mx,by=my,bdx=T,bdy=T;
+  const xc=[0,S.floor.w-w], yc=[0,S.floor.d-d];
+  others.forEach(o=>{ xc.push(o.x+o.w, o.x-w, o.x, o.x+o.w-w);
+                      yc.push(o.y+o.d, o.y-d, o.y, o.y+o.d-d); });
+  xc.forEach(v=>{ const dd=Math.abs(v-mx); if(dd<bdx){bdx=dd;bx=v;} });
+  yc.forEach(v=>{ const dd=Math.abs(v-my); if(dd<bdy){bdy=dd;by=v;} });
+  mx=bx; my=by; c=clampToFloor(mx,my,w,d); mx=c.x; my=c.y;
+  // 2) 重なりを貫入の浅い軸へ押し出して隣接させる
+  for(let k=0;k<8;k++){
+    let hit=false;
+    for(const o of others){
+      if(mx<o.x+o.w && mx+w>o.x && my<o.y+o.d && my+d>o.y){
+        const ox=Math.min(mx+w,o.x+o.w)-Math.max(mx,o.x);
+        const oy=Math.min(my+d,o.y+o.d)-Math.max(my,o.y);
+        if(ox<=oy){ mx += (mx+w/2 < o.x+o.w/2)? -ox : ox; }
+        else      { my += (my+d/2 < o.y+o.d/2)? -oy : oy; }
+        c=clampToFloor(mx,my,w,d); mx=c.x; my=c.y; hit=true;
+      }
+    }
+    if(!hit) break;
+  }
+  return {x:+mx.toFixed(3),y:+my.toFixed(3)};
+}
+
+/* ───────────────── ドラッグ：既存アイテム移動 ───────────────── */
+function attachItemDrag(el,it){
+  el.addEventListener("pointerdown",ev=>{
+    ev.preventDefault();
+    // Shift+クリック：選択トグル（ドラッグ開始しない）
+    if(ev.shiftKey){
+      if(selSet.has(it.id)) selSet.delete(it.id); else selSet.add(it.id);
+      drawItems(); syncSelPanel(); return;
+    }
+    // 非選択をつかんだら単独選択に切替。既に選択集合内なら集合のまま移動
+    if(!selSet.has(it.id)) selSet=new Set([it.id]);
+    drawItems(); syncSelPanel();
+
+    const r=floor.getBoundingClientRect();
+    // 移動対象グループ（選択中の全アイテム）の開始位置と寸法
+    const grp=[...selSet].map(id=>{ const o=S.items.find(x=>x.id===id);
+      const p=presetById(o.presetId); const {w,d}=dims(o,p); return {o,w,d,sx:o.x,sy:o.y}; });
+    const grab=grp.find(g=>g.o.id===it.id);
+    const offX=ev.clientX-(r.left+it.x*PXM), offY=ev.clientY-(r.top+it.y*PXM);
+    let moved=false;
+
+    const move=e=>{
+      if(!moved){ moved=true; pushUndo(); }
+      let gx=(e.clientX-r.left-offX)/PXM, gy=(e.clientY-r.top-offY)/PXM;
+      const snapped=place(selSet, gx, gy, grab.w, grab.d); // 選択集合外に吸着
+      let dx=snapped.x-grab.sx, dy=snapped.y-grab.sy;
+      // ブロックを剛体保持：全員が床内に収まるよう移動量をクランプ
+      let dxMin=-Infinity,dxMax=Infinity,dyMin=-Infinity,dyMax=Infinity;
+      grp.forEach(g=>{ dxMin=Math.max(dxMin,-g.sx); dxMax=Math.min(dxMax,S.floor.w-g.w-g.sx);
+                       dyMin=Math.max(dyMin,-g.sy); dyMax=Math.min(dyMax,S.floor.d-g.d-g.sy); });
+      dx=Math.max(dxMin,Math.min(dxMax,dx)); dy=Math.max(dyMin,Math.min(dyMax,dy));
+      grp.forEach(g=>{ g.o.x=+(g.sx+dx).toFixed(3); g.o.y=+(g.sy+dy).toFixed(3);
+        const e2=floor.querySelector(`.item[data-id="${g.o.id}"]`);
+        if(e2){ e2.style.left=(g.o.x*PXM)+"px"; e2.style.top=(g.o.y*PXM)+"px"; } });
+      markCollisions();
+    };
+    const up=()=>{ window.removeEventListener("pointermove",move); window.removeEventListener("pointerup",up); refreshMetrics(); };
+    window.addEventListener("pointermove",move);
+    window.addEventListener("pointerup",up);
+  });
+}
+
+/* ───────────────── 選択パネル ───────────────── */
+function syncSelPanel(){
+  const panel=$("#selPanel"); const n=selSet.size;
+  if(n===0){ panel.classList.remove("on"); return; }
+  panel.classList.add("on");
+  if(n>1){ // 複数選択
+    $("#selName .sw").style.background="linear-gradient(135deg,var(--accent),var(--accent-2))";
+    $("#selName .t").textContent=`複数選択 ${n}個`;
+    $("#stkField").style.display="none";
+    $("#posField").style.display="none";
+    $("#alignBox").style.display="block";
+    $("#selRot").style.display="none";
+    return;
+  }
+  $("#alignBox").style.display="none";
+  $("#selRot").style.display="";
+  const it=S.items.find(x=>x.id===selOne());
+  if(!it){ panel.classList.remove("on"); return; }
+  const p=presetById(it.presetId);
+  $("#selName .sw").style.background=p.color;
+  $("#selName .t").textContent=p.name;
+  const ob=isObstacle(p);
+  $("#stkField").style.display = ob? "none":"block";
+  if(!ob){
+    $("#stkVal").textContent=it.stack;
+    $("#capNote").textContent=`最大 ${p.maxStack} 段 / 1個口 ${fmt(p.w)}×${fmt(p.d)}m`;
+  }
+  // 座標欄（障害物も移動対象なので常に表示）
+  $("#posField").style.display="flex";
+  $("#selX").value=fmt(it.x); $("#selY").value=fmt(it.y);
+}
+// 座標入力で正確配置（吸着なし・床内クランプのみ）
+function applySelPos(){
+  const it=S.items.find(x=>x.id===selOne()); if(!it) return;
+  const p=presetById(it.presetId); const {w,d}=dims(it,p);
+  const nx=clampNum($("#selX").value,0,+(S.floor.w-w).toFixed(3),it.x);
+  const ny=clampNum($("#selY").value,0,+(S.floor.d-d).toFixed(3),it.y);
+  if(Math.abs(nx-it.x)<1e-9 && Math.abs(ny-it.y)<1e-9){ $("#selX").value=fmt(it.x); $("#selY").value=fmt(it.y); return; }
+  pushUndo();
+  it.x=+nx.toFixed(3); it.y=+ny.toFixed(3);
+  drawItems(); syncSelPanel();
+}
+$("#selX").addEventListener("change",applySelPos);
+$("#selY").addEventListener("change",applySelPos);
+$("#stkUp").onclick=()=>changeStack(1);
+$("#stkDn").onclick=()=>changeStack(-1);
+function changeStack(dv){
+  const it=S.items.find(x=>x.id===selOne()); if(!it) return;
+  const p=presetById(it.presetId); if(isObstacle(p)) return;
+  pushUndo();
+  it.stack=Math.max(1,Math.min(p.maxStack,it.stack+dv));
+  drawItems(); syncSelPanel();
+}
+$("#selRot").onclick=()=>{ const it=S.items.find(x=>x.id===selOne()); if(!it)return;
+  pushUndo();
+  it.rot=it.rot?0:1; const p=presetById(it.presetId); const {w,d}=dims(it,p);
+  const c=place(it.id,it.x,it.y,w,d); it.x=c.x; it.y=c.y; drawItems(); };
+$("#selDup").onclick=duplicateSel;
+$("#selDel").onclick=delSel;
+
+// グループ複製：相対配置を保ったままブロックごと複製
+function duplicateSel(){
+  const items=[...selSet].map(id=>S.items.find(x=>x.id===id)).filter(Boolean);
+  if(!items.length) return;
+  pushUndo();
+  let minx=Infinity,miny=Infinity,maxx=-Infinity,maxy=-Infinity;
+  items.forEach(o=>{ const p=presetById(o.presetId); const {w,d}=dims(o,p);
+    minx=Math.min(minx,o.x); miny=Math.min(miny,o.y); maxx=Math.max(maxx,o.x+w); maxy=Math.max(maxy,o.y+d); });
+  const bw=maxx-minx, bh=maxy-miny, off=0.3;
+  let ox=Math.max(0,Math.min(S.floor.w-bw,minx+off));
+  let oy=Math.max(0,Math.min(S.floor.d-bh,miny+off));
+  const dx=ox-minx, dy=oy-miny, newIds=[];
+  items.forEach(o=>{ const it={...o,id:nid(),x:+(o.x+dx).toFixed(3),y:+(o.y+dy).toFixed(3)};
+    S.items.push(it); newIds.push(it.id); });
+  selSet=new Set(newIds); drawItems(); syncSelPanel();
+}
+function delSel(){ if(selSet.size===0)return; pushUndo(); S.items=S.items.filter(x=>!selSet.has(x.id)); selSet.clear(); drawItems(); syncSelPanel(); }
+
+// 格子状（アレイ）複製：選択ブロックを 列×行 に展開
+$("#arrGo").onclick=arrayDuplicate;
+function arrayDuplicate(){
+  const items=[...selSet].map(id=>S.items.find(x=>x.id===id)).filter(Boolean);
+  if(!items.length){ toast("複製する荷物を選択してください"); return; }
+  const cols=Math.round(clampNum($("#arrCols").value,1,50,1));
+  const rows=Math.round(clampNum($("#arrRows").value,1,50,1));
+  const gx=clampNum($("#arrGapX").value,0,200,0), gy=clampNum($("#arrGapY").value,0,200,0);
+  // 元ブロックの外接矩形
+  let minx=Infinity,miny=Infinity,maxx=-Infinity,maxy=-Infinity;
+  items.forEach(o=>{ const p=presetById(o.presetId); const {w,d}=dims(o,p);
+    minx=Math.min(minx,o.x); miny=Math.min(miny,o.y); maxx=Math.max(maxx,o.x+w); maxy=Math.max(maxy,o.y+d); });
+  const bw=maxx-minx, bh=maxy-miny, pitchX=bw+gx, pitchY=bh+gy;
+  const totalNew=(cols*rows-1)*items.length;
+  const run=()=>{
+    pushUndo();
+    const newIds=[]; let placed=0, skipped=0;
+    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+      if(c===0&&r===0) continue; // 元ブロック
+      const dx=c*pitchX, dy=r*pitchY;
+      if(maxx+dx>S.floor.w+1e-6 || maxy+dy>S.floor.d+1e-6){ skipped++; continue; }
+      items.forEach(o=>{ const it={...o,id:nid(),x:+(o.x+dx).toFixed(3),y:+(o.y+dy).toFixed(3)};
+        S.items.push(it); newIds.push(it.id); });
+      placed++;
+    }
+    newIds.forEach(id=>selSet.add(id));
+    drawItems(); syncSelPanel();
+    toast(`格子複製：${placed} ブロック追加`+(skipped?`（床外 ${skipped} 区画をスキップ）`:""));
+  };
+  if(totalNew>4000) uiConfirm(`約 ${totalNew} 個を生成します。続行しますか？`, run);
+  else run();
+}
+
+/* ── 整列・分配（複数選択を座標直接セット／吸着なし） ── */
+function selItemsWithDims(){
+  return [...selSet].map(id=>S.items.find(x=>x.id===id)).filter(Boolean)
+    .map(o=>{ const p=presetById(o.presetId); const {w,d}=dims(o,p); return {o,w,d}; });
+}
+function clampItemToFloor(g){
+  g.o.x=+Math.max(0,Math.min(S.floor.w-g.w,g.o.x)).toFixed(3);
+  g.o.y=+Math.max(0,Math.min(S.floor.d-g.d,g.o.y)).toFixed(3);
+}
+function alignSel(mode){
+  const gs=selItemsWithDims(); if(gs.length<2) return;
+  const minx=Math.min(...gs.map(g=>g.o.x)), maxr=Math.max(...gs.map(g=>g.o.x+g.w));
+  const miny=Math.min(...gs.map(g=>g.o.y)), maxb=Math.max(...gs.map(g=>g.o.y+g.d));
+  pushUndo();
+  gs.forEach(g=>{
+    if(mode==="left")   g.o.x=minx;
+    if(mode==="right")  g.o.x=maxr-g.w;
+    if(mode==="cx")     g.o.x=(minx+maxr)/2 - g.w/2;
+    if(mode==="top")    g.o.y=miny;
+    if(mode==="bottom") g.o.y=maxb-g.d;
+    if(mode==="cy")     g.o.y=(miny+maxb)/2 - g.d/2;
+    clampItemToFloor(g);
+  });
+  drawItems(); syncSelPanel();
+}
+function distributeSel(axis){
+  const gs=selItemsWithDims(); if(gs.length<3){ toast("分配は3個以上で有効です"); return; }
+  pushUndo();
+  if(axis==="x"){
+    gs.sort((a,b)=>a.o.x-b.o.x);
+    const minx=gs[0].o.x, maxr=Math.max(...gs.map(g=>g.o.x+g.w));
+    const sumW=gs.reduce((s,g)=>s+g.w,0);
+    const gap=(maxr-minx-sumW)/(gs.length-1);
+    let cur=minx;
+    gs.forEach(g=>{ g.o.x=+cur.toFixed(3); cur+=g.w+gap; clampItemToFloor(g); });
+  } else {
+    gs.sort((a,b)=>a.o.y-b.o.y);
+    const miny=gs[0].o.y, maxb=Math.max(...gs.map(g=>g.o.y+g.d));
+    const sumH=gs.reduce((s,g)=>s+g.d,0);
+    const gap=(maxb-miny-sumH)/(gs.length-1);
+    let cur=miny;
+    gs.forEach(g=>{ g.o.y=+cur.toFixed(3); cur+=g.d+gap; clampItemToFloor(g); });
+  }
+  drawItems(); syncSelPanel();
+}
+$("#alL").onclick=()=>alignSel("left");
+$("#alR").onclick=()=>alignSel("right");
+$("#alCx").onclick=()=>alignSel("cx");
+$("#alT").onclick=()=>alignSel("top");
+$("#alB").onclick=()=>alignSel("bottom");
+$("#alCy").onclick=()=>alignSel("cy");
+$("#alDx").onclick=()=>distributeSel("x");
+$("#alDy").onclick=()=>distributeSel("y");
+
+/* ── コピー＆ペースト（区画まるごと） ── */
+let clip=null, lastFloorPt=null;
+floor.addEventListener("pointermove",e=>{ const r=floor.getBoundingClientRect();
+  lastFloorPt={x:(e.clientX-r.left)/PXM, y:(e.clientY-r.top)/PXM}; });
+function copySel(){
+  const items=[...selSet].map(id=>S.items.find(x=>x.id===id)).filter(Boolean);
+  if(!items.length) return false;
+  let minx=Infinity,miny=Infinity;
+  items.forEach(o=>{ minx=Math.min(minx,o.x); miny=Math.min(miny,o.y); });
+  clip={ items: items.map(o=>({presetId:o.presetId,rot:o.rot,stack:o.stack,
+    dx:+(o.x-minx).toFixed(3), dy:+(o.y-miny).toFixed(3)})) };
+  return true;
+}
+function pasteClip(){
+  if(!clip || !clip.items || !clip.items.length) return;
+  pushUndo();
+  let bw=0,bh=0;
+  clip.items.forEach(c=>{ const p=presetById(c.presetId); if(!p)return; const {w,d}=dims(c,p);
+    bw=Math.max(bw,c.dx+w); bh=Math.max(bh,c.dy+d); });
+  let ox,oy;
+  const inFloor = lastFloorPt && lastFloorPt.x>=-1 && lastFloorPt.x<=S.floor.w+1 && lastFloorPt.y>=-1 && lastFloorPt.y<=S.floor.d+1;
+  if(inFloor){ ox=lastFloorPt.x-bw/2; oy=lastFloorPt.y-bh/2; }
+  else { ox=1; oy=1; }
+  ox=Math.max(0,Math.min(S.floor.w-bw,ox)); oy=Math.max(0,Math.min(S.floor.d-bh,oy));
+  const newIds=[];
+  clip.items.forEach(c=>{ const p=presetById(c.presetId); if(!p)return;
+    const it={id:nid(),presetId:c.presetId,x:+(ox+c.dx).toFixed(3),y:+(oy+c.dy).toFixed(3),rot:c.rot,stack:c.stack};
+    S.items.push(it); newIds.push(it.id); });
+  selSet=new Set(newIds);
+  drawItems(); syncSelPanel();
+  toast(`${newIds.length}個を貼り付け（ドラッグで位置調整）`);
+}
+$("#selCopy").onclick=()=>{ if(copySel()) toast(`${clip.items.length}個をコピー：Ctrl/⌘+V で貼付`); };
+
+/* ── 範囲選択（ラバーバンド）：床の空白をドラッグ ── */
+floor.addEventListener("pointerdown",e=>{
+  if(!(e.target===floor||e.target.id==="emptyNote")) return;
+  const r=floor.getBoundingClientRect();
+  const sx=(e.clientX-r.left)/PXM, sy=(e.clientY-r.top)/PXM;
+  const add=e.shiftKey;
+  const box=document.createElement("div"); box.className="marquee"; floor.appendChild(box);
+  let moved=false;
+  const upd=ev=>{
+    const cx=(ev.clientX-r.left)/PXM, cy=(ev.clientY-r.top)/PXM;
+    if(Math.abs(cx-sx)>0.15||Math.abs(cy-sy)>0.15) moved=true;
+    const x0=Math.min(sx,cx),y0=Math.min(sy,cy),x1=Math.max(sx,cx),y1=Math.max(sy,cy);
+    box.style.left=(x0*PXM)+"px"; box.style.top=(y0*PXM)+"px";
+    box.style.width=((x1-x0)*PXM)+"px"; box.style.height=((y1-y0)*PXM)+"px";
+  };
+  const up=ev=>{
+    window.removeEventListener("pointermove",upd); window.removeEventListener("pointerup",up);
+    box.remove();
+    const cx=(ev.clientX-r.left)/PXM, cy=(ev.clientY-r.top)/PXM;
+    const x0=Math.min(sx,cx),y0=Math.min(sy,cy),x1=Math.max(sx,cx),y1=Math.max(sy,cy);
+    if(!moved){ if(!add){ selSet.clear(); drawItems(); syncSelPanel(); } return; }
+    if(!add) selSet.clear();
+    S.items.forEach(o=>{ const p=presetById(o.presetId); const {w,d}=dims(o,p);
+      if(o.x<x1 && o.x+w>x0 && o.y<y1 && o.y+d>y0) selSet.add(o.id); });
+    drawItems(); syncSelPanel();
+  };
+  window.addEventListener("pointermove",upd); window.addEventListener("pointerup",up);
+});
+
+// 矢印キー：選択中アイテムを微調整移動（吸着なし・床内クランプのみ）
+// 通常 0.1m、Shift同時押しで 1m ステップ。グループは剛体のまま移動。
+function nudgeSel(dx,dy){
+  if(!selSet.size) return;
+  const grp=[...selSet].map(id=>{ const o=S.items.find(x=>x.id===id);
+    const p=presetById(o.presetId); const {w,d}=dims(o,p); return {o,w,d}; });
+  // 全員が床内に収まるよう移動量をクランプ
+  let dxMin=-Infinity,dxMax=Infinity,dyMin=-Infinity,dyMax=Infinity;
+  grp.forEach(g=>{ dxMin=Math.max(dxMin,-g.o.x); dxMax=Math.min(dxMax,S.floor.w-g.w-g.o.x);
+                   dyMin=Math.max(dyMin,-g.o.y); dyMax=Math.min(dyMax,S.floor.d-g.d-g.o.y); });
+  dx=Math.max(dxMin,Math.min(dxMax,dx)); dy=Math.max(dyMin,Math.min(dyMax,dy));
+  if(Math.abs(dx)<1e-9 && Math.abs(dy)<1e-9) return; // 床端で移動できない
+  pushUndo();
+  grp.forEach(g=>{ g.o.x=+(g.o.x+dx).toFixed(3); g.o.y=+(g.o.y+dy).toFixed(3); });
+  drawItems(); markCollisions(); refreshMetrics();
+}
+const ARROW_DELTA={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
+
+document.addEventListener("keydown",e=>{
+  const a=document.activeElement; if(a&&a.tagName==="INPUT") return;
+  const cmd=e.ctrlKey||e.metaKey;
+  if(cmd && e.key.toLowerCase()==="z"){ e.preventDefault(); if(e.shiftKey) doRedo(); else doUndo(); return; }
+  if(cmd && e.key.toLowerCase()==="y"){ e.preventDefault(); doRedo(); return; }
+  if(cmd && e.key.toLowerCase()==="c"){ if(copySel()){ e.preventDefault(); toast(`${clip.items.length}個をコピー`); } return; }
+  if(cmd && e.key.toLowerCase()==="v"){ e.preventDefault(); pasteClip(); return; }
+  if(cmd && e.key.toLowerCase()==="a"){ e.preventDefault(); selSet=new Set(S.items.map(o=>o.id)); drawItems(); syncSelPanel(); return; }
+  if(e.key==="Escape"){ if(selSet.size){ selSet.clear(); drawItems(); syncSelPanel(); } return; }
+  if((e.key==="Delete"||e.key==="Backspace")&&selSet.size){ e.preventDefault(); delSel(); return; }
+  if(ARROW_DELTA[e.key]&&selSet.size){
+    e.preventDefault();
+    const step=e.shiftKey?1:0.1;
+    const [ux,uy]=ARROW_DELTA[e.key];
+    nudgeSel(ux*step, uy*step);
+  }
+});
+
+/* ───────────────── 集計 ───────────────── */
+function calcMetrics(items,presets){
+  const floorArea=S.floor.w*S.floor.d;
+  let used=0, units=0, obst=0, loads=0;
+  items.forEach(it=>{ const p=presetById(it.presetId,presets); if(!p)return;
+    const {w,d}=dims(it,p); const a=w*d;
+    if(isObstacle(p)){ obst+=a; }
+    else { used+=a; units+=it.stack; loads++; }
+  });
+  const usable=Math.max(0,floorArea-obst);
+  return { placed:loads, units, used:+used.toFixed(2), obst:+obst.toFixed(2),
+    usable:+usable.toFixed(2), free:+Math.max(0,usable-used).toFixed(2),
+    util: usable? +(used/usable*100).toFixed(1):0, floorArea:+floorArea.toFixed(1) };
+}
+function refreshMetrics(){
+  const m=calcMetrics(S.items,S.presets);
+  $("#mPlaced").innerHTML=`${m.placed}<small> 個口</small>`;
+  $("#mUnits").innerHTML=`${m.units}<small> 段口</small>`;
+  $("#mUsed").innerHTML=`${m.used}<small> ㎡</small>`;
+  $("#mFree").innerHTML=`${m.free}<small> ㎡</small>`;
+  $("#mUtil").innerHTML=`${m.util}<small> %</small>`;
+  $("#mBar").style.width=Math.min(100,m.util)+"%";
+  $("#mNote").textContent=`有効床 ${m.usable}㎡（全${m.floorArea}㎡ − 障害物 ${m.obst}㎡）`;
+  refreshCompare(m);
+}
+/* ───────────────── Before/After ───────────────── */
+function snapshot(){
+  S.before={ floor:{...S.floor}, presets:JSON.parse(JSON.stringify(S.presets)),
+    items:JSON.parse(JSON.stringify(S.items)), metrics:calcMetrics(S.items,S.presets) };
+  $("#ghostToggleWrap").style.display="flex";
+  toast("現状を Before に保存しました");
+  refreshMetrics();
+}
+function refreshCompare(after){
+  const t=$("#cmpTable"), nb=$("#noBefore"), gt=$("#ghostToggleWrap");
+  if(!S.before){ t.style.display="none"; nb.style.display="block"; gt.style.display="none"; return; }
+  nb.style.display="none"; t.style.display="table"; gt.style.display="flex";
+  const b=S.before.metrics;
+  const rows=[
+    ["設置数 (個口)", b.placed, after.placed, 0],
+    ["総収容数 (段口)", b.units, after.units, 0],
+    ["使用床 (㎡)", b.used, after.used, 2],
+    ["床占有率 (%)", b.util, after.util, 1]
+  ];
+  const tb=t.querySelector("tbody"); tb.innerHTML="";
+  rows.forEach(([k,bv,av,dec])=>{
+    const diff=+(av-bv).toFixed(dec);
+    const cls=diff>0?"d-up":diff<0?"d-dn":"d-0";
+    const sgn=diff>0?"+":"";
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${k}</td><td>${bv}</td><td>${av}</td><td class="${cls}">${sgn}${diff}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+/* ───────────────── Undo / Redo（多段） ───────────────── */
+function snapState(){ return JSON.parse(JSON.stringify({
+  name:S.name, floor:S.floor, grid:S.grid, presets:S.presets, items:S.items, before:S.before })); }
+function applyState(s){
+  S.name=s.name; S.floor=s.floor; S.grid=s.grid; S.presets=s.presets; S.items=s.items; S.before=s.before;
+  selSet.clear(); syncInputs();
+  $("#ghostToggleWrap").style.display = S.before? "flex":"none";
+  drawPresets(); drawFloor(); drawItems(); syncSelPanel();
+}
+function updateUndoButtons(){
+  $("#btnUndo").disabled = undoStack.length===0;
+  const rb=$("#btnRedo"); if(rb) rb.disabled = redoStack.length===0;
+}
+// 操作実行前に現状を履歴へ積む（Redoはクリア）
+function pushUndo(){
+  undoStack.push(snapState());
+  if(undoStack.length>UNDO_MAX) undoStack.shift();
+  redoStack.length=0;
+  updateUndoButtons();
+}
+function doUndo(){
+  if(!undoStack.length) return;
+  redoStack.push(snapState());
+  applyState(undoStack.pop());
+  updateUndoButtons();
+  toast("元に戻しました");
+}
+function doRedo(){
+  if(!redoStack.length) return;
+  undoStack.push(snapState());
+  applyState(redoStack.pop());
+  updateUndoButtons();
+  toast("やり直しました");
+}
+function syncInputs(){
+  $("#fName").value=S.name||""; $("#fW").value=S.floor.w; $("#fD").value=S.floor.d; $("#fGrid").value=S.grid;
+}
+
+/* ───────────────── 確認モーダル（confirm代替・サンドボックス対応） ───────────────── */
+let modalCb=null;
+function uiConfirm(msg,onYes){ $("#modalMsg").textContent=msg; modalCb=onYes; $("#modalBg").classList.add("on"); }
+$("#modalOk").onclick=()=>{ $("#modalBg").classList.remove("on"); const cb=modalCb; modalCb=null; if(cb)cb(); };
+$("#modalCancel").onclick=()=>{ $("#modalBg").classList.remove("on"); modalCb=null; };
+$("#modalBg").onclick=e=>{ if(e.target===$("#modalBg")){ $("#modalBg").classList.remove("on"); modalCb=null; } };
+
+/* ───────────────── 入力ハンドラ ───────────────── */
+["#fName","#fW","#fD","#fGrid"].forEach(s=>$(s).addEventListener("focus",pushUndo));
+$("#fName").oninput=e=>{ S.name=e.target.value; };
+$("#fW").oninput=e=>{ S.floor.w=clampNum(e.target.value,1,500,20); reflowAll(); };
+$("#fD").oninput=e=>{ S.floor.d=clampNum(e.target.value,1,500,14); reflowAll(); };
+$("#fGrid").oninput=e=>{ S.grid=clampNum(e.target.value,0.1,20,1); drawFloor(); };
+$("#fGridShow").onchange=e=>{ S.gridShow=e.target.checked; drawFloor(); };
+$("#fSnap").onchange=e=>{ S.snap=e.target.checked; };
+$("#showGhost").onchange=e=>{ S.showGhost=e.target.checked; drawItems(); };
+function reflowAll(){ // 床変更時はみ出しを内側へ
+  S.items.forEach(it=>{ const p=presetById(it.presetId); const {w,d}=dims(it,p);
+    const c=place(it.id,it.x,it.y,w,d); it.x=c.x; it.y=c.y; });
+  drawFloor(); drawItems();
+}
+$("#pAdd").onclick=()=>{
+  pushUndo();
+  const kind=$("#pKind").value;
+  const name=$("#pName").value.trim()|| (kind==="pillar"?"柱":kind==="aisle"?"通路":"荷物");
+  const w=clampNum($("#pW").value,0.1,50, kind==="aisle"?2:1);
+  const d=clampNum($("#pD").value,0.1,50, kind==="aisle"?4:1);
+  const stk=kind==="load"? clampNum($("#pStk").value,1,99,1) : 1;
+  const loadColors=["#f0a93b","#ff7a45","#5fd39a","#56a8e8","#c98bff","#ff6b9d","#ffd166","#4dd0c4"];
+  const color = kind==="pillar"?"#3c424b" : kind==="aisle"?"#7d93a8"
+              : loadColors[S.presets.filter(p=>p.kind==="load").length%loadColors.length];
+  S.presets.push({id:"p"+Date.now(),name,w,d,maxStack:Math.round(stk),color,kind});
+  $("#pName").value=""; $("#pW").value=""; $("#pD").value=""; $("#pStk").value="1"; $("#pKind").value="load";
+  drawPresets();
+};
+
+/* ───────────────── ヘッダ操作 ───────────────── */
+$("#btnUndo").onclick=doUndo;
+$("#btnRedo").onclick=doRedo;
+/* ── ズーム操作 ── */
+$("#zIn").onclick =()=>setZoom((S.zoom||1)*1.25);
+$("#zOut").onclick=()=>setZoom((S.zoom||1)/1.25);
+$("#zFit").onclick=()=>setZoom(1);
+scroller.addEventListener("wheel",e=>{
+  if(!(e.ctrlKey||e.metaKey)) return;   // 通常スクロールは妨げない
+  e.preventDefault();
+  setZoom((S.zoom||1) * (e.deltaY<0?1.12:1/1.12));
+},{passive:false});
+$("#btnSnapshot").onclick=()=>{ pushUndo(); snapshot(); };
+$("#btnClear").onclick=()=>uiConfirm("配置をすべて消去しますか？（プリセットは残ります）",()=>{
+  pushUndo(); S.items=[]; selSet.clear(); drawItems(); syncSelPanel(); toast("配置を消去しました（戻すボタンで復元可）");
+});
+$("#btnSave").onclick=()=>{
+  const m=calcMetrics(S.items,S.presets);
+  const data={ version:2, name:S.name||"", floor:S.floor, grid:S.grid,
+    presets:S.presets, items:S.items, before:S.before,
+    summary:{ name:S.name||"", usableArea:m.usable, usedArea:m.used, freeArea:m.free, utilization:m.util } };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  const safe=(S.name||"格納レイアウト").replace(/[\\/:*?"<>|]/g,"_");
+  a.download=`${safe}_${new Date().toISOString().slice(0,10)}.json`; a.click();
+  toast("JSONを保存しました");
+};
+$("#btnLoad").onclick=()=>$("#fileIn").click();
+$("#fileIn").onchange=e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{ try{ const d=JSON.parse(r.result);
+    pushUndo();
+    if(typeof d.name==="string")S.name=d.name;
+    if(d.floor)S.floor=d.floor; if(d.grid)S.grid=d.grid;
+    if(d.presets)S.presets=d.presets; if(d.items)S.items=d.items;
+    S.before=d.before||null;
+    syncInputs();
+    $("#ghostToggleWrap").style.display = S.before? "flex":"none";
+    selSet.clear(); drawPresets(); drawFloor(); drawItems(); syncSelPanel();
+    toast("JSONを読み込みました");
+  }catch(err){ toast("読み込み失敗：不正なJSONです"); } };
+  r.readAsText(f); e.target.value="";
+};
+
+/* ───────────────── 記録一覧 ───────────────── */
+$("#btnRecord").onclick=()=>{
+  const m=calcMetrics(S.items,S.presets);
+  const name=(S.name||"").trim();
+  if(!name){ toast("先に倉庫名を入力してください"); $("#fName").focus(); return; }
+  const rec={ id:"r"+Date.now(), name, floorArea:m.floorArea, usable:m.usable, used:m.used, free:m.free, util:m.util,
+    placed:m.placed, units:m.units, savedAt:new Date().toISOString(),
+    layout:{ name, floor:{...S.floor}, grid:S.grid,
+      presets:JSON.parse(JSON.stringify(S.presets)), items:JSON.parse(JSON.stringify(S.items)), before:S.before } };
+  const i=registry.findIndex(r=>r.name===name);
+  if(i>=0){ registry[i]=rec; toast(`「${name}」の記録を更新しました`); }
+  else { registry.push(rec); toast(`「${name}」を一覧に記録しました`); }
+  saveRegistry();
+};
+$("#btnList").onclick=showList;
+$("#btnBack").onclick=showEditor;
+function showList(){ renderRegistry(); $(".stage").style.display="none"; $("#editorActions").style.display="none"; $("#listView").style.display="flex"; }
+function showEditor(){ $("#listView").style.display="none"; $(".stage").style.display="flex"; $("#editorActions").style.display="flex"; }
+// 全床面積：新しい記録は floorArea を持つ。旧記録は保存された床寸法から算出
+function grossArea(r){
+  if(typeof r.floorArea==="number") return r.floorArea;
+  const f=r.layout&&r.layout.floor;
+  return f? +( f.w*f.d ).toFixed(1) : null;
+}
+function renderRegistry(){
+  const tb=$("#regTable tbody"); tb.innerHTML="";
+  const foot=$("#regFoot");
+  if(!registry.length){ $("#regEmpty").style.display="block"; $("#regTable").style.display="none"; return; }
+  $("#regEmpty").style.display="none"; $("#regTable").style.display="table";
+  const rows=[...registry].sort((a,b)=>String(a.name).localeCompare(String(b.name),"ja"));
+  rows.forEach(r=>{
+    const col = r.util>=85?"#ff6b6b" : r.util>=60?"#f0a93b" : "#5fd39a";
+    const gross = grossArea(r);
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td class="nm">${esc(r.name)}</td>
+      <td>${gross!=null?gross.toFixed(1):"—"}</td><td>${r.usable}</td><td>${r.used}</td><td>${r.free}</td>
+      <td><span class="util-pill" style="background:${col}22;color:${col}">${r.util}%</span></td>
+      <td class="dt">${(r.savedAt||"").slice(0,10)}</td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="lnk" data-open="${r.id}">開く</button>
+        <button class="lnk del" data-del="${r.id}">削除</button></td>`;
+    tb.appendChild(tr);
+  });
+  const tG=registry.reduce((s,r)=>s+(grossArea(r)||0),0);
+  const tU=registry.reduce((s,r)=>s+r.usable,0), tUse=registry.reduce((s,r)=>s+r.used,0), tF=registry.reduce((s,r)=>s+r.free,0);
+  const avg=registry.length? (registry.reduce((s,r)=>s+r.util,0)/registry.length):0;
+  foot.innerHTML=`<td class="nm">合計 ${registry.length} 件</td>
+    <td>${tG.toFixed(1)}</td><td>${tU.toFixed(2)}</td><td>${tUse.toFixed(2)}</td><td>${tF.toFixed(2)}</td>
+    <td>平均 ${avg.toFixed(1)}%</td><td></td><td></td>`;
+  tb.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openRecord(b.dataset.open));
+  tb.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>uiConfirm("この記録を削除しますか？",()=>{
+    registry=registry.filter(r=>r.id!==b.dataset.del); saveRegistry(); renderRegistry();
+  }));
+}
+function openRecord(id){
+  const r=registry.find(x=>x.id===id); if(!r||!r.layout){ toast("レイアウトデータがありません"); return; }
+  const L=r.layout; pushUndo();
+  S.name=L.name||r.name; S.floor=L.floor; S.grid=L.grid; S.presets=L.presets; S.items=L.items; S.before=L.before||null;
+  selSet.clear(); syncInputs(); $("#ghostToggleWrap").style.display = S.before? "flex":"none";
+  showEditor(); drawPresets(); drawFloor(); drawItems(); syncSelPanel();
+  toast(`「${S.name}」を開きました`);
+}
+$("#btnListSave").onclick=()=>{
+  const blob=new Blob([JSON.stringify({version:1,records:registry},null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download=`倉庫一覧_${new Date().toISOString().slice(0,10)}.json`; a.click();
+  toast("一覧JSONを保存しました");
+};
+// CSV出力（Excel対応：UTF-8 BOM付き）
+$("#btnListCsv").onclick=()=>{
+  if(!registry.length){ toast("記録がありません"); return; }
+  const head=["倉庫名","全床面積(㎡)","有効床(㎡)","使用床(㎡)","空き有効床(㎡)","占有率(%)","設置数(個口)","総収容数(段口)","記録日"];
+  const rows=[...registry].sort((a,b)=>String(a.name).localeCompare(String(b.name),"ja")).map(r=>{
+    const g=grossArea(r);
+    return [r.name, g!=null?g.toFixed(1):"", r.usable, r.used, r.free, r.util,
+            r.placed!=null?r.placed:"", r.units!=null?r.units:"", (r.savedAt||"").slice(0,10)];
+  });
+  const q=v=>{ const s=String(v==null?"":v); return /[",\r\n]/.test(s)? '"'+s.replace(/"/g,'""')+'"' : s; };
+  const csv=[head,...rows].map(r=>r.map(q).join(",")).join("\r\n");
+  const blob=new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download=`倉庫一覧_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  toast("CSVを保存しました");
+};
+$("#btnListLoad").onclick=()=>$("#listFileIn").click();
+$("#listFileIn").onchange=e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{ try{ const d=JSON.parse(r.result);
+    const recs=Array.isArray(d)? d : (d.records||[]);
+    if(!Array.isArray(recs)) throw 0;
+    registry=recs; saveRegistry(); renderRegistry(); toast(`${registry.length} 件を読み込みました`);
+  }catch(err){ toast("読み込み失敗：不正なJSONです"); } };
+  r.readAsText(f); e.target.value="";
+};
+// レジストリ永続化（claude.ai環境では window.storage に自動保存。オフライン時は一覧JSONで保存）
+async function saveRegistry(){ try{ if(window.storage&&window.storage.set) await window.storage.set("warehouse_registry",JSON.stringify(registry),false); }catch(e){} }
+async function loadRegistry(){ try{ if(window.storage&&window.storage.get){ const r=await window.storage.get("warehouse_registry",false);
+  if(r&&r.value){ const a=JSON.parse(r.value); if(Array.isArray(a)) registry=a; } } }catch(e){} }
+
+/* ───────────────── util ───────────────── */
+function clampNum(v,min,max,def){ v=parseFloat(v); if(isNaN(v))return def; return Math.max(min,Math.min(max,v)); }
+function fmt(n){ return (Math.round(n*100)/100).toString(); }
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+let toastT;
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),1900); }
+
+/* ───────────────── init ───────────────── */
+window.addEventListener("resize",()=>{ if($("#listView").style.display!=="flex"){ drawFloor(); drawItems(); } });
+loadRegistry();
+drawPresets(); drawFloor(); drawItems(); syncSelPanel();
+</script>
+</body>
+</html>

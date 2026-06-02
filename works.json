@@ -302,6 +302,7 @@
         "title":  "Garden Planner",
         "description":  "年・季節ごとに菜園レイアウトを記録し、作物の配置やプリセットをブラウザ上で管理できるガーデンプランニングアプリ。",
         "href":  "works/Garden_Planner/",
+        "noteUrl":  "https://note.com/clean_whale1844/n/n5269997811d5",
         "image":  "works/61_image/garden-planner.png",
         "alt":  "Garden Planner 紹介画像",
         "tags":  [
@@ -327,6 +328,7 @@
         "title":  "倉庫格納シミュレーター",
         "description":  "倉庫内の荷物配置をドラッグ操作で作成し、床面積、収容数、占有率、Before / After差分を確認できるレイアウト検討アプリ。",
         "href":  "works/warehouse-sim/",
+        "noteUrl":  "https://note.com/clean_whale1844/n/ndede0c33bd89",
         "image":  "works/61_image/warehouse-sim-infographic-16x9.png",
         "alt":  "倉庫格納シミュレーター 紹介画像",
         "tags":  [

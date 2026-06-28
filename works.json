@@ -336,5 +336,17 @@
                      "倉庫運用",
                      "レイアウト検討"
                  ]
+    },
+    {
+        "title":  "Media Clip Organizer",
+        "description":  "趣味の動画整理でつらい「探す・切る・候補を比べる」作業を半自動化し、AIが候補抽出、人が最終判断を担当するメディア整理ツール。",
+        "href":  "works/media-clip-organizer/",
+        "image":  "works/61_image/media-clip-organizer.png",
+        "alt":  "Media Clip Organizer スクリーンショット",
+        "tags":  [
+                     "Python",
+                     "動画整理",
+                     "AI活用"
+                 ]
     }
 ]

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="文字起こしと操作スクリーンショットを時刻で対応づけ、手順書作成を支援するWork Manual Creation Toolの紹介ページです。" />
+  <title>Work Manual Creation Tool | Works</title>
+  <style>
+    :root{
+      --bg:#f8fafc; --fg:#1f2937; --muted:#64748b; --line:#e2e8f0;
+      --card:#ffffff; --accent:#0f766e; --accent-hover:#115e59;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:"Noto Sans JP","Segoe UI",system-ui,sans-serif;
+      background:var(--bg); color:var(--fg); line-height:1.75;
+    }
+    .wrap{width:min(960px,100%); margin:0 auto; padding:24px}
+    .top-nav{margin-bottom:16px}
+    .back-link{color:var(--accent); text-decoration:none; font-weight:700}
+    .back-link:hover{text-decoration:underline}
+    .card{
+      background:var(--card); border:1px solid var(--line);
+      border-radius:14px; padding:24px;
+    }
+    h1{margin:0 0 10px; font-size:clamp(24px,3.4vw,34px)}
+    .lead{margin:0 0 20px; color:var(--muted)}
+    .thumb{
+      width:100%; height:auto; border:1px solid var(--line); border-radius:10px;
+      margin:0 0 18px;
+    }
+    h2{
+      margin:24px 0 10px; font-size:20px; padding-bottom:6px;
+      border-bottom:1px solid var(--line);
+    }
+    ul{margin:0; padding-left:20px}
+    li{margin:6px 0}
+    .note-link{
+      display:inline-block; margin-top:24px; padding:10px 16px;
+      border-radius:999px; background:var(--accent); color:#ffffff;
+      font-weight:700; text-decoration:none;
+    }
+    .note-link:hover{background:var(--accent-hover)}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <nav class="top-nav" aria-label="パンくずリスト">
+      <a class="back-link" href="../../works.html">← Worksに戻る</a>
+    </nav>
+
+    <article class="card">
+      <h1>Work Manual Creation Tool</h1>
+      <p class="lead">作業手順の文字起こしとPC操作中のスクリーンショットを組み合わせ、説明と画像の時間差を調整しながら手順書の下書きを作る支援ツールです。</p>
+      <img class="thumb" src="../61_image/Work_Manual_CreationTool.png" alt="Work Manual Creation Toolの紹介画面" loading="lazy" decoding="async" />
+
+      <h2>解決したい課題</h2>
+      <ul>
+        <li>業務を説明しながら、同時に手順書を作る負担が大きい。</li>
+        <li>文字起こしとスクリーンショットは取得できても、説明と画面の状態が少しずつずれる。</li>
+        <li>手順が増えるほど、画像を一枚ずつ並べ直す修正作業も増えてしまう。</li>
+      </ul>
+
+      <h2>ツールのアプローチ</h2>
+      <ul>
+        <li>発言内容と発言時刻、操作時のスクリーンショットと撮影時刻を共通の時間軸で整理。</li>
+        <li>文字起こしの時刻を数秒前後へ動かす「オフセット調整」で、説明に近い画像候補を絞り込む。</li>
+        <li>AIにすべてを判断させず、候補抽出を自動化し、最後の画像選択は人が短時間で行う。</li>
+      </ul>
+
+      <h2>主な機能</h2>
+      <ul>
+        <li>文字起こしデータと操作スクリーンショットの読み込み。</li>
+        <li>発言時刻と撮影時刻を使った説明文・画像候補の対応づけ。</li>
+        <li>画面上から時間差を変更し、組み合わせ結果を比較できるオフセット調整。</li>
+        <li>説明文と画像を並べた手順書の下書き生成。</li>
+      </ul>
+
+      <h2>試作から得られたこと</h2>
+      <ul>
+        <li>モデルやプロンプトを変えなくても、入力データの時計を合わせるだけで対応精度を改善できた。</li>
+        <li>記録量を増やすだけでは、画面移動や入力途中など不要な画像も増える。</li>
+        <li>完全自動化よりも、時刻で候補を絞り、人が最終判断する分担が現場では扱いやすい。</li>
+      </ul>
+
+      <a class="note-link" href="https://note.com/clean_whale1844/n/n9993a02d4b2b" target="_blank" rel="noopener noreferrer">制作過程をnoteで読む</a>
+    </article>
+  </main>
+</body>
+</html>

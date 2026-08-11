@@ -349,5 +349,18 @@
                      "動画整理",
                      "AI活用"
                  ]
+    },
+    {
+        "title":  "Work Manual Creation Tool",
+        "description":  "文字起こしと操作スクリーンショットを時刻で対応づけ、時間差を調整しながら手順書の下書きと画像選びを効率化するツール。",
+        "href":  "works/Work_Manual_CreationTool/",
+        "noteUrl":  "https://note.com/clean_whale1844/n/n9993a02d4b2b",
+        "image":  "works/61_image/Work_Manual_CreationTool.png",
+        "alt":  "Work Manual Creation Tool 紹介画像",
+        "tags":  [
+                     "AI活用",
+                     "手順書作成",
+                     "業務改善"
+                 ]
     }
 ]

@@ -362,5 +362,17 @@
                      "手順書作成",
                      "業務改善"
                  ]
+    },
+    {
+        "title":  "LogiDash（国際コンテナ動静ダッシュボード）",
+        "description":  "コンテナ船・貨物の現在地と滞留日数を地図と一覧で可視化し、重要BLを特別管理として抽出・Excel出力できる単一HTMLのダッシュボード。",
+        "href":  "works/LogiDash/",
+        "image":  "works/61_image/LogiDash.png",
+        "alt":  "LogiDash スクリーンショット",
+        "tags":  [
+                     "HTML/CSS/JS",
+                     "国際物流",
+                     "可視化"
+                 ]
     }
 ]

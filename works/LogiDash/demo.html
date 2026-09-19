@@ -1,0 +1,2282 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LogiDash - 国際コンテナ動静確認ダッシュボード</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+<style>
+  .tabular-nums{ font-variant-numeric: tabular-nums; }
+  ::-webkit-scrollbar{ height:8px; width:8px; }
+  ::-webkit-scrollbar-thumb{ background:#cbd5e1; border-radius:4px; }
+  .js-tab{ border-color:transparent; }
+  table thead th{ position: sticky; top:0; z-index:2; }
+  /* BL一覧の左端3列(★・詳細・BL番号)を横スクロール時も固定する。背景は行(tr)の色を引き継ぐ */
+  .sticky-col{ position: sticky; z-index:1; background-color: inherit; }
+  table thead th.sticky-col{ z-index:3; }
+  .sc-1{ left:0; width:36px; min-width:36px; max-width:36px; }
+  .sc-2{ left:36px; width:52px; min-width:52px; max-width:52px; }
+  .sc-3{ left:88px; box-shadow: inset -1px 0 0 #e2e8f0; }
+  #mapDiv{ position:relative; z-index:0; }
+</style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
+
+<header id="appHeader" class="bg-slate-900 text-white sticky top-0 z-30 shadow"></header>
+<div id="filterBar" class="bg-white border-b sticky top-[56px] z-20"></div>
+<nav id="tabNav" class="bg-white border-b sticky top-[100px] z-20"></nav>
+
+<main class="max-w-[1600px] w-full mx-auto p-4 flex-1">
+  <div id="tab-map"></div>
+  <div id="tab-all" class="hidden"></div>
+  <div id="tab-special" class="hidden"></div>
+  <div id="tab-aggregate" class="hidden"></div>
+</main>
+
+<footer id="appFooter" class="text-center text-xs text-slate-400 py-4 border-t bg-white"></footer>
+
+<div id="dropOverlay" class="hidden fixed inset-0 bg-indigo-900/70 z-[9999] flex items-center justify-center text-white text-2xl font-bold pointer-events-none">
+  <div><i class="fa-solid fa-file-arrow-up mr-2"></i>ここにファイルをドロップして取込</div>
+</div>
+<div id="modalRoot"></div>
+<div id="toastRoot" class="fixed bottom-4 right-4 z-[9998] flex flex-col gap-2 items-end"></div>
+<input type="file" id="fileInput" class="hidden" accept=".xlsx,.xls,.csv">
+
+<script>
+'use strict';
+/* ============================================================
+   1. CONFIG
+============================================================ */
+const CONFIG = {
+  STORAGE_KEYS: {
+    data: 'logidash.data.v1',
+    special: 'logidash.special.v1',
+    settings: 'logidash.settings.v1',
+    baseLayer: 'logidash.baselayer.v1',
+    specialLocalDirty: 'logidash.special.localdirty.v1'
+  },
+  DEFAULT_SETTINGS: { warnDays: 3, dangerDays: 7 },
+  DEFAULT_POD: '名古屋港'
+};
+
+/* ============================================================
+   2. PORT_DICT
+============================================================ */
+const PORT_DICT = [
+  { keys:['上海','shanghai'], lat:31.2304, lng:121.4737 },
+  { keys:['寧波','ningbo'], lat:29.8683, lng:121.5440 },
+  { keys:['青島','qingdao'], lat:36.0671, lng:120.3826 },
+  { keys:['大連','dalian'], lat:38.9140, lng:121.6147 },
+  { keys:['天津','tianjin'], lat:39.0842, lng:117.2009 },
+  { keys:['深圳','塩田','shenzhen','yantian'], lat:22.5431, lng:114.0579 },
+  { keys:['香港','hong kong','hongkong'], lat:22.3193, lng:114.1694 },
+  { keys:['高雄','kaohsiung'], lat:22.6163, lng:120.3133 },
+  { keys:['基隆','keelung'], lat:25.1276, lng:121.7392 },
+  { keys:['釜山','busan'], lat:35.1796, lng:129.0756 },
+  { keys:['仁川','incheon'], lat:37.4563, lng:126.7052 },
+  { keys:['シンガポール','singapore'], lat:1.2644, lng:103.8200 },
+  { keys:['レムチャバン','laem chabang'], lat:13.0827, lng:100.8833 },
+  { keys:['バンコク','bangkok'], lat:13.7563, lng:100.5018 },
+  { keys:['ホーチミン','ho chi minh'], lat:10.7626, lng:106.6602 },
+  { keys:['ハイフォン','haiphong'], lat:20.8449, lng:106.6881 },
+  { keys:['マニラ','manila'], lat:14.5995, lng:120.9842 },
+  { keys:['ジャカルタ','jakarta'], lat:-6.1045, lng:106.8813 },
+  { keys:['ポートクラン','port klang'], lat:3.0000, lng:101.4000 },
+  { keys:['チェンナイ','chennai'], lat:13.0827, lng:80.2707 },
+  { keys:['ロッテルダム','rotterdam'], lat:51.9244, lng:4.4777 },
+  { keys:['ハンブルク','hamburg'], lat:53.5511, lng:9.9937 },
+  { keys:['アントワープ','antwerp'], lat:51.2194, lng:4.4025 },
+  { keys:['ロサンゼルス','los angeles'], lat:33.7405, lng:-118.2668 },
+  { keys:['ロングビーチ','long beach'], lat:33.7701, lng:-118.1937 },
+  { keys:['シアトル','seattle'], lat:47.6062, lng:-122.3321 },
+  { keys:['名古屋','nagoya'], lat:35.0833, lng:136.8833 },
+  { keys:['東京','tokyo'], lat:35.6250, lng:139.7750 },
+  { keys:['横浜','yokohama'], lat:35.4437, lng:139.6380 },
+  { keys:['大阪','osaka'], lat:34.6500, lng:135.4333 },
+  { keys:['神戸','kobe'], lat:34.6833, lng:135.1833 },
+  { keys:['博多','hakata'], lat:33.6064, lng:130.4181 }
+];
+function lookupPort(name){
+  if(!name) return null;
+  const n = String(name).toLowerCase();
+  for(const p of PORT_DICT){
+    for(const k of p.keys){
+      if(n.includes(k.toLowerCase())) return { lat:p.lat, lng:p.lng };
+    }
+  }
+  return null;
+}
+
+/* ============================================================
+   3. utils
+============================================================ */
+function esc(s){
+  if(s===null||s===undefined) return '';
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function pad2(n){ return String(n).padStart(2,'0'); }
+function toDateStr(y,m,d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
+function toDateObj(s){ if(!s) return null; const [y,m,d]=s.split('-').map(Number); return new Date(Date.UTC(y,m-1,d)); }
+function excelSerialToDate(n){ const ms = Math.round((n-25569)*86400*1000); return new Date(ms); }
+function isValidYMD(y,m,d){
+  if(!(m>=1&&m<=12)) return false;
+  if(!(d>=1&&d<=31)) return false;
+  const dt = new Date(Date.UTC(y,m-1,d));
+  return dt.getUTCFullYear()===y && dt.getUTCMonth()===m-1 && dt.getUTCDate()===d;
+}
+function parseDate(v){
+  if(v===null||v===undefined||v==='') return null;
+  if(v instanceof Date){
+    if(isNaN(v.getTime())) return null;
+    let y=v.getFullYear(), mo=v.getMonth()+1, d=v.getDate();
+    // SheetJSの丸め誤差対策: ローカル時刻が23:59以降なら翌日として扱う
+    if(v.getHours()===23 && v.getMinutes()>=59){
+      const bumped = new Date(v.getFullYear(), v.getMonth(), v.getDate()+1);
+      y=bumped.getFullYear(); mo=bumped.getMonth()+1; d=bumped.getDate();
+    }
+    if(!isValidYMD(y,mo,d)) return null;
+    return toDateStr(y,mo,d);
+  }
+  if(typeof v === 'number'){
+    if(!isFinite(v)) return null;
+    // Excelシリアル値の1秒未満の丸め誤差を吸収してから日付部分を取得
+    const days = Math.floor(v + 1/86400);
+    const d = excelSerialToDate(days);
+    if(isNaN(d.getTime())) return null;
+    const y=d.getUTCFullYear(), mo=d.getUTCMonth()+1, dd=d.getUTCDate();
+    if(!isValidYMD(y,mo,dd)) return null;
+    return toDateStr(y,mo,dd);
+  }
+  const s = String(v).trim();
+  if(!s) return null;
+  let m;
+  if((m = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/))){
+    const y=+m[1], mo=+m[2], d=+m[3];
+    return isValidYMD(y,mo,d) ? toDateStr(y,mo,d) : null;
+  }
+  if((m = s.match(/^(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})日/))){
+    const y=+m[1], mo=+m[2], d=+m[3];
+    return isValidYMD(y,mo,d) ? toDateStr(y,mo,d) : null;
+  }
+  if((m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/))){
+    const y=+m[3], mo=+m[1], d=+m[2];
+    return isValidYMD(y,mo,d) ? toDateStr(y,mo,d) : null;
+  }
+  if((m = s.match(/^(\d{8})$/))){
+    const y=+m[1].slice(0,4), mo=+m[1].slice(4,6), d=+m[1].slice(6,8);
+    return isValidYMD(y,mo,d) ? toDateStr(y,mo,d) : null;
+  }
+  return null;
+}
+function fmtMD(s, baseYear){
+  if(!s) return '-';
+  const p=s.split('-');
+  const by = baseYear!=null ? baseYear : (typeof state!=='undefined' && state.baseDate ? +state.baseDate.slice(0,4) : null);
+  if(by!=null && +p[0]!==by) return `${p[0]}/${p[1]}/${p[2]}`;
+  return `${p[1]}/${p[2]}`;
+}
+function fmtYMD(s){ return s ? String(s).replace(/-/g,'/') : '-'; }
+// 12.6: 到着日表示。値があれば通常表示、無ければ「未到達で予定も未定」なら「未定」、それ以外は「-」
+function etaOrUndef(dateVal, etaUndefined){ return dateVal ? fmtMD(dateVal) : (etaUndefined ? '未定' : '-'); }
+function diffDays(a,b){ if(!a||!b) return null; const da=toDateObj(a), db=toDateObj(b); return Math.round((db-da)/86400000); }
+function addDays(s,n){ const d=toDateObj(s); d.setUTCDate(d.getUTCDate()+n); return toDateStr(d.getUTCFullYear(), d.getUTCMonth()+1, d.getUTCDate()); }
+function todayStr(){ const d=new Date(); return toDateStr(d.getFullYear(), d.getMonth()+1, d.getDate()); }
+function parseQty(raw){
+  if(raw===null||raw===undefined||raw==='') return null;
+  const s = String(raw).trim();
+  const m = s.match(/^([\d,]+(?:\.\d+)?)\s*(.*)$/);
+  if(m && m[1]){ return { qty: parseFloat(m[1].replace(/,/g,'')), unit: m[2].trim(), raw: s }; }
+  return { qty: null, unit: '', raw: s };
+}
+function sumByUnit(items){
+  const map = new Map();
+  (items||[]).forEach(it=>{
+    if(!it || it.qty==null || isNaN(it.qty)) return;
+    const u = it.unit || '';
+    map.set(u, (map.get(u)||0) + it.qty);
+  });
+  const parts = [...map.entries()].map(([u,q])=> `${q.toLocaleString()}${u? (' '+u) : ''}`);
+  return parts.length ? parts.join(' / ') : '-';
+}
+function normalizeHeader(s){
+  if(s==null) return '';
+  return String(s).trim()
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0)-0xFEE0))
+    .replace(/\s+/g,'');
+}
+function debounce(fn, ms){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); }; }
+
+/* ============================================================
+   4. sample data
+============================================================ */
+function mkNode(name, opts){
+  opts = opts || {};
+  const port = lookupPort(name);
+  const node = {
+    name: name || '',
+    eta: opts.eta || null, ata: opts.ata || null, etd: opts.etd || null, atd: opts.atd || null,
+    lat: (opts.lat!=null) ? opts.lat : (port ? port.lat : null),
+    lng: (opts.lng!=null) ? opts.lng : (port ? port.lng : null)
+  };
+  if(opts.out !== undefined) node.out = opts.out || null;
+  if(opts.nuts !== undefined) node.nuts = opts.nuts || null;
+  return node;
+}
+function buildSampleData(T){
+  const A = (n)=> addDays(T, n);
+  const cg = (...items)=> items.map(([type,qty,unit])=>({ type, qty, unit, raw:`${qty} ${unit}` }));
+  const bls = [];
+
+  bls.push({ blNo:'BL-2026-001', customer:'A商事', carrier:'ONE', vessel:'OCEAN FREEDOM V.012', statusText:'上海港 出港待ち', special:false,
+    pol: mkNode('上海港', {eta:A(2)}), vias:[], pod: mkNode('名古屋港', {eta:A(14)}),
+    cargo: cg(['電子部品',100,'CTN']) });
+
+  bls.push({ blNo:'BL-2026-002', customer:'B物産', carrier:'MAERSK', vessel:'MAERSK EDMONTON', statusText:'寧波港 出港待ち', special:false,
+    pol: mkNode('寧波港', {eta:A(1)}), vias:[], pod: mkNode('名古屋港', {eta:A(15)}),
+    cargo: cg(['機械部品',50,'PLT']) });
+
+  bls.push({ blNo:'BL-2026-003', customer:'C工業', carrier:'EVERGREEN', vessel:'EVER GIVEN', statusText:'青島港 出港遅延', special:true,
+    pol: mkNode('青島港', {ata:A(-9), etd:A(-2)}), vias:[], pod: mkNode('名古屋港', {eta:A(10)}),
+    cargo: cg(['自動車部品',300,'CTN'],['工具',20,'PLT']) });
+
+  bls.push({ blNo:'BL-2026-004', customer:'D電機', carrier:'COSCO', vessel:'COSCO GALAXY V.201', statusText:'航行中', special:false,
+    pol: mkNode('塩田港', {ata:A(-6), atd:A(-5)}), vias:[], pod: mkNode('名古屋港', {eta:A(3)}),
+    cargo: cg(['家電製品',400,'CTN']) });
+
+  bls.push({ blNo:'BL-2026-005', customer:'E自動車', carrier:'CMA CGM', vessel:'CMA CGM JACQUES SAADE', statusText:'欧州発 航行中', special:true,
+    pol: mkNode('ロッテルダム港', {ata:A(-25), atd:A(-20)}),
+    vias:[ mkNode('シンガポール港', {ata:A(-6), atd:A(-3)}), mkNode('香港港', {eta:A(6)}) ],
+    pod: mkNode('名古屋港', {eta:A(16)}),
+    cargo: cg(['自動車部品',150,'CTN'],['タイヤ',500,'pcs']) });
+
+  bls.push({ blNo:'BL-2026-006', customer:'A商事', carrier:'HMM', vessel:'HMM ALGECIRAS', statusText:'航行中', special:false,
+    pol: mkNode('ホーチミン港', {ata:A(-9), atd:A(-8)}), vias:[], pod: mkNode('名古屋港', {eta:A(2)}),
+    cargo: cg(['アパレル',800,'CTN']) });
+
+  bls.push({ blNo:'BL-2026-007', customer:'B物産', carrier:'ONE', vessel:'ONE INNOVATION', statusText:'航行中', special:false,
+    pol: mkNode('マニラ港', {ata:A(-4), atd:A(-3)}), vias:[], pod: mkNode('名古屋港', {eta:A(5)}),
+    cargo: cg(['雑貨',60,'PLT']) });
+
+  bls.push({ blNo:'BL-2026-008', customer:'C工業', carrier:'MAERSK', vessel:'MAERSK SEALAND', statusText:'釜山港 滞留中', special:false,
+    pol: mkNode('大連港', {ata:A(-11), atd:A(-10)}),
+    vias:[ mkNode('釜山港', {ata:A(-4)}) ],
+    pod: mkNode('名古屋港', {eta:A(4)}),
+    cargo: cg(['精密機械',30,'pcs']) });
+
+  bls.push({ blNo:'BL-2026-009', customer:'D電機', carrier:'EVERGREEN', vessel:'EVER ACE', statusText:'高雄港 滞留中', special:true,
+    pol: mkNode('香港港', {ata:A(-13), atd:A(-12)}),
+    vias:[ mkNode('高雄港', {ata:A(-8)}) ],
+    pod: mkNode('名古屋港', {eta:A(1)}),
+    cargo: cg(['半導体部品',20,'CTN'],['梱包材',10,'PLT']) });
+
+  bls.push({ blNo:'BL-2026-010', customer:'E自動車', carrier:'COSCO', vessel:'COSCO SHIPPING UNIVERSE', statusText:'シンガポール港 滞留中', special:false,
+    pol: mkNode('ポートクラン港', {ata:A(-6), atd:A(-5)}),
+    vias:[ mkNode('シンガポール港', {ata:A(-1)}) ],
+    pod: mkNode('名古屋港', {eta:A(3)}),
+    cargo: cg(['ゴム製品',1200,'KG']) });
+
+  bls.push({ blNo:'BL-2026-011', customer:'A商事', carrier:'CMA CGM', vessel:'CMA CGM ANTOINE DE SAINT EXUPERY', statusText:'名古屋港 到着済', special:false,
+    pol: mkNode('ハイフォン港', {ata:A(-20), atd:A(-19)}), vias:[],
+    pod: mkNode('名古屋港', {ata:A(-5)}),
+    cargo: cg(['家具',90,'CTN']) });
+
+  bls.push({ blNo:'BL-2026-012', customer:'B物産', carrier:'HMM', vessel:'HMM NUERI', statusText:'搬出済', special:false,
+    pol: mkNode('大連港', {ata:A(-24), atd:A(-23)}), vias:[],
+    pod: mkNode('名古屋港', {ata:A(-20), out:A(-15)}),
+    cargo: cg(['文具',300,'CTN']) });
+
+  bls.push({ blNo:'BL-2026-013', customer:'C工業', carrier:'ONE', vessel:'ONE COMMITMENT', statusText:'搬出済', special:false,
+    pol: mkNode('天津港', {ata:A(-33), atd:A(-32)}), vias:[],
+    pod: mkNode('名古屋港', {ata:A(-30), out:A(-25)}),
+    cargo: cg(['化学製品',400,'KG'],['サンプル品',5,'CTN']) });
+
+  bls.push({ blNo:'BL-2026-014', customer:'D電機', carrier:'COSCO', vessel:'COSCO GALAXY V.201', statusText:'航行中', special:false,
+    pol: mkNode('塩田港', {ata:A(-6), atd:A(-5)}), vias:[], pod: mkNode('名古屋港', {eta:A(3)}),
+    cargo: cg(['家電製品',250,'CTN']) });
+
+  bls.push({ blNo:'BL-2026-015', customer:'E自動車', carrier:'HMM', vessel:'HMM PROMISE', statusText:'航行中', special:false,
+    pol: mkNode('天津港', {ata:A(-4), atd:A(-3)}), vias:[], pod: mkNode('名古屋港', {eta:A(9)}),
+    cargo: cg(['自動車部品',60,'CTN'],['塗料',200,'KG']) });
+
+  bls.push({ blNo:'BL-2026-016', customer:'A商事', carrier:'ONE', vessel:'ONE COMPETENCE', statusText:'チェンナイ港発 航行中', special:false,
+    pol: mkNode('チェンナイ港', {ata:A(-16), atd:A(-15)}),
+    vias:[ mkNode('ポートクラン港', {ata:A(-9), atd:A(-8)}), mkNode('シンガポール港', {ata:A(-4), atd:A(-3)}), mkNode('香港港', {eta:A(5)}), mkNode('釜山港', {eta:A(9)}) ],
+    pod: mkNode('名古屋港', {eta:A(16)}),
+    cargo: cg(['化学薬品',80,'CTN']) });
+
+  return bls;
+}
+
+/* ============================================================
+   5. importer
+============================================================ */
+function buildHeaderMap(headerRow){
+  const map = {};
+  (headerRow||[]).forEach((h,i)=>{
+    const n = normalizeHeader(h);
+    if(n && !(n in map)) map[n] = i;
+  });
+  return map;
+}
+function normalizeRows(aoa){
+  const warnings = [];
+  let skipped = 0;
+  const header = aoa[0] || [];
+  const hmap = buildHeaderMap(header);
+  const get = (row, key) => (key in hmap) ? row[hmap[key]] : undefined;
+
+  const viaNums = new Set(), cargoNums = new Set();
+  Object.keys(hmap).forEach(k=>{
+    let m;
+    if((m = k.match(/^経由地(\d+)$/))) viaNums.add(+m[1]);
+    if((m = k.match(/^荷物種類(\d+)$/))) cargoNums.add(+m[1]);
+  });
+  const viaList = [...viaNums].sort((a,b)=>a-b);
+  const cargoList = [...cargoNums].sort((a,b)=>a-b);
+
+  const byBl = new Map();
+  const order = [];
+  // 空欄なら設定。値が既にあり新しい値と食い違う場合は警告（空欄は食い違いとみなさない）
+  const setOrWarn = (obj,key,val,label,blNo)=>{
+    if(val==null || val==='') return;
+    if(obj[key]===''||obj[key]==null){ obj[key]=val; return; }
+    if(obj[key]!==val) warnings.push(`${blNo}: ${label} が行により異なります（最初の値を採用）`);
+  };
+  // 日付セル: 値があるのに解釈できない場合は警告
+  const parseDateOrWarn = (raw, label, blNo)=>{
+    if(raw==null || raw==='') return null;
+    const d = parseDate(raw);
+    if(d==null) warnings.push(`${blNo}: ${label} の日付を解釈できません ("${raw}")`);
+    return d;
+  };
+
+  for(let r=1; r<aoa.length; r++){
+    const row = aoa[r];
+    if(!row || row.every(c=>c==null||c==='')) continue;
+    const blNoRaw = get(row,'BL番号');
+    const blNo = blNoRaw!=null ? String(blNoRaw).trim() : '';
+    if(!blNo){ skipped++; continue; }
+    let bl = byBl.get(blNo.toLowerCase());
+    if(!bl){
+      bl = { blNo, customer:'', carrier:'', vessel:'', statusText:'', special:null,
+        pol:{name:'',eta:null,ata:null,etd:null,atd:null,lat:null,lng:null},
+        vias:[], pod:{name:'',eta:null,ata:null,out:null,nuts:null,lat:null,lng:null}, cargo:[] };
+      byBl.set(blNo.toLowerCase(), bl);
+      order.push(bl);
+    }
+    setOrWarn(bl,'customer', get(row,'顧客名'), '顧客名', blNo);
+    setOrWarn(bl,'carrier', get(row,'船会社'), '船会社', blNo);
+    setOrWarn(bl,'vessel', get(row,'船名'), '船名', blNo);
+    setOrWarn(bl,'statusText', get(row,'ステータス'), 'ステータス', blNo);
+    // v1.5: 動静データの「特別管理」列は読まない（特別管理は特別管理リストで管理する）
+    // 出荷港
+    setOrWarn(bl.pol,'name', get(row,'出荷港'), '出荷港', blNo);
+    const polEta=parseDateOrWarn(get(row,'出荷港ETA'),'出荷港ETA',blNo), polAta=parseDateOrWarn(get(row,'出荷港ATA'),'出荷港ATA',blNo),
+          polEtd=parseDateOrWarn(get(row,'出荷港ETD'),'出荷港ETD',blNo), polAtd=parseDateOrWarn(get(row,'出荷港ATD'),'出荷港ATD',blNo);
+    setOrWarn(bl.pol,'eta',polEta,'出荷港ETA',blNo);
+    setOrWarn(bl.pol,'ata',polAta,'出荷港ATA',blNo);
+    setOrWarn(bl.pol,'etd',polEtd,'出荷港ETD',blNo);
+    setOrWarn(bl.pol,'atd',polAtd,'出荷港ATD',blNo);
+    const polLat=get(row,'出荷港Lat'), polLng=get(row,'出荷港Lng');
+    if(polLat!=null && polLat!=='' && !isNaN(+polLat) && (bl.pol.lat==null)) bl.pol.lat=+polLat;
+    if(polLng!=null && polLng!=='' && !isNaN(+polLng) && (bl.pol.lng==null)) bl.pol.lng=+polLng;
+
+    // 経由地n
+    for(const vn of viaList){
+      const name = get(row, `経由地${vn}`);
+      if(name==null || name==='') continue;
+      const nm = String(name).trim();
+      let via = bl.vias.find(v=>v.name===nm);
+      if(!via){ via = {name:nm,eta:null,ata:null,etd:null,atd:null,lat:null,lng:null}; bl.vias.push(via); }
+      const e=parseDateOrWarn(get(row,`経由地${vn}ETA`),`経由地${vn}ETA`,blNo), a=parseDateOrWarn(get(row,`経由地${vn}ATA`),`経由地${vn}ATA`,blNo),
+            ed=parseDateOrWarn(get(row,`経由地${vn}ETD`),`経由地${vn}ETD`,blNo), ad=parseDateOrWarn(get(row,`経由地${vn}ATD`),`経由地${vn}ATD`,blNo);
+      setOrWarn(via,'eta',e,`経由地${vn}ETA`,blNo);
+      setOrWarn(via,'ata',a,`経由地${vn}ATA`,blNo);
+      setOrWarn(via,'etd',ed,`経由地${vn}ETD`,blNo);
+      setOrWarn(via,'atd',ad,`経由地${vn}ATD`,blNo);
+      const lat=get(row,`経由地${vn}Lat`), lng=get(row,`経由地${vn}Lng`);
+      if(lat!=null && lat!=='' && !isNaN(+lat) && via.lat==null) via.lat=+lat;
+      if(lng!=null && lng!=='' && !isNaN(+lng) && via.lng==null) via.lng=+lng;
+    }
+
+    // 到着港
+    setOrWarn(bl.pod,'name', get(row,'到着港'), '到着港', blNo);
+    const podEta=parseDateOrWarn(get(row,'到着港ETA'),'到着港ETA',blNo), podAta=parseDateOrWarn(get(row,'到着港ATA'),'到着港ATA',blNo),
+          podOut=parseDateOrWarn(get(row,'到着港搬出日'),'到着港搬出日',blNo);
+    const nutsRaw = get(row,'NUTS到着予定日') ?? get(row,'NUTS') ?? get(row,'NUTS到着予定');
+    const podNuts = parseDateOrWarn(nutsRaw,'NUTS到着予定日',blNo);
+    setOrWarn(bl.pod,'eta',podEta,'到着港ETA',blNo);
+    setOrWarn(bl.pod,'ata',podAta,'到着港ATA',blNo);
+    setOrWarn(bl.pod,'out',podOut,'到着港搬出日',blNo);
+    setOrWarn(bl.pod,'nuts',podNuts,'NUTS到着予定日',blNo);
+    const podLat=get(row,'到着港Lat'), podLng=get(row,'到着港Lng');
+    if(podLat!=null && podLat!=='' && !isNaN(+podLat) && bl.pod.lat==null) bl.pod.lat=+podLat;
+    if(podLng!=null && podLng!=='' && !isNaN(+podLng) && bl.pod.lng==null) bl.pod.lng=+podLng;
+
+    // 荷物: 番号付き(荷物種類n/数量n/単位n)・番号なし(荷物種類/数量/単位)の両方を受け付ける（縦持ち推奨）
+    const pushCargo = (type, qtyRaw, unitCol, label)=>{
+      if(type==null || type==='') return;
+      let combined = qtyRaw!=null ? String(qtyRaw) : '';
+      if(unitCol) combined = `${combined} ${unitCol}`.trim();
+      const parsed = parseQty(combined) || { qty:null, unit:'', raw:combined };
+      if(parsed.qty==null && combined) warnings.push(`${blNo}: ${label} の数量を解釈できませんでした ("${combined}")`);
+      bl.cargo.push({ type:String(type).trim(), qty:parsed.qty, unit:parsed.unit, raw:parsed.raw });
+    };
+    for(const cn of cargoList){
+      pushCargo(get(row, `荷物種類${cn}`), get(row, `数量${cn}`), get(row, `単位${cn}`), `荷物${cn}`);
+    }
+    pushCargo(get(row,'荷物種類'), get(row,'数量'), get(row,'単位'), '荷物');
+  }
+
+  order.forEach(bl=>{
+    if(!bl.pod.name) bl.pod.name = CONFIG.DEFAULT_POD;
+    [bl.pol, ...bl.vias, bl.pod].forEach(node=>{
+      if((node.lat==null || node.lng==null) && node.name){
+        const p = lookupPort(node.name);
+        if(p){ if(node.lat==null) node.lat=p.lat; if(node.lng==null) node.lng=p.lng; }
+      }
+    });
+  });
+
+  return { bls: order, warnings, skipped };
+}
+async function readFile(file){
+  const name = file.name.toLowerCase();
+  let wb;
+  if(name.endsWith('.csv')){
+    const buf = await file.arrayBuffer();
+    let text;
+    try{ text = new TextDecoder('utf-8', {fatal:true}).decode(buf); }
+    catch(e){ text = new TextDecoder('shift_jis').decode(buf); }
+    text = text.replace(/^﻿/, '');
+    wb = XLSX.read(text, { type:'string' });
+  } else {
+    const buf = await file.arrayBuffer();
+    wb = XLSX.read(buf, { type:'array', cellDates:true });
+  }
+  if(wb.SheetNames.includes(SL_SHEET) && !wb.SheetNames.includes('取込用データ')){
+    throw new Error('これは特別管理リストのファイルです。画面上部の「リストを開く」から開いてください');
+  }
+  const sheetName = wb.SheetNames.includes('取込用データ') ? '取込用データ' : wb.SheetNames[0];
+  const ws = wb.Sheets[sheetName];
+  if(!ws) throw new Error('シートが見つかりません');
+  const aoa = XLSX.utils.sheet_to_json(ws, { header:1, defval:null, raw:true });
+  return normalizeRows(aoa);
+}
+
+/* ============================================================
+   6. logic
+============================================================ */
+function nodesOf(bl){ return [bl.pol, ...bl.vias, bl.pod]; }
+
+function levelOf(dwell, settings){
+  if(dwell==null) return 'none';
+  if(dwell >= settings.dangerDays) return 'danger';
+  if(dwell >= settings.warnDays) return 'warn';
+  return 'ok';
+}
+
+// 4.3 滞留日数
+function dwellOf(node, T, isPod){
+  const arr = node.ata || node.eta || null;
+  const isEstimatedArr = !node.ata && !!node.eta;
+  if(!arr){
+    return { dwell:null, ongoing:false, etdOverdue:false, arr:null, depUsed:null, isEstimatedArr, isEstimatedDep:false };
+  }
+  // v1.4: 実績のみ。基準日までに到着済みの港だけを数え、出港(ATD/搬出日)が無ければ基準日まで。
+  // 将来の到着予定・出港予定(ETD)までの日数は含めない
+  const actDep = isPod ? node.out : node.atd;
+  const isEstimatedDep = !actDep && !isPod && !!node.etd && node.etd >= T; // 表示用(予定の斜体)のみ
+  let depUsed = null, hasActualDep = false;
+  if(arr <= T){
+    if(actDep && actDep <= T){ depUsed = actDep; hasActualDep = true; }
+    else depUsed = T;
+  }
+  let dwell = null;
+  if(depUsed != null){ dwell = diffDays(arr, depUsed); if(dwell < 0) dwell = 0; }
+  const ongoing = !hasActualDep && arr <= T;
+  const etdOverdue = !isPod && !hasActualDep && node.etd && node.etd < T && arr <= T;
+  return { dwell, ongoing, etdOverdue, arr, depUsed, isEstimatedArr, isEstimatedDep };
+}
+
+// 4.2 簡易 arr/dep (フェーズ判定用。dep は「実績出発」のみを採用する - ETD超過だけでは
+// 出港済みとみなさない。dwell計算(4.3)とは別ロジックで、etdOverdue/ongoingと矛盾しないための実装判断)
+function nodeArrDep(node, isPod){
+  const arr = node.ata || node.eta || null;
+  const dep = isPod ? (node.out || null) : (node.atd || null);
+  return { arr, dep };
+}
+
+// 4.4 フェーズ・現在地
+function analyze(bl, T, settings){
+  const nodes = nodesOf(bl);
+  const n = nodes.length;
+  const ads = nodes.map((nd,i)=> nodeArrDep(nd, i===n-1));
+  let phase='COMPLETED', locationLabel='-', locationKey='-', currentNodeIdx=-1, position=null;
+
+  // 12.6: ETAもATAも空欄（未定）のノードか
+  const isEtaUndef = nd => !nd.eta && !nd.ata;
+  // 12.6: ETAが基準日以前なのにATAが空欄のまま「到着済み」扱いになっているか（予定ベース）
+  const isAtaNotEntered = nd => !nd.ata && !!nd.eta && nd.eta<=T;
+  let sailBIdx = null;
+
+  const polAd = ads[0];
+  if(!polAd.dep || polAd.dep > T){
+    phase = 'NOT_DEPARTED';
+    currentNodeIdx = 0;
+    locationLabel = (polAd.arr && polAd.arr<=T) ? `${nodes[0].name||''} 滞留中` : `${nodes[0].name||''} 出港待ち`;
+    if(polAd.arr && polAd.arr<=T && isAtaNotEntered(nodes[0])) locationLabel += '（予定ベース・ATA未入力）';
+    locationKey = nodes[0].name || '-';
+  } else {
+    let found = false;
+    for(let i=1; i<n; i++){
+      const ad = ads[i];
+      const isPod = (i===n-1);
+      if(ad.arr && ad.arr<=T && (!ad.dep || ad.dep>T)){
+        phase = isPod ? 'ARRIVED' : 'AT_PORT';
+        currentNodeIdx = i;
+        locationLabel = isPod ? `${nodes[i].name||''} 到着済(搬出待ち)` : `${nodes[i].name||''} 滞留中`;
+        if(isAtaNotEntered(nodes[i])) locationLabel += '（予定ベース・ATA未入力）';
+        locationKey = nodes[i].name || '-';
+        found = true;
+        break;
+      }
+    }
+    if(!found){
+      const podAd = ads[n-1];
+      if(podAd.dep && podAd.dep<=T){
+        phase = 'COMPLETED';
+        currentNodeIdx = n-1;
+        locationLabel = `${nodes[n-1].name||''} 完了(搬出済)`;
+        locationKey = nodes[n-1].name || '-';
+      } else {
+        phase = 'SAILING';
+        let aIdx = 0;
+        for(let i=0; i<n-1; i++){ if(ads[i].dep && ads[i].dep<=T) aIdx = i; }
+        const bIdx = aIdx+1;
+        sailBIdx = bIdx;
+        const A = nodes[aIdx], B = nodes[bIdx];
+        currentNodeIdx = aIdx;
+        const bEtaUndef = isEtaUndef(B);
+        const etaLabel = bEtaUndef ? '（ETA未定）' : `（ETA ${fmtMD(B.ata||B.eta)}）`;
+        locationLabel = `${A.name||''} → ${B.name||''} 航海中${etaLabel}`;
+        locationKey = `${A.name||''} → ${B.name||''}`;
+        if(A.lat!=null && A.lng!=null && B.lat!=null && B.lng!=null){
+          const depA = ads[aIdx].dep, arrB = ads[bIdx].arr;
+          let t = 0.5, etaUnknown = false;
+          if(depA && arrB){
+            const total = diffDays(depA, arrB);
+            const elapsed = diffDays(depA, T);
+            t = total>0 ? elapsed/total : 0.5;
+            t = Math.max(0, Math.min(1, t));
+          } else {
+            // 次港の到着日が不明: 中間点ではなく出発港寄り(t=0.1)を目安位置とする(12.6)
+            t = 0.1;
+            etaUnknown = true;
+          }
+          position = { lat: A.lat+(B.lat-A.lat)*t, lng: A.lng+(B.lng-A.lng)*t, fromIdx:aIdx, toIdx:bIdx, etaUnknown };
+        }
+      }
+    }
+  }
+
+  const dwellNodes = nodes.map((nd,i)=> Object.assign({ name: nd.name, idx:i }, dwellOf(nd, T, i===n-1)));
+  const aheadIdx = phase==='SAILING' ? sailBIdx : currentNodeIdx+1;
+  dwellNodes.forEach((dn,i)=>{
+    dn.etaUndefined = i>=aheadIdx && dn.arr==null;
+    dn.ataNotEntered = dn.isEstimatedArr && dn.arr!=null && dn.arr<=T;
+  });
+  const hasEtaUndefined = dwellNodes.some(dn=>dn.etaUndefined);
+  let maxDwell = null;
+  dwellNodes.forEach(dn=>{ if(dn.dwell!=null){ if(maxDwell==null || dn.dwell>maxDwell) maxDwell = dn.dwell; } });
+  // 完了(搬出済)BLは過去の滞留で行ハイライトしない（各ノードの滞留日数は詳細モーダルで確認可能）
+  const level = (maxDwell==null || phase==='COMPLETED') ? 'ok' : levelOf(maxDwell, settings);
+
+  // 累計滞留(v1.4): 各港の滞留日数(実績のみ, dwellOf)の全港合計。赤/黄の判定(level)は港ごとの最大(maxDwell)で行う
+  let totalDwell = null;
+  dwellNodes.forEach(dn=>{ if(dn.dwell!=null) totalDwell = (totalDwell||0) + dn.dwell; });
+
+  return { phase, locationLabel, locationKey, currentNodeIdx, position, maxDwell, totalDwell, level, hasEtaUndefined, nodes: dwellNodes };
+}
+
+/* ============================================================
+   7. state
+============================================================ */
+function safeLSTest(){
+  try{ const k='__logidash_test__'; localStorage.setItem(k,'1'); localStorage.removeItem(k); return true; }
+  catch(e){ return false; }
+}
+const LS_OK = safeLSTest();
+
+const state = {
+  bls: [],
+  specialSet: new Set(),
+  settings: Object.assign({}, CONFIG.DEFAULT_SETTINGS),
+  baseDate: todayStr(),
+  filters: { customer:'', carrier:'', cargoType:'', via:'', text:'' },
+  specialCarrier: '',
+  phaseFilter: '',
+  etaFilter: false,
+  tab: 'map',
+  lastImport: null,
+  analysisCache: new Map(),
+  sortMap: {},
+  pageMap: {},
+  expanded: { customer: new Set(), cargo: new Set() },
+  pendingImport: null,
+  saveStatus: null, // null=保存対象なし(サンプル) / 'saved' / 'unsaved'
+  // v1.5 特別管理リスト(共有xlsx)。handle=接続中のファイル / lastModified=読込・保存時のファイル更新時刻(他者の更新検知用)
+  // saved=ファイル上の特別管理BL(未保存件数の算出用) / registered=BL番号→登録日時 / prevHandle=前回接続したファイル
+  slist: { handle:null, name:'', lastModified:null, updatedAt:'', saved:new Set(), registered:new Map(), prevHandle:null, busy:false }
+};
+
+function saveData(){
+  if(!LS_OK) return;
+  try{
+    localStorage.setItem(CONFIG.STORAGE_KEYS.data, JSON.stringify(state.bls));
+    state.saveStatus = 'saved';
+  }catch(e){
+    state.saveStatus = 'unsaved';
+    toast('ブラウザの保存容量を超えたため、データは次回起動時に復元されません（再取込してください）', 'warn');
+  }
+}
+function saveSpecial(){ if(!LS_OK) return; try{ localStorage.setItem(CONFIG.STORAGE_KEYS.special, JSON.stringify([...state.specialSet])); }catch(e){} }
+function saveSettings(){ if(!LS_OK) return; try{ localStorage.setItem(CONFIG.STORAGE_KEYS.settings, JSON.stringify(state.settings)); }catch(e){} }
+
+function getAnalysis(bl){
+  let a = state.analysisCache.get(bl.blNo);
+  if(!a){ a = analyze(bl, state.baseDate, state.settings); state.analysisCache.set(bl.blNo, a); }
+  return a;
+}
+function invalidateAnalysis(){ state.analysisCache.clear(); }
+
+/* ============================================================
+   8. selectors
+============================================================ */
+function matchesCommonFilters(bl){
+  const f = state.filters;
+  if(f.customer && bl.customer !== f.customer) return false;
+  if(f.carrier && bl.carrier !== f.carrier) return false;
+  if(f.cargoType && !bl.cargo.some(c=>c.type===f.cargoType)) return false;
+  if(f.via && !bl.vias.some(v=>v.name===f.via)) return false;
+  if(f.text){
+    const t = f.text.toLowerCase();
+    const hay = [bl.blNo, bl.vessel, bl.customer, bl.pol.name, bl.pod.name, ...bl.vias.map(v=>v.name)].join(' ').toLowerCase();
+    if(!hay.includes(t)) return false;
+  }
+  return true;
+}
+function filteredBLs(){
+  return state.bls.filter(matchesCommonFilters).filter(bl=>{
+    if(state.phaseFilter) return getAnalysis(bl).phase === state.phaseFilter;
+    return true;
+  }).filter(bl=>{
+    if(state.etaFilter) return getAnalysis(bl).hasEtaUndefined;
+    return true;
+  });
+}
+function specialBLs(){
+  return state.bls.filter(bl=>state.specialSet.has(bl.blNo))
+    .filter(matchesCommonFilters)
+    .filter(bl=> state.specialCarrier ? bl.carrier===state.specialCarrier : true);
+}
+function computeKPI(list){
+  const counts = { NOT_DEPARTED:0, SAILING:0, AT_PORT:0, ARRIVED:0, COMPLETED:0 };
+  let warnCount=0, dangerCount=0, specialCount=0, etaUndefinedCount=0;
+  list.forEach(bl=>{
+    const a = getAnalysis(bl);
+    counts[a.phase] = (counts[a.phase]||0)+1;
+    if(a.level==='warn') warnCount++;
+    if(a.level==='danger') dangerCount++;
+    if(state.specialSet.has(bl.blNo)) specialCount++;
+    if(a.hasEtaUndefined) etaUndefinedCount++;
+  });
+  return { total:list.length, counts, warnCount, dangerCount, specialCount, etaUndefinedCount };
+}
+function aggregateByLocation(list){
+  const map = new Map();
+  list.forEach(bl=>{
+    const a = getAnalysis(bl);
+    const key = a.locationKey;
+    if(!map.has(key)) map.set(key, { key, bls:[], vessels:new Set(), qty:[], specialCount:0, worst:'none' });
+    const g = map.get(key);
+    g.bls.push(bl); g.vessels.add(bl.vessel);
+    bl.cargo.forEach(c=>g.qty.push(c));
+    if(state.specialSet.has(bl.blNo)) g.specialCount++;
+    if(a.level==='danger') g.worst='danger';
+    else if(a.level==='warn' && g.worst!=='danger') g.worst='warn';
+    else if(g.worst==='none') g.worst='ok';
+  });
+  return [...map.values()];
+}
+function aggregateByCustomer(list){
+  const map = new Map();
+  list.forEach(bl=>{
+    if(!map.has(bl.customer)) map.set(bl.customer, { customer:bl.customer, bls:[], phaseCounts:{NOT_DEPARTED:0,SAILING:0,AT_PORT:0,ARRIVED:0,COMPLETED:0}, warnCount:0, specialCount:0, qty:[] });
+    const g = map.get(bl.customer);
+    g.bls.push(bl);
+    const a = getAnalysis(bl);
+    g.phaseCounts[a.phase] = (g.phaseCounts[a.phase]||0)+1;
+    if(a.level==='warn'||a.level==='danger') g.warnCount++;
+    if(state.specialSet.has(bl.blNo)) g.specialCount++;
+    bl.cargo.forEach(c=>g.qty.push(c));
+  });
+  return [...map.values()];
+}
+function aggregateByCargoType(list){
+  const map = new Map();
+  list.forEach(bl=>{
+    const a = getAnalysis(bl);
+    const types = new Set(bl.cargo.map(c=>c.type));
+    types.forEach(type=>{
+      if(!map.has(type)) map.set(type, { type, bls:[], qty:[], locations:new Map() });
+      const g = map.get(type);
+      g.bls.push(bl);
+      bl.cargo.filter(c=>c.type===type).forEach(c=>g.qty.push(c));
+      g.locations.set(a.locationKey, (g.locations.get(a.locationKey)||0)+1);
+    });
+  });
+  return [...map.values()];
+}
+function aggregateByCarrier(list){
+  const map = new Map();
+  list.forEach(bl=>{
+    if(!map.has(bl.carrier)) map.set(bl.carrier, { carrier:bl.carrier, bls:[], vessels:new Set(), warnCount:0 });
+    const g = map.get(bl.carrier);
+    g.bls.push(bl); g.vessels.add(bl.vessel);
+    const a = getAnalysis(bl);
+    if(a.level==='warn'||a.level==='danger') g.warnCount++;
+  });
+  return [...map.values()];
+}
+function warningList(list){
+  return list.filter(bl=>{ const a=getAnalysis(bl); return a.level==='warn'||a.level==='danger'; })
+    .sort((a,b)=> (getAnalysis(b).maxDwell??0) - (getAnalysis(a).maxDwell??0));
+}
+
+/* ============================================================
+   9. render - common helpers
+============================================================ */
+const PHASE_LABEL = { NOT_DEPARTED:'未出港', AT_PORT:'港滞留', SAILING:'航海中', ARRIVED:'到着済', COMPLETED:'完了' };
+const PHASE_COLOR = {
+  NOT_DEPARTED:'bg-slate-200 text-slate-700',
+  AT_PORT:'bg-amber-200 text-amber-800',
+  SAILING:'bg-sky-200 text-sky-800',
+  ARRIVED:'bg-emerald-200 text-emerald-800',
+  COMPLETED:'bg-gray-300 text-gray-700'
+};
+function phaseBadge(phase){ return `<span class="px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${PHASE_COLOR[phase]||''}">${esc(PHASE_LABEL[phase]||phase)}</span>`; }
+function dwellBadge(a){
+  if(a.maxDwell==null) return '<span class="text-slate-400 text-xs">-</span>';
+  const cls = a.level==='danger' ? 'bg-red-100 text-red-700 border border-red-300'
+    : a.level==='warn' ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
+    : 'bg-slate-100 text-slate-600';
+  return `<span class="px-2 py-0.5 rounded text-xs font-semibold tabular-nums ${cls}">${a.maxDwell}日</span>`;
+}
+function specialCheckbox(blNo, checked){
+  return `<input type="checkbox" class="js-special" data-bl="${esc(blNo)}" aria-label="${esc(blNo)}の特別管理" ${checked?'checked':''} onclick="event.stopPropagation()">`;
+}
+// 12.7: NUTS到着予定日セル。到着港ETAとの差を小さく表示（遅れ=赤・早まり=青）。計算には使わず表示のみ
+function nutsCellHtml(bl){
+  if(!bl.pod.nuts) return '<span class="text-slate-300">-</span>';
+  const base = fmtMD(bl.pod.nuts);
+  if(!bl.pod.eta) return `<span class="tabular-nums">${esc(base)}</span>`;
+  const diff = diffDays(bl.pod.eta, bl.pod.nuts);
+  if(diff===0) return `<span class="tabular-nums">${esc(base)}</span>`;
+  const cls = diff>0 ? 'text-red-600' : 'text-blue-600';
+  const label = diff>0 ? `ETA比 +${diff}日` : `ETA比 ${diff}日`;
+  return `<span class="tabular-nums">${esc(base)}</span><div class="text-xs ${cls}">${esc(label)}</div>`;
+}
+function cargoSummary(bl){
+  if(!bl.cargo.length) return '<span class="text-slate-400">-</span>';
+  return bl.cargo.map(c=> `<div class="text-xs leading-5">${esc(c.type)} <span class="tabular-nums text-slate-500">${c.qty!=null?c.qty.toLocaleString():''}${c.unit?esc(' '+c.unit):''}</span></div>`).join('');
+}
+
+const ALL_COLUMNS = [
+  {key:'special', label:''},
+  {key:'detail', label:''},
+  {key:'blNo', label:'BL番号'},
+  {key:'customer', label:'顧客名'},
+  {key:'phase', label:'現在地'},
+  {key:'statusText', label:'ステータス'},
+  {key:'pol', label:'出荷港'},
+  {key:'via1', label:'経由地1'},
+  {key:'via2', label:'経由地2'},
+  {key:'via3', label:'経由地3'},
+  {key:'via4', label:'経由地4'},
+  {key:'via5', label:'経由地5'},
+  {key:'pod', label:'到着港'},
+  {key:'nuts', label:'NUTS到着予定'},
+  {key:'dwell', label:'累計滞留'},
+  {key:'cargo', label:'荷物'},
+  {key:'carrier', label:'船会社'},
+  {key:'vessel', label:'船名'}
+];
+const SORTABLE_KEYS = ['blNo','customer','carrier','vessel','phase','statusText','pol','via1','via2','via3','via4','via5','pod','nuts','dwell'];
+function viaNameAt(bl, i){ return (bl.vias[i-1] && bl.vias[i-1].name) || ''; }
+function sortComparator(key){
+  return (a,b)=>{
+    const aa=getAnalysis(a), ab=getAnalysis(b);
+    let va, vb;
+    switch(key){
+      case 'blNo': va=a.blNo; vb=b.blNo; break;
+      case 'customer': va=a.customer; vb=b.customer; break;
+      case 'carrier': va=a.carrier; vb=b.carrier; break;
+      case 'vessel': va=a.vessel; vb=b.vessel; break;
+      case 'phase': va=aa.phase; vb=ab.phase; break;
+      case 'statusText': va=a.statusText||''; vb=b.statusText||''; break;
+      case 'pol': va=a.pol.name||''; vb=b.pol.name||''; break;
+      case 'via1': va=viaNameAt(a,1); vb=viaNameAt(b,1); break;
+      case 'via2': va=viaNameAt(a,2); vb=viaNameAt(b,2); break;
+      case 'via3': va=viaNameAt(a,3); vb=viaNameAt(b,3); break;
+      case 'via4': va=viaNameAt(a,4); vb=viaNameAt(b,4); break;
+      case 'via5': va=viaNameAt(a,5); vb=viaNameAt(b,5); break;
+      case 'pod': va=a.pod.name||''; vb=b.pod.name||''; break;
+      case 'nuts': va=a.pod.nuts||''; vb=b.pod.nuts||''; break;
+      case 'dwell': va=aa.totalDwell??-1; vb=ab.totalDwell??-1; break;
+      default: va=a.blNo; vb=b.blNo;
+    }
+    if(key.indexOf('via')===0 || key==='nuts'){
+      // 経由地・NUTSソートは空欄を末尾扱いにする
+      if(va==='' && vb==='') return 0;
+      if(va==='') return 1;
+      if(vb==='') return -1;
+    }
+    if(va<vb) return -1; if(va>vb) return 1; return 0;
+  };
+}
+// 港列(出荷港/経由地n/到着港)の第2キー: その港の日付(着 = ATA→ETA、無ければ 発 = ATD→ETD)の古い順。日付なしは末尾
+function portDateComparator(key){
+  const nodeOf = key==='pol' ? (bl=>bl.pol) : key==='pod' ? (bl=>bl.pod)
+    : /^via\d$/.test(key) ? (bl=>bl.vias[+key.slice(3)-1]) : null;
+  if(!nodeOf) return null;
+  const dateOf = bl=>{ const nd = nodeOf(bl); return nd ? (nd.ata||nd.eta||nd.atd||nd.etd||'') : ''; };
+  return (a,b)=>{
+    const da = dateOf(a), db = dateOf(b);
+    if(da===db) return 0;
+    if(da==='') return 1;
+    if(db==='') return -1;
+    return da<db ? -1 : 1;
+  };
+}
+function sortStateFor(tableId){
+  if(!state.sortMap[tableId]) state.sortMap[tableId] = { key:'blNo', dir:'asc' };
+  return state.sortMap[tableId];
+}
+// 11.5 ページング: テーブルごとにページ番号・1ページ件数を保持
+function pageStateFor(tableId){
+  if(!state.pageMap[tableId]) state.pageMap[tableId] = { page:1, pageSize:100 };
+  return state.pageMap[tableId];
+}
+function resetPages(){ state.pageMap = {}; }
+let lastRenderedLists = {};
+
+function viaCellHtml(bl, a, i){
+  const node = bl.vias[i-1];
+  if(!node){
+    return `<td class="px-2 py-2 text-center text-slate-300">-</td>`;
+  }
+  const dn = a.nodes[i] || {};
+  const arrDate = node.ata || node.eta || null;
+  const arrEst = !node.ata && !!node.eta;
+  const depDate = node.atd || node.etd || null;
+  const depEst = !node.atd && !!node.etd;
+  const arrHtml = arrDate ? (arrEst ? `<i>${fmtMD(arrDate)}</i>` : fmtMD(arrDate)) : (dn.etaUndefined ? '未定' : '-');
+  const depHtml = depDate ? (depEst ? `<i>${fmtMD(depDate)}</i>` : fmtMD(depDate)) : '-';
+  const highlightCls = (state.filters.via && state.filters.via===node.name) ? 'bg-indigo-100 rounded px-1' : '';
+  const badge = (dn.dwell!=null && dn.dwell>=state.settings.warnDays)
+    ? `<div class="mt-0.5">${dwellBadge({maxDwell:dn.dwell, level:levelOf(dn.dwell,state.settings)})}</div>` : '';
+  const more = (i===5 && bl.vias.length>5) ? `<div class="text-xs text-slate-400">他${bl.vias.length-5}港</div>` : '';
+  return `<td class="px-2 py-2 tabular-nums whitespace-nowrap">
+    <span class="${highlightCls}">${esc(node.name)}</span>
+    <div class="text-xs text-slate-400">着 ${arrHtml} / 発 ${depHtml}</div>
+    ${badge}${more}
+  </td>`;
+}
+// 出荷港セル: 経由地セルと同じ「着 / 発」表示（予定日は斜体）。滞留が注意日数以上ならバッジを出す
+function polCellHtml(bl, a){
+  const node = bl.pol;
+  const dn = a.nodes[0] || {};
+  const arrDate = node.ata || node.eta || null;
+  const depDate = node.atd || node.etd || null;
+  const arrHtml = arrDate ? (!node.ata ? `<i>${fmtMD(arrDate)}</i>` : fmtMD(arrDate)) : '-';
+  const depHtml = depDate ? (!node.atd ? `<i>${fmtMD(depDate)}</i>` : fmtMD(depDate)) : '-';
+  const badge = (dn.dwell!=null && dn.dwell>=state.settings.warnDays)
+    ? `<div class="mt-0.5">${dwellBadge({maxDwell:dn.dwell, level:levelOf(dn.dwell,state.settings)})}</div>` : '';
+  return `<td class="px-2 py-2 tabular-nums whitespace-nowrap">${esc(node.name)}
+    <div class="text-xs text-slate-400">着 ${arrHtml} / 発 ${depHtml}</div>${badge}</td>`;
+}
+function blRowHtml(bl, checked){
+  const a = getAnalysis(bl);
+  const rowCls = a.level==='danger' ? 'bg-red-50' : a.level==='warn' ? 'bg-yellow-50' : 'bg-white';
+  const viaCells = [1,2,3,4,5].map(i=>viaCellHtml(bl, a, i)).join('');
+  const podDn = a.nodes[a.nodes.length-1] || {};
+  // hover色は固定列が下の列を透かさないよう不透明色にする
+  return `<tr class="${rowCls} border-b hover:bg-indigo-50 cursor-pointer js-row" data-bl="${esc(bl.blNo)}">
+    <td class="px-2 py-2 sticky-col sc-1" onclick="event.stopPropagation()">${specialCheckbox(bl.blNo, checked)}</td>
+    <td class="px-2 py-2 text-center sticky-col sc-2"><button class="js-detail text-indigo-600 hover:underline text-xs whitespace-nowrap" data-bl="${esc(bl.blNo)}">詳細</button></td>
+    <td class="px-2 py-2 font-medium whitespace-nowrap sticky-col sc-3">${esc(bl.blNo)}</td>
+    <td class="px-2 py-2 whitespace-nowrap">${esc(bl.customer)}</td>
+    <td class="px-2 py-2 whitespace-nowrap">${phaseBadge(a.phase)}<div class="text-xs text-slate-500">${esc(a.locationLabel)}</div></td>
+    <td class="px-2 py-2 text-slate-500 whitespace-nowrap">${esc(bl.statusText||'-')}</td>
+    ${polCellHtml(bl, a)}
+    ${viaCells}
+    <td class="px-2 py-2 tabular-nums whitespace-nowrap">${esc(bl.pod.name)}<div class="text-xs text-slate-400">ETA ${etaOrUndef(bl.pod.eta, podDn.etaUndefined)} / ATA ${fmtMD(bl.pod.ata)}</div></td>
+    <td class="px-2 py-2 tabular-nums whitespace-nowrap">${nutsCellHtml(bl)}</td>
+    <td class="px-2 py-2 whitespace-nowrap" title="${a.maxDwell!=null ? `港ごとの最大 ${a.maxDwell}日（赤/黄はこちらで判定）` : ''}">${dwellBadge({maxDwell:a.totalDwell, level:a.level})}</td>
+    <td class="px-2 py-2 whitespace-nowrap">${cargoSummary(bl)}</td>
+    <td class="px-2 py-2 whitespace-nowrap">${esc(bl.carrier)}</td>
+    <td class="px-2 py-2 whitespace-nowrap">${esc(bl.vessel)}</td>
+  </tr>`;
+}
+const PAGE_SIZE_OPTIONS = [50,100,200,500];
+function pagerHtml(tableId, pg, totalCount, totalPages){
+  const startIdx = totalCount===0 ? 0 : (pg.page-1)*pg.pageSize+1;
+  const endIdx = Math.min(pg.page*pg.pageSize, totalCount);
+  const sizeOptions = PAGE_SIZE_OPTIONS.map(n=>`<option value="${n}" ${pg.pageSize===n?'selected':''}>${n}件</option>`).join('');
+  return `<div class="flex flex-wrap items-center gap-2 mb-1 text-sm text-slate-500">
+    <span>${startIdx.toLocaleString()}–${endIdx.toLocaleString()} / ${totalCount.toLocaleString()}件</span>
+    <select class="js-pagesize border rounded px-1 py-0.5 text-xs" data-table="${tableId}">${sizeOptions}</select>
+    <span class="flex items-center gap-1">
+      <button class="js-pager px-1.5 py-0.5 border rounded text-xs disabled:opacity-30" data-table="${tableId}" data-dir="first" ${pg.page<=1?'disabled':''}>&laquo;</button>
+      <button class="js-pager px-1.5 py-0.5 border rounded text-xs disabled:opacity-30" data-table="${tableId}" data-dir="prev" ${pg.page<=1?'disabled':''}>&lsaquo;</button>
+      <span class="text-xs">ページ ${pg.page} / ${totalPages}</span>
+      <button class="js-pager px-1.5 py-0.5 border rounded text-xs disabled:opacity-30" data-table="${tableId}" data-dir="next" ${pg.page>=totalPages?'disabled':''}>&rsaquo;</button>
+      <button class="js-pager px-1.5 py-0.5 border rounded text-xs disabled:opacity-30" data-table="${tableId}" data-dir="last" ${pg.page>=totalPages?'disabled':''}>&raquo;</button>
+    </span>
+  </div>`;
+}
+function renderBLTable(list, opts){
+  const tableId = opts.tableId;
+  const sortState = sortStateFor(tableId);
+  // 降順は第1キー(列の値)だけを反転し、港列の第2キー(日付の古い順)は常に昇順のまま
+  const primary = sortComparator(sortState.key);
+  const secondary = portDateComparator(sortState.key);
+  const dirMul = sortState.dir==='desc' ? -1 : 1;
+  const sorted = [...list].sort((a,b)=> dirMul*primary(a,b) || (secondary ? secondary(a,b) : 0));
+  const totalCount = sorted.length;
+  const pg = pageStateFor(tableId);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pg.pageSize));
+  if(pg.page > totalPages) pg.page = totalPages;
+  if(pg.page < 1) pg.page = 1;
+  const startOffset = (pg.page-1)*pg.pageSize;
+  const pageList = sorted.slice(startOffset, startOffset+pg.pageSize);
+  lastRenderedLists[tableId] = pageList;
+  const allChecked = pageList.length>0 && pageList.every(bl=>state.specialSet.has(bl.blNo));
+  const headerCb = `<input type="checkbox" id="${tableId}-headercb" ${allChecked?'checked':''} aria-label="このページの全行" title="このページの全行">`;
+  const rows = pageList.map(bl=>blRowHtml(bl, state.specialSet.has(bl.blNo))).join('');
+  const arrow = dir => dir==='asc' ? '▲' : '▼';
+  const headerCells = ALL_COLUMNS.map(c=>{
+    if(c.key==='special') return `<th class="px-2 py-2 bg-slate-100 sticky-col sc-1">${headerCb}</th>`;
+    if(c.key==='detail') return `<th class="px-2 py-2 bg-slate-100 sticky-col sc-2"></th>`;
+    const sortable = SORTABLE_KEYS.includes(c.key);
+    const active = sortState.key===c.key;
+    const stickyCls = c.key==='blNo' ? 'sticky-col sc-3' : '';
+    return `<th class="px-2 py-2 bg-slate-100 whitespace-nowrap ${stickyCls} ${sortable?'cursor-pointer select-none js-sort':''}" data-key="${c.key}" data-table="${tableId}">${esc(c.label)}${active?(' '+arrow(sortState.dir)):''}</th>`;
+  }).join('');
+  return `${pagerHtml(tableId, pg, totalCount, totalPages)}
+  <div class="overflow-auto border rounded-lg bg-white" style="max-height:60vh">
+  <table class="min-w-full text-sm">
+    <thead><tr>${headerCells}</tr></thead>
+    <tbody id="${tableId}-body">${rows || `<tr><td colspan="${ALL_COLUMNS.length}" class="text-center text-slate-400 py-8">データがありません</td></tr>`}</tbody>
+  </table></div>`;
+}
+
+/* ============================================================
+   9b. render - map tab
+============================================================ */
+function kpiCardsHtml(k){
+  const cards = [
+    { label:'総BL', value:k.total, phase:null },
+    { label:'未出港', value:k.counts.NOT_DEPARTED||0, phase:'NOT_DEPARTED' },
+    { label:'航海中', value:k.counts.SAILING||0, phase:'SAILING' },
+    { label:'港滞留中', value:k.counts.AT_PORT||0, phase:'AT_PORT' },
+    { label:'到着済', value:k.counts.ARRIVED||0, phase:'ARRIVED' }
+  ];
+  const cardHtml = cards.map(c=> `<div class="bg-white rounded-xl shadow-sm p-3 ${c.phase?'cursor-pointer hover:ring-2 hover:ring-indigo-300 js-kpi':''}" ${c.phase?`data-phase="${c.phase}"`:''}>
+      <div class="text-xs text-slate-500">${esc(c.label)}</div><div class="text-lg font-bold tabular-nums">${c.value}</div></div>`).join('');
+  const warnCard = `<div class="bg-white rounded-xl shadow-sm p-3"><div class="text-xs text-slate-500">滞留警告(赤/黄)</div><div class="text-lg font-bold tabular-nums"><span class="text-red-600">${k.dangerCount}</span> / <span class="text-yellow-600">${k.warnCount}</span></div></div>`;
+  const etaCard = `<div class="bg-white rounded-xl shadow-sm p-3 cursor-pointer hover:ring-2 hover:ring-indigo-300 js-kpi" data-eta="1"><div class="text-xs text-slate-500">ETA未定</div><div class="text-lg font-bold tabular-nums">${k.etaUndefinedCount}</div></div>`;
+  // ★特別管理の件数はタブのバッジで分かるためカードは置かない（7枚で1行に収める）
+  return cardHtml + warnCard + etaCard;
+}
+// "1,000 CTN / 20 PLT" を単位ごとに折り返せる形にする（単位の途中では折り返さない）
+function qtyLinesHtml(text){
+  return String(text).split(' / ').map(t=>`<span class="whitespace-nowrap">${esc(t)}</span>`).join(' / ');
+}
+function renderSummaryTableHtml(groups){
+  const rows = groups.map(g=>{
+    const cls = g.worst==='danger' ? 'text-red-600' : g.worst==='warn' ? 'text-yellow-600' : 'text-slate-400';
+    const label = g.worst==='danger' ? '赤' : g.worst==='warn' ? '黄' : '-';
+    return `<tr class="js-loc-row cursor-pointer hover:bg-indigo-50" data-loc="${esc(g.key)}">
+      <td class="px-2 py-1.5" style="min-width:9em">${esc(g.key)}</td>
+      <td class="px-2 py-1.5 text-center tabular-nums">${g.bls.length}</td>
+      <td class="px-2 py-1.5 text-center tabular-nums">${g.vessels.size}</td>
+      <td class="px-2 py-1.5 tabular-nums" style="min-width:8em">${qtyLinesHtml(sumByUnit(g.qty))}</td>
+      <td class="px-2 py-1.5 text-center tabular-nums">${g.specialCount}</td>
+      <td class="px-2 py-1.5 text-center font-semibold ${cls}">${label}</td>
+    </tr>`;
+  }).join('');
+  return `<div class="overflow-auto border rounded-lg bg-white" style="max-height:460px">
+  <table class="min-w-full text-sm">
+  <thead><tr class="bg-slate-100 [&>th]:bg-slate-100 [&>th]:whitespace-nowrap">
+    <th class="px-2 py-1.5 text-left">場所</th><th class="px-2 py-1.5">BL数</th><th class="px-2 py-1.5">船数</th><th class="px-2 py-1.5 text-left">数量</th><th class="px-2 py-1.5">★</th><th class="px-2 py-1.5">判定</th>
+  </tr></thead><tbody>${rows || '<tr><td colspan="6" class="text-center text-slate-400 py-6">データなし</td></tr>'}</tbody></table></div>`;
+}
+
+// 港ごとの滞留中/通過予定/通過済インデックスを描画1回だけ全BL走査して作る(11.5 性能対応)
+function buildPortIndex(list){
+  const idx = new Map();
+  const ensure = name=>{ if(!idx.has(name)) idx.set(name, { staying:[], scheduled:[], passed:0 }); return idx.get(name); };
+  list.forEach(bl=>{
+    const a = getAnalysis(bl);
+    const nodes = [bl.pol, ...bl.vias, bl.pod];
+    nodes.forEach((nd,idxN)=>{
+      if(!nd.name) return;
+      const dn = a.nodes[idxN];
+      const arrived = dn.arr!=null && dn.arr<=state.baseDate;
+      const g = ensure(nd.name);
+      if(idxN===a.currentNodeIdx && arrived && (a.phase==='AT_PORT'||a.phase==='ARRIVED'||a.phase==='NOT_DEPARTED')){
+        g.staying.push({ bl, dn });
+      } else if(!arrived){
+        g.scheduled.push({ bl, node:nd, dn });
+      } else {
+        g.passed++;
+      }
+    });
+  });
+  return idx;
+}
+function portStats(portName, portIndex){
+  return portIndex.get(portName) || { staying:[], scheduled:[], passed:0 };
+}
+function portPopupHtml(portName, portIndex){
+  const { staying, scheduled, passed } = portStats(portName, portIndex);
+  const totalQty = sumByUnit(staying.flatMap(s=>s.bl.cargo));
+  const LIMIT = 30;
+  const stayShown = staying.slice(0, LIMIT);
+  const stayRows = stayShown.map(s=> `<div class="flex items-center gap-1 text-xs py-1 border-b last:border-0">
+      ${specialCheckbox(s.bl.blNo, state.specialSet.has(s.bl.blNo))}
+      <a href="#" class="js-detail text-indigo-600 hover:underline font-medium" data-bl="${esc(s.bl.blNo)}">${esc(s.bl.blNo)}</a>
+      <span class="text-slate-400">${esc(s.bl.customer)}</span>
+      <span class="text-slate-400">${esc(s.bl.vessel)}</span>
+      ${dwellBadge({maxDwell:s.dn.dwell, level: s.dn.dwell==null?'ok':levelOf(s.dn.dwell,state.settings)})}
+    </div>`).join('') || '<div class="text-xs text-slate-400">なし</div>';
+  const stayMore = staying.length>LIMIT ? `<div class="text-xs text-slate-400">他${staying.length-LIMIT}件</div>` : '';
+  const schedShown = scheduled.slice(0, LIMIT);
+  const schedRows = schedShown.map(s=> `<div class="text-xs py-0.5 border-b last:border-0">${esc(s.bl.blNo)} <span class="text-slate-400">ETA ${fmtMD(s.node.eta)}</span></div>`).join('') || '<div class="text-xs text-slate-400">なし</div>';
+  const schedMore = scheduled.length>LIMIT ? `<div class="text-xs text-slate-400">他${scheduled.length-LIMIT}件</div>` : '';
+  return `<div style="min-width:220px;max-width:280px" class="text-sm">
+    <div class="font-bold mb-1">${esc(portName)}</div>
+    <div class="text-xs text-slate-500 mb-1">滞留中 ${staying.length}件 / 合計 ${esc(totalQty)}</div>
+    <div class="font-semibold text-xs mt-1">滞留中</div>${stayRows}${stayMore}
+    <div class="font-semibold text-xs mt-1">通過予定</div>${schedRows}${schedMore}
+    <div class="text-xs text-slate-400 mt-1">通過済 ${passed}件</div>
+  </div>`;
+}
+
+let leafletMap=null, portLayerGroup=null, shipLayerGroup=null, routeLayerGroup=null;
+let openPopups = new Map(); // portName -> L.Popup
+let lastPortMarkers = new Map(); // portName -> L.CircleMarker
+let mapFitDone = false;
+// ポップアップは地図(高さ520px)に収まる高さを上限とし、超えた分は中でスクロールする。
+// 上限が無いと件数が多い港で autoPan が地図を大きくずらし、下部が見切れる
+const POPUP_OPTS = { maxWidth:300, maxHeight:340, autoPanPadding:[10,10] };
+const MAP_NORTH_LIMIT = 85;
+// ポップアップは地点の上側に開く。maxBounds で北端より上へはパンできないため、
+// 地点から北端までの余白に収まるよう高さ上限を開くたびに調整する（引いたズームで北寄りの港を開いた時の見切れ対策）
+function fitPopupHeight(popup){
+  const ll = popup.getLatLng();
+  if(!ll) return;
+  const roomAbove = leafletMap.project(ll).y - leafletMap.project([MAP_NORTH_LIMIT, ll.lng]).y;
+  const mapH = leafletMap.getSize().y;
+  const h = Math.max(120, Math.min(POPUP_OPTS.maxHeight, roomAbove - 70, mapH - 90));
+  if(popup.options.maxHeight !== h){ popup.options.maxHeight = h; popup.update(); }
+}
+
+function initMapIfNeeded(){
+  if(leafletMap || typeof L==='undefined') return;
+  const el = document.getElementById('mapDiv');
+  if(!el) return;
+  // maxBounds: 南北方向の端より外(地図の無い灰色領域)へ動かさない。東西は worldCopyJump で無制限のまま
+  leafletMap = L.map(el, { minZoom: 2, worldCopyJump: true, preferCanvas: true,
+    maxBounds: [[-MAP_NORTH_LIMIT, -100000], [MAP_NORTH_LIMIT, 100000]], maxBoundsViscosity: 1.0 }).setView([20,120], 3);
+  // 地図タイル: OSM公式(tile.openstreetmap.org)は Referer の無いアクセス(file:// で開いた場合)を
+  // 利用ポリシー違反として 403 画像を返すため、file:// では Esri を既定にする。右上で切替可能・選択は保存。
+  const ATTR_OSM = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors';
+  const baseLayers = {
+    'OpenStreetMap': L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: ATTR_OSM, maxZoom: 19 }),
+    'Esri World Street Map': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, HERE, Garmin, USGS, NGA, EPA, USDA, NPS', maxZoom: 18 }),
+    '国土地理院 標準地図': L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+      attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院</a>', maxZoom: 18 })
+  };
+  let savedBase = null;
+  if(LS_OK){ try{ savedBase = localStorage.getItem(CONFIG.STORAGE_KEYS.baseLayer); }catch(e){} }
+  const defaultBase = /^https?:$/.test(location.protocol) ? 'OpenStreetMap' : 'Esri World Street Map';
+  (baseLayers[savedBase] || baseLayers[defaultBase]).addTo(leafletMap);
+  L.control.layers(baseLayers, null, { position:'topright' }).addTo(leafletMap);
+  setTimeout(ensureMapLayout, 100);
+  leafletMap.on('baselayerchange', e=>{ if(LS_OK){ try{ localStorage.setItem(CONFIG.STORAGE_KEYS.baseLayer, e.name); }catch(err){} } });
+  portLayerGroup = L.layerGroup().addTo(leafletMap);
+  shipLayerGroup = L.layerGroup().addTo(leafletMap);
+  routeLayerGroup = L.layerGroup().addTo(leafletMap);
+}
+function renderMap(list){
+  initMapIfNeeded();
+  if(!leafletMap) return;
+  const reopenNames = [...openPopups.keys()]; // clearLayers で popupclose が発火し消えるため先に退避
+  portLayerGroup.clearLayers();
+  shipLayerGroup.clearLayers();
+  lastPortMarkers = new Map();
+
+  // 港の集計は描画ごとに全BLを1回だけ走査してインデックス化する(11.5)
+  const portIndex = buildPortIndex(list);
+
+  const portMap = new Map();
+  list.forEach(bl=>{
+    const nodeList = [[bl.pol,false], ...bl.vias.map(v=>[v,false]), [bl.pod,true]];
+    nodeList.forEach(([nd,isPod])=>{
+      if(nd.lat==null || nd.lng==null || !nd.name) return;
+      if(!portMap.has(nd.name)) portMap.set(nd.name, {lat:nd.lat, lng:nd.lng, isPod:false, count:0});
+      const p = portMap.get(nd.name);
+      p.count++;
+      if(isPod) p.isPod = true;
+    });
+  });
+
+  const bounds = [];
+  portMap.forEach((p, name)=>{
+    const { staying } = portStats(name, portIndex);
+    let worst = 'none';
+    staying.forEach(s=>{
+      const lv = s.dn.dwell==null ? 'ok' : levelOf(s.dn.dwell, state.settings);
+      if(lv==='danger') worst='danger';
+      else if(lv==='warn' && worst!=='danger') worst='warn';
+      else if(worst==='none') worst='ok';
+    });
+    const color = worst==='danger' ? '#dc2626' : worst==='warn' ? '#d97706' : worst==='ok' ? '#2563eb' : '#94a3b8';
+    const radius = Math.min(8 + p.count*1.5, 22);
+    const marker = L.circleMarker([p.lat, p.lng], {
+      radius, color: p.isPod ? '#1e293b' : color, weight: p.isPod ? 3 : 1, fillColor: color, fillOpacity:0.8
+    });
+    // ポップアップ内容は開いた時に生成する(11.5 性能対応)
+    marker.bindPopup(()=>portPopupHtml(name, portIndex), POPUP_OPTS);
+    marker.on('popupopen', e=>{
+      fitPopupHeight(e.popup);
+      openPopups.set(name, e.popup);
+      const el = e.popup.getElement();
+      if(el && !el.__logidashDetailBound){
+        el.__logidashDetailBound = true;
+        el.addEventListener('click', ev=>{
+          const btn = ev.target.closest('.js-detail');
+          if(btn){ ev.preventDefault(); renderModal(btn.dataset.bl); }
+        });
+      }
+    });
+    marker.on('popupclose', ()=>{ openPopups.delete(name); });
+    marker.addTo(portLayerGroup);
+    lastPortMarkers.set(name, marker);
+    bounds.push([p.lat, p.lng]);
+  });
+
+  // 航海中の船マーカーは船名＋位置でまとめる(11.5)
+  const shipGroups = new Map();
+  list.forEach(bl=>{
+    const a = getAnalysis(bl);
+    if(a.phase==='SAILING' && a.position){
+      const key = `${bl.vessel}|${a.position.lat.toFixed(3)}|${a.position.lng.toFixed(3)}`;
+      if(!shipGroups.has(key)) shipGroups.set(key, { vessel:bl.vessel, lat:a.position.lat, lng:a.position.lng, locationLabel:a.locationLabel, etaUnknown:!!a.position.etaUnknown, bls:[] });
+      shipGroups.get(key).bls.push(bl);
+    }
+  });
+  const SHIP_LIMIT = 30;
+  shipGroups.forEach(g=>{
+    const icon = L.divIcon({ html:'<i class="fa-solid fa-ship" style="color:#0ea5e9;font-size:16px;filter:drop-shadow(0 0 2px #fff)"></i>', className:'', iconSize:[20,20], iconAnchor:[10,10] });
+    const m = L.marker([g.lat, g.lng], { icon });
+    m.bindPopup(()=>{
+      const shown = g.bls.slice(0, SHIP_LIMIT);
+      const rows = shown.map(bl=>`<div class="text-xs py-0.5 border-b last:border-0">${esc(bl.blNo)} <span class="text-slate-400">${esc(bl.customer)}</span></div>`).join('');
+      const more = g.bls.length>SHIP_LIMIT ? `<div class="text-xs text-slate-400">他${g.bls.length-SHIP_LIMIT}件</div>` : '';
+      const unknownNote = g.etaUnknown ? '<div class="text-xs text-amber-600 mt-1">ETA未定のため位置は目安</div>' : '';
+      return `<div class="text-sm"><b>${esc(g.vessel)}</b><br>${esc(g.locationLabel)}${unknownNote}<div class="mt-1">${rows}${more}</div></div>`;
+    }, POPUP_OPTS);
+    m.on('popupopen', e=>fitPopupHeight(e.popup));
+    m.addTo(shipLayerGroup);
+    bounds.push([g.lat, g.lng]);
+  });
+
+  renderRoutes(list);
+
+  if(!mapFitDone && bounds.length && leafletMap.getSize().x > 0){
+    leafletMap.fitBounds(bounds, { padding:[30,30], maxZoom:6 });
+    mapFitDone = true;
+  }
+  reopenNames.forEach(name=>{ const m = lastPortMarkers.get(name); if(m) m.openPopup(); });
+}
+// ルート線のみ再描画（特別管理トグル時はこれだけ呼べばよい。港・船マーカーは特別管理に依存しない）
+function renderRoutes(list){
+  if(!leafletMap) return;
+  routeLayerGroup.clearLayers();
+  // ルート線: 同一経路(座標列が同じ)をまとめて1本にする(11.5)
+  const routeGroups = new Map();
+  list.forEach(bl=>{
+    const nodes = [bl.pol, ...bl.vias, bl.pod].filter(nd=>nd.lat!=null && nd.lng!=null);
+    if(nodes.length<2) return;
+    const isSpecial = state.specialSet.has(bl.blNo);
+    const key = (isSpecial?'S|':'N|') + nodes.map(nd=>`${nd.lat},${nd.lng}`).join('|');
+    if(!routeGroups.has(key)) routeGroups.set(key, { latlngs: nodes.map(nd=>[nd.lat, nd.lng]), special:isSpecial, count:0 });
+    routeGroups.get(key).count++;
+  });
+  routeGroups.forEach(g=>{
+    const weight = g.special ? Math.min(2 + g.count*0.6, 6) : Math.min(1 + g.count*0.35, 5);
+    L.polyline(g.latlngs, { color: g.special?'#f97316':'#94a3b8', weight, opacity: g.special?0.9:0.45, interactive:false }).addTo(routeLayerGroup).bringToBack();
+  });
+}
+function flyToLocation(key){
+  if(!leafletMap) return;
+  const marker = lastPortMarkers.get(key);
+  if(marker){ leafletMap.flyTo(marker.getLatLng(), 6); marker.openPopup(); }
+}
+function renderMapTabContent(list){
+  const k = computeKPI(list);
+  const groups = aggregateByLocation(list);
+  const container = document.getElementById('tab-map');
+  const phaseChip = filterChipHtml();
+  const mapLibOk = (typeof L !== 'undefined');
+  // 骨組み(#mapDiv含む)は初回のみ生成し、以降は各パーツだけ差し替える。
+  // #mapDiv を作り直すと Leaflet インスタンスが DOM から切り離され地図が消えるため。
+  if(!document.getElementById('mapDiv')){
+    container.innerHTML = `
+    ${!mapLibOk ? '<div class="p-3 mb-2 bg-yellow-50 text-yellow-700 text-sm rounded">地図ライブラリを読み込めませんでした。地図機能は利用できません（その他の機能は利用可能です）。</div>' : ''}
+    <div id="mapKpis" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 mb-3"></div>
+    <div id="mapPhaseChip"></div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-2">
+        <div id="mapDiv" style="height:520px" class="rounded-lg overflow-hidden bg-slate-50">${mapLibOk ? '' : '<div class="flex items-center justify-center h-full text-slate-400 text-sm">地図ライブラリ未読込</div>'}</div>
+      </div>
+      <div><div class="font-semibold text-sm mb-1">現在地別サマリー</div><div id="mapSummary"></div></div>
+    </div>
+    <div class="mt-4">
+      <div class="font-semibold text-sm mb-1">滞留警告BL</div>
+      <div id="mapWarn"></div>
+    </div>`;
+  }
+  document.getElementById('mapKpis').innerHTML = kpiCardsHtml(k);
+  document.getElementById('mapPhaseChip').innerHTML = phaseChip;
+  document.getElementById('mapSummary').innerHTML = renderSummaryTableHtml(groups);
+  document.getElementById('mapWarn').innerHTML = renderBLTable(warningList(list), { tableId:'warn' });
+  if(mapLibOk) renderMap(list);
+}
+
+/* ============================================================
+   9c. render - 全BL一覧タブ
+============================================================ */
+function filterChipHtml(){
+  const chips = [];
+  if(state.phaseFilter) chips.push(`<span class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full">フェーズ: ${esc(PHASE_LABEL[state.phaseFilter]||state.phaseFilter)} <button id="btnClearPhase" class="ml-1 font-bold">×</button></span>`);
+  if(state.etaFilter) chips.push(`<span class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full">ETA未定 <button id="btnClearEta" class="ml-1 font-bold">×</button></span>`);
+  return chips.length ? `<div class="mb-2 text-xs flex gap-2">${chips.join('')}</div>` : '';
+}
+// v1.5: 全BL一覧でフェーズ(＋ETA未定)を直接選べるセレクト。件数は共通フィルター適用後の件数
+function phaseSelectHtml(){
+  const base = state.bls.filter(matchesCommonFilters);
+  const counts = {}; let etaCount = 0;
+  base.forEach(bl=>{ const a = getAnalysis(bl); counts[a.phase] = (counts[a.phase]||0)+1; if(a.hasEtaUndefined) etaCount++; });
+  const cur = state.etaFilter ? 'ETA_UNDEF' : state.phaseFilter;
+  const opt = (v, label, n)=> `<option value="${v}" ${cur===v?'selected':''}>${esc(label)}${n!=null?`（${n.toLocaleString()}）`:''}</option>`;
+  const opts = opt('', 'フェーズ: すべて', base.length)
+    + ['NOT_DEPARTED','SAILING','AT_PORT','ARRIVED','COMPLETED'].map(p=>opt(p, PHASE_LABEL[p], counts[p]||0)).join('')
+    + opt('ETA_UNDEF', 'ETA未定', etaCount);
+  return `<div class="mb-2"><select id="filterPhase" class="border rounded px-2 py-1 text-sm ${cur?'border-indigo-400 bg-indigo-50':''}">${opts}</select></div>`;
+}
+function renderAllTabContent(list){
+  document.getElementById('tab-all').innerHTML = phaseSelectHtml() + renderBLTable(list, { tableId:'all' });
+}
+
+/* ============================================================
+   9d. render - 特別管理BLタブ
+============================================================ */
+function renderSpecialTab(){
+  const specialAll = state.bls.filter(bl=>state.specialSet.has(bl.blNo));
+  const blNos = new Set(state.bls.map(bl=>bl.blNo));
+  const missing = [...state.specialSet].filter(no=>!blNos.has(no));
+  const missingNote = missing.length
+    ? `<div class="text-xs text-slate-500 mb-2" title="${esc(missing.join(', '))}">特別管理のうち、今の動静データに無いBL: ${missing.length}件（特別管理リストには残ります）</div>` : '';
+  const carriers = [...new Set(specialAll.map(bl=>bl.carrier))].filter(Boolean).sort();
+  const list = specialBLs();
+  const k = computeKPI(list);
+  const body = specialAll.length===0
+    ? `<div class="text-center text-slate-400 py-16 bg-white rounded-xl border">各一覧の☐にチェックすると、ここに集約されます</div>`
+    : renderBLTable(list, { tableId:'special' });
+  return `
+  <div class="flex flex-wrap items-center gap-3 mb-3">
+    <select id="specialCarrierSelect" class="border rounded px-2 py-1 text-sm">
+      <option value="">船社: すべて</option>
+      ${carriers.map(c=>`<option value="${esc(c)}" ${state.specialCarrier===c?'selected':''}>${esc(c)}</option>`).join('')}
+    </select>
+    <button id="btnExportView" class="px-3 py-1.5 text-sm rounded bg-indigo-600 text-white disabled:opacity-40 disabled:cursor-not-allowed" ${list.length?'':'disabled'}>表示中（船社フィルター適用）を出力</button>
+    <button id="btnExportAll" class="px-3 py-1.5 text-sm rounded bg-indigo-500 text-white disabled:opacity-40 disabled:cursor-not-allowed" ${specialAll.length?'':'disabled'}>全特別管理BLを出力</button>
+    ${(specialAll.length && !list.length) ? '<span class="text-xs text-amber-600">現在のフィルター条件では出力対象が0件です</span>' : ''}
+  </div>
+  ${missingNote}
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+    <div class="bg-white rounded-xl shadow-sm p-3"><div class="text-xs text-slate-500">件数</div><div class="text-lg font-bold tabular-nums">${k.total}</div></div>
+    <div class="bg-white rounded-xl shadow-sm p-3"><div class="text-xs text-slate-500">航海中</div><div class="text-lg font-bold tabular-nums">${k.counts.SAILING||0}</div></div>
+    <div class="bg-white rounded-xl shadow-sm p-3"><div class="text-xs text-slate-500">滞留警告(赤/黄)</div><div class="text-lg font-bold tabular-nums"><span class="text-red-600">${k.dangerCount}</span> / <span class="text-yellow-600">${k.warnCount}</span></div></div>
+    <div class="bg-white rounded-xl shadow-sm p-3"><div class="text-xs text-slate-500">数量合計</div><div class="text-sm font-semibold tabular-nums">${sumByUnit(list.flatMap(bl=>bl.cargo))}</div></div>
+  </div>
+  ${body}`;
+}
+
+/* ============================================================
+   9e. render - 顧客別/荷物別集計タブ
+============================================================ */
+function renderAggregateTab(list){
+  const byCust = aggregateByCustomer(list);
+  const byCargo = aggregateByCargoType(list);
+  const byCarrier = aggregateByCarrier(list);
+
+  const custRows = byCust.map(g=>{
+    const expanded = state.expanded.customer.has(g.customer);
+    const sub = expanded ? `<tr><td colspan="10" class="p-2 bg-slate-50">${renderBLTable(g.bls, { tableId:'cust-'+encodeURIComponent(g.customer) })}</td></tr>` : '';
+    return `<tr class="js-expand-cust cursor-pointer hover:bg-indigo-50 border-b" data-key="${esc(g.customer)}">
+      <td class="px-2 py-1.5">${expanded?'▼':'▶'} ${esc(g.customer||'(未設定)')}</td>
+      <td class="px-2 py-1.5 text-center tabular-nums">${g.bls.length}</td>
+      <td class="px-2 py-1.5 text-center tabular-nums">${g.phaseCounts.NOT_DEPARTED}</td>
+      <td class="px-2 py-1.5 text-center tabular-nums">${g.phaseCounts.SAILING}</td>
+      <td class="px-2 py-1.5 text-center tabular-nums">${g.phaseCounts.AT_PORT}</td>
+      <td class="px-2 py-1.5 text-center tabular-nums">${g.phaseCounts.ARRIVED}</td>
+      <td class="px-2 py-1.5 text-center tabular-nums">${g.phaseCounts.COMPLETED}</td>
+      <td class="px-2 py-1.5 text-center tabular-nums">${g.warnCount}</td>
+      <td class="px-2 py-1.5 text-center tabular-nums">${g.specialCount}</td>
+      <td class="px-2 py-1.5 tabular-nums whitespace-nowrap">${sumByUnit(g.qty)}</td>
+    </tr>${sub}`;
+  }).join('');
+
+  const cargoRows = byCargo.map(g=>{
+    const expanded = state.expanded.cargo.has(g.type);
+    const top3 = [...g.locations.entries()].sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>`${k}(${v})`).join(', ');
+    const sub = expanded ? `<tr><td colspan="4" class="p-2 bg-slate-50">${renderBLTable(g.bls, { tableId:'cargo-'+encodeURIComponent(g.type) })}</td></tr>` : '';
+    return `<tr class="js-expand-cargo cursor-pointer hover:bg-indigo-50 border-b" data-key="${esc(g.type)}">
+      <td class="px-2 py-1.5">${expanded?'▼':'▶'} ${esc(g.type)}</td>
+      <td class="px-2 py-1.5 text-center tabular-nums">${g.bls.length}</td>
+      <td class="px-2 py-1.5 tabular-nums whitespace-nowrap">${sumByUnit(g.qty)}</td>
+      <td class="px-2 py-1.5 text-xs text-slate-500">${esc(top3)}</td>
+    </tr>${sub}`;
+  }).join('');
+
+  const carrierRows = byCarrier.map(g=>`<tr class="border-b">
+    <td class="px-2 py-1.5">${esc(g.carrier)}</td>
+    <td class="px-2 py-1.5 text-center tabular-nums">${g.bls.length}</td>
+    <td class="px-2 py-1.5 text-center tabular-nums">${g.vessels.size}</td>
+    <td class="px-2 py-1.5 text-center tabular-nums">${g.warnCount}</td>
+  </tr>`).join('');
+
+  return `
+  <div class="mb-6">
+    <div class="font-semibold text-sm mb-1">顧客別</div>
+    <div class="overflow-auto border rounded-lg bg-white" style="max-height:60vh">
+    <table class="min-w-full text-sm">
+      <thead><tr class="bg-slate-100">
+        <th class="px-2 py-1.5 text-left">顧客名</th><th class="px-2 py-1.5">BL数</th><th class="px-2 py-1.5">未出港</th><th class="px-2 py-1.5">航海中</th><th class="px-2 py-1.5">滞留</th><th class="px-2 py-1.5">到着</th><th class="px-2 py-1.5">完了</th><th class="px-2 py-1.5">警告</th><th class="px-2 py-1.5">★</th><th class="px-2 py-1.5">数量合計</th>
+      </tr></thead>
+      <tbody>${custRows || '<tr><td colspan="10" class="text-center text-slate-400 py-8">データがありません</td></tr>'}</tbody>
+    </table></div>
+  </div>
+  <div class="mb-6">
+    <div class="font-semibold text-sm mb-1">荷物種類別</div>
+    <div class="overflow-auto border rounded-lg bg-white" style="max-height:50vh">
+    <table class="min-w-full text-sm">
+      <thead><tr class="bg-slate-100">
+        <th class="px-2 py-1.5 text-left">荷物種類</th><th class="px-2 py-1.5">該当BL数</th><th class="px-2 py-1.5">数量合計</th><th class="px-2 py-1.5 text-left">主な現在地(上位3件)</th>
+      </tr></thead>
+      <tbody>${cargoRows || '<tr><td colspan="4" class="text-center text-slate-400 py-8">データがありません</td></tr>'}</tbody>
+    </table></div>
+  </div>
+  <div>
+    <div class="font-semibold text-sm mb-1">船会社別</div>
+    <div class="overflow-auto border rounded-lg bg-white" style="max-height:40vh">
+    <table class="min-w-full text-sm">
+      <thead><tr class="bg-slate-100"><th class="px-2 py-1.5 text-left">船会社</th><th class="px-2 py-1.5">BL数</th><th class="px-2 py-1.5">船数</th><th class="px-2 py-1.5">警告件数</th></tr></thead>
+      <tbody>${carrierRows || '<tr><td colspan="4" class="text-center text-slate-400 py-8">データがありません</td></tr>'}</tbody>
+    </table></div>
+  </div>`;
+}
+
+/* ============================================================
+   9f. render - 詳細モーダル
+============================================================ */
+function renderModal(blNo){
+  const bl = state.bls.find(b=>b.blNo===blNo);
+  const root = document.getElementById('modalRoot');
+  if(!bl){ root.innerHTML=''; return; }
+  const a = getAnalysis(bl);
+  const nodesInfo = [ {label:'出荷港', node:bl.pol}, ...bl.vias.map((v,i)=>({label:`経由地${i+1}`, node:v})), {label:'到着港', node:bl.pod} ];
+  const timeline = nodesInfo.map((ni,idx)=>{
+    const dn = a.nodes[idx];
+    const sailing = a.phase==='SAILING' && a.position;
+    const isCurrent = sailing ? (idx===a.position.fromIdx || idx===a.position.toIdx) : idx===a.currentNodeIdx;
+    const curLabel = !sailing ? '(現在)' : idx===a.position.fromIdx ? '(出港済・航海中)' : '(次の寄港地)';
+    const isPodNode = idx===nodesInfo.length-1;
+    let badges = '';
+    if(dn.dwell!=null) badges += dwellBadge({ maxDwell:dn.dwell, level: levelOf(dn.dwell, state.settings) });
+    if(dn.ongoing) badges += ' <span class="ml-1 text-xs px-1.5 py-0.5 rounded bg-sky-100 text-sky-700">継続中</span>';
+    if(dn.etdOverdue) badges += ' <span class="ml-1 text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-700">出港遅延</span>';
+    if(dn.etaUndefined) badges += ' <span class="ml-1 text-xs px-1.5 py-0.5 rounded bg-slate-200 text-slate-600">ETA未定</span>';
+    if(dn.ataNotEntered) badges += ' <span class="ml-1 text-xs px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">ATA未入力</span>';
+    const est = dn.isEstimatedArr || dn.isEstimatedDep;
+    const nutsLine = isPodNode ? ` / NUTS ${fmtMD(ni.node.nuts)}` : '';
+    return `<div class="relative pl-6 pb-4 border-l-2 ${isCurrent?'border-indigo-500':'border-slate-200'}">
+      <div class="absolute -left-[7px] top-0 w-3 h-3 rounded-full ${isCurrent?'bg-indigo-500':'bg-slate-300'}"></div>
+      <div class="font-semibold ${est?'italic text-slate-600':''}">${esc(ni.label)}: ${esc(ni.node.name||'-')} ${isCurrent?`<span class="text-xs text-indigo-600 not-italic">${curLabel}</span>`:''}</div>
+      <div class="text-xs text-slate-500">ETA ${fmtMD(ni.node.eta)} / ATA ${fmtMD(ni.node.ata)} / ${isPodNode ? `搬出 ${fmtMD(ni.node.out)}` : `ETD ${fmtMD(ni.node.etd)} / ATD ${fmtMD(ni.node.atd)}`}${nutsLine}</div>
+      <div class="mt-1">${badges}</div>
+    </div>`;
+  }).join('');
+  const cargoRows = bl.cargo.map(c=>`<tr class="border-b"><td class="px-2 py-1">${esc(c.type)}</td><td class="px-2 py-1 text-right tabular-nums">${c.qty??'-'}</td><td class="px-2 py-1">${esc(c.unit)}</td></tr>`).join('');
+  const totalQty = sumByUnit(bl.cargo);
+  root.innerHTML = `
+  <div class="fixed inset-0 bg-black/40 z-[1000] flex items-center justify-center p-4" id="modalBackdrop">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto" id="modalBox">
+      <div class="flex items-center justify-between p-4 border-b sticky top-0 bg-white z-10">
+        <div class="flex items-center gap-2 flex-wrap">
+          <h3 class="text-lg font-bold">${esc(bl.blNo)}</h3>
+          ${phaseBadge(a.phase)}
+          <label class="flex items-center gap-1 text-sm ml-2">${specialCheckbox(bl.blNo, state.specialSet.has(bl.blNo))} 特別管理</label>
+        </div>
+        <button id="modalClose" class="text-slate-400 hover:text-slate-700 text-2xl leading-none px-2">&times;</button>
+      </div>
+      <div class="p-4 grid grid-cols-2 md:grid-cols-5 gap-3 text-sm border-b">
+        <div><div class="text-xs text-slate-400">顧客名</div>${esc(bl.customer)}</div>
+        <div><div class="text-xs text-slate-400">船会社</div>${esc(bl.carrier)}</div>
+        <div><div class="text-xs text-slate-400">船名</div>${esc(bl.vessel)}</div>
+        <div><div class="text-xs text-slate-400">ステータス(入力)</div>${esc(bl.statusText||'-')}</div>
+        <div><div class="text-xs text-slate-400">現在地(算出)</div>${esc(a.locationLabel)}</div>
+      </div>
+      <div class="p-4 border-b">
+        <div class="font-semibold mb-2 text-sm">ルートタイムライン</div>
+        ${timeline}
+        <button id="modalShowOnMap" data-bl="${esc(bl.blNo)}" class="mt-1 text-xs text-indigo-600 hover:underline"><i class="fa-solid fa-map"></i> 地図で見る</button>
+      </div>
+      <div class="p-4">
+        <div class="font-semibold mb-2 text-sm">荷物内訳</div>
+        <table class="w-full text-sm"><thead><tr class="text-slate-400 text-xs"><th class="px-2 py-1 text-left">種類</th><th class="px-2 py-1 text-right">数量</th><th class="px-2 py-1 text-left">単位</th></tr></thead>
+        <tbody>${cargoRows || '<tr><td colspan="3" class="text-slate-400 text-center py-2">なし</td></tr>'}</tbody></table>
+        <div class="text-right text-sm mt-1 text-slate-500">合計: ${esc(totalQty)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   10. exporter
+============================================================ */
+// 12.3: 取込用データの列（縦持ち＝1行=1BL×1荷物）。経由地は1〜N（既定5）
+function longFormatHeader(maxVia){
+  const header = ['BL番号','顧客名','船会社','船名','ステータス',
+    '出荷港','出荷港ETA','出荷港ATA','出荷港ETD','出荷港ATD','出荷港Lat','出荷港Lng'];
+  const dateCols = [6,7,8,9];
+  for(let i=1;i<=maxVia;i++){
+    const base = header.length;
+    header.push(`経由地${i}`,`経由地${i}ETA`,`経由地${i}ATA`,`経由地${i}ETD`,`経由地${i}ATD`,`経由地${i}Lat`,`経由地${i}Lng`);
+    dateCols.push(base+1, base+2, base+3, base+4);
+  }
+  const podBase = header.length;
+  header.push('到着港','到着港ETA','到着港ATA','到着港搬出日','NUTS到着予定日','到着港Lat','到着港Lng');
+  dateCols.push(podBase+1, podBase+2, podBase+3, podBase+4);
+  header.push('荷物種類','数量','単位');
+  return { header, dateCols };
+}
+function downloadTemplate(){
+  if(typeof XLSX==='undefined'){ toast('Excelライブラリが読み込まれていません', 'error'); return; }
+  const { header, dateCols } = longFormatHeader(2);
+  const rows = [header,
+    ['BL-SAMPLE-001','サンプル商事','ONE','SAMPLE VESSEL V.001','サンプルステータス',
+     '上海港','2026-01-01','','2026-01-03','','','',
+     '釜山港','2026-01-05','2026-01-05','2026-01-06','2026-01-06','','',
+     '','','','','','','',
+     '名古屋港','2026-01-15','','','2026-01-15','','',
+     '電子部品','100','CTN'],
+    ['BL-SAMPLE-001','','','','', '','','','','','','', '','','','','','','', '','','','','','','', '','','','','','','',
+     '精密機械','5','pcs']
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = header.map(()=>({wch:14}));
+  applyDateColumns(ws, rows, dateCols);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '取込用データ');
+  XLSX.writeFile(wb, '取込テンプレート.xlsx');
+}
+// 11.3: "YYYY-MM-DD" 文字列を Excel の日付シリアル値セルに変換して書き込む(タイムゾーンの影響を受けない)
+function excelDateSerial(dateStr){
+  if(!dateStr) return null;
+  const [y,m,d] = String(dateStr).split('-').map(Number);
+  return Date.UTC(y,m-1,d)/86400000 + 25569;
+}
+// aoa_to_sheet で作った ws の指定列(0-based, ヘッダー行除く)を日付セルに置き換える
+function applyDateColumns(ws, rows, colIdxs){
+  colIdxs.forEach(c=>{
+    for(let r=1; r<rows.length; r++){
+      const val = rows[r][c];
+      const addr = XLSX.utils.encode_cell({ r, c });
+      if(val){
+        const serial = excelDateSerial(val);
+        ws[addr] = { t:'n', v:serial, z:'yyyy/mm/dd' };
+      } else {
+        ws[addr] = { t:'s', v:'' };
+      }
+    }
+  });
+}
+function exportSpecial(scope){
+  if(typeof XLSX==='undefined'){ toast('Excelライブラリが読み込まれていません', 'error'); return; }
+  const list = scope==='view' ? specialBLs() : state.bls.filter(bl=>state.specialSet.has(bl.blNo));
+  if(list.length===0){ toast('出力対象がありません', 'error'); return; }
+  const T = state.baseDate;
+
+  // シート1: 経由地(要約1列)を廃止し、経由地1〜5を個別列に分ける。日付列のインデックスを収集する。
+  const s1header = ['BL番号','顧客名','船会社','船名','現在地(算出)','ステータス(入力)','出荷港','出荷港ETD','出荷港ATD'];
+  const s1dateCols = [7,8];
+  for(let i=1;i<=5;i++){
+    const base = s1header.length;
+    s1header.push(`経由地${i}`,`経由地${i}ETA`,`経由地${i}ATA`,`経由地${i}ETD`,`経由地${i}ATD`,`経由地${i}滞留日数`);
+    s1dateCols.push(base+1, base+2, base+3, base+4);
+  }
+  s1header.push('その他経由地(6港目以降)');
+  const s1podEtaIdx = s1header.length + 1;
+  const s1podAtaIdx = s1header.length + 2;
+  const s1nutsIdx = s1header.length + 3;
+  s1header.push('到着港','到着港ETA','到着港ATA','NUTS到着予定日','最大滞留日数','累計滞留日数','滞留警告','荷物内訳');
+  s1dateCols.push(s1podEtaIdx, s1podAtaIdx, s1nutsIdx);
+  const s1baseDateIdx = s1header.length;
+  s1header.push('基準日');
+  s1dateCols.push(s1baseDateIdx);
+
+  const s1rows = [s1header];
+  const s2rows = [['BL番号','区分','港名','ETA','ATA','ETD','ATD','滞留日数','判定']];
+  const s2dateCols = [3,4,5,6];
+  const s3rows = [['BL番号','顧客名','荷物種類','数量','単位']];
+
+  list.forEach(bl=>{
+    const a = getAnalysis(bl);
+    const cargoSummaryStr = bl.cargo.map(c=>`${c.type} ${c.qty??''}${c.unit?(' '+c.unit):''}`).join(' / ');
+    const warnLabel = a.level==='danger' ? '警告' : a.level==='warn' ? '注意' : '-';
+    const row = [bl.blNo, bl.customer, bl.carrier, bl.vessel, a.locationLabel, bl.statusText, bl.pol.name, bl.pol.etd||'', bl.pol.atd||''];
+    for(let i=1;i<=5;i++){
+      const v = bl.vias[i-1];
+      const dn = a.nodes[i];
+      if(v) row.push(v.name, v.eta||'', v.ata||'', v.etd||'', v.atd||'', (dn && dn.dwell!=null) ? dn.dwell : '');
+      else row.push('','','','','','');
+    }
+    const extraVias = bl.vias.slice(5);
+    const extraStr = extraVias.map(v=>{
+      const arr = v.ata||v.eta, dep = v.atd||v.etd;
+      return `${v.name}[着 ${fmtYMD(arr)} 発 ${fmtYMD(dep)}]`;
+    }).join(' → ');
+    row.push(extraStr);
+    row.push(bl.pod.name, bl.pod.eta||'', bl.pod.ata||'', bl.pod.nuts||'', a.maxDwell??'', a.totalDwell??'', warnLabel, cargoSummaryStr, T);
+    s1rows.push(row);
+
+    const nodesInfo = [ {label:'出荷港', node:bl.pol}, ...bl.vias.map((v,i)=>({label:`経由地${i+1}`, node:v})), {label:'到着港', node:bl.pod} ];
+    nodesInfo.forEach((ni,idx)=>{
+      const dn = a.nodes[idx];
+      const judge = dn.dwell==null ? '-' : dn.dwell>=state.settings.dangerDays ? '警告' : dn.dwell>=state.settings.warnDays ? '注意' : '正常';
+      s2rows.push([bl.blNo, ni.label, ni.node.name, ni.node.eta||'', ni.node.ata||'', ni.node.etd||ni.node.out||'', ni.node.atd||'', dn.dwell??'', judge]);
+    });
+    bl.cargo.forEach(c=> s3rows.push([bl.blNo, bl.customer, c.type, c.qty??'', c.unit]));
+  });
+
+  // 取込用データ(シート4)は縦持ち（1行=1BL×1荷物、荷物が無いBLも1行）。経由地は1〜N（最低5）(12.3)
+  const maxVia = Math.max(5, ...list.map(bl=>bl.vias.length));
+  const { header: s4header, dateCols: s4dateCols } = longFormatHeader(maxVia);
+  const s4rows = [s4header];
+  list.forEach(bl=>{
+    const baseRow = [bl.blNo, bl.customer, bl.carrier, bl.vessel, bl.statusText,
+      bl.pol.name, bl.pol.eta||'', bl.pol.ata||'', bl.pol.etd||'', bl.pol.atd||'', bl.pol.lat??'', bl.pol.lng??''];
+    for(let i=0;i<maxVia;i++){
+      const v = bl.vias[i];
+      if(v) baseRow.push(v.name, v.eta||'', v.ata||'', v.etd||'', v.atd||'', v.lat??'', v.lng??'');
+      else baseRow.push('','','','','','','');
+    }
+    baseRow.push(bl.pod.name, bl.pod.eta||'', bl.pod.ata||'', bl.pod.out||'', bl.pod.nuts||'', bl.pod.lat??'', bl.pod.lng??'');
+    const cargoList = bl.cargo.length ? bl.cargo : [null];
+    cargoList.forEach((c,i)=>{
+      const row = i===0 ? baseRow.slice() : [bl.blNo, ...baseRow.slice(1).map(()=>'')];
+      if(c) row.push(c.type, c.qty??'', c.unit);
+      else row.push('','','');
+      s4rows.push(row);
+    });
+  });
+
+  const wb = XLSX.utils.book_new();
+  const ws1 = XLSX.utils.aoa_to_sheet(s1rows); ws1['!cols'] = s1header.map(()=>({wch:14}));
+  applyDateColumns(ws1, s1rows, s1dateCols);
+  const ws2 = XLSX.utils.aoa_to_sheet(s2rows); ws2['!cols'] = s2rows[0].map(()=>({wch:14}));
+  applyDateColumns(ws2, s2rows, s2dateCols);
+  const ws3 = XLSX.utils.aoa_to_sheet(s3rows); ws3['!cols'] = s3rows[0].map(()=>({wch:14}));
+  const ws4 = XLSX.utils.aoa_to_sheet(s4rows); ws4['!cols'] = s4header.map(()=>({wch:14}));
+  applyDateColumns(ws4, s4rows, s4dateCols);
+  XLSX.utils.book_append_sheet(wb, ws1, '特別管理BL一覧');
+  XLSX.utils.book_append_sheet(wb, ws2, '経由港明細');
+  XLSX.utils.book_append_sheet(wb, ws3, '荷物明細');
+  XLSX.utils.book_append_sheet(wb, ws4, '取込用データ');
+  const now = new Date();
+  const ts = `${now.getFullYear()}${pad2(now.getMonth()+1)}${pad2(now.getDate())}_${pad2(now.getHours())}${pad2(now.getMinutes())}`;
+  XLSX.writeFile(wb, `特別管理BL_${ts}.xlsx`);
+}
+
+/* ============================================================
+   11. events / shell / init
+============================================================ */
+function renderHeaderShell(){
+  document.getElementById('appHeader').innerHTML = `
+  <div class="max-w-[1600px] mx-auto px-4 py-2.5 flex flex-wrap items-center gap-3">
+    <div class="flex items-center gap-2 mr-4">
+      <i class="fa-solid fa-ship text-indigo-400 text-xl"></i>
+      <div><div class="font-bold text-lg leading-tight">LogiDash</div><div class="text-[11px] text-slate-400 leading-tight">国際コンテナ動静確認ダッシュボード</div></div>
+    </div>
+    <label class="text-xs text-slate-300">基準日
+      <input type="date" id="baseDateInput" value="${state.baseDate}" class="ml-1 text-slate-900 rounded px-1.5 py-0.5 text-sm">
+    </label>
+    <button id="btnToday" class="text-xs bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded">今日</button>
+    <label class="text-xs text-slate-300">注意日数
+      <input type="number" id="warnDaysInput" min="0" value="${state.settings.warnDays}" class="ml-1 w-14 text-slate-900 rounded px-1.5 py-0.5 text-sm">
+    </label>
+    <label class="text-xs text-slate-300">警告日数
+      <input type="number" id="dangerDaysInput" min="0" value="${state.settings.dangerDays}" class="ml-1 w-14 text-slate-900 rounded px-1.5 py-0.5 text-sm">
+    </label>
+    <div class="flex-1"></div>
+    <button id="btnImportFile" class="text-xs bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded"><i class="fa-solid fa-file-import mr-1"></i>取込</button>
+    <button id="btnTemplate" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded"><i class="fa-solid fa-file-excel mr-1"></i>取込テンプレート</button>
+    <button id="btnSample" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded"><i class="fa-solid fa-rotate-left mr-1"></i>サンプルに戻す</button>
+  </div>`;
+}
+function renderFilterBarShell(){
+  document.getElementById('filterBar').innerHTML = `
+  <div class="max-w-[1600px] mx-auto px-4 py-2 flex flex-wrap items-center gap-2 text-sm">
+    <select id="filterCustomer" class="border rounded px-2 py-1"></select>
+    <select id="filterCarrier" class="border rounded px-2 py-1"></select>
+    <select id="filterCargo" class="border rounded px-2 py-1"></select>
+    <select id="filterVia" class="border rounded px-2 py-1"></select>
+    <input id="filterText" type="text" placeholder="BL番号・船名・港名・顧客名で検索" class="border rounded px-2 py-1 flex-1 min-w-[200px]">
+    <button id="btnClearFilters" class="text-xs text-indigo-600 hover:underline">クリア</button>
+  </div>`;
+}
+function refreshFilterOptions(){
+  const customers = [...new Set(state.bls.map(b=>b.customer).filter(Boolean))].sort();
+  const carriers = [...new Set(state.bls.map(b=>b.carrier).filter(Boolean))].sort();
+  const cargoTypes = [...new Set(state.bls.flatMap(b=>b.cargo.map(c=>c.type)).filter(Boolean))].sort();
+  const vias = [...new Set(state.bls.flatMap(b=>b.vias.map(v=>v.name)).filter(Boolean))].sort();
+  const sel = (id, arr, label, cur)=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.innerHTML = `<option value="">${label}: すべて</option>` + arr.map(v=>`<option value="${esc(v)}" ${cur===v?'selected':''}>${esc(v)}</option>`).join('');
+  };
+  sel('filterCustomer', customers, '顧客', state.filters.customer);
+  sel('filterCarrier', carriers, '船会社', state.filters.carrier);
+  sel('filterCargo', cargoTypes, '荷物種類', state.filters.cargoType);
+  sel('filterVia', vias, '経由地', state.filters.via);
+}
+function renderTabsShell(){
+  document.getElementById('tabNav').innerHTML = `
+  <div class="max-w-[1600px] mx-auto px-4 flex flex-wrap items-center gap-1 text-sm">
+    <button class="js-tab px-3 py-2 border-b-2" data-tab="map">地図＆サマリー</button>
+    <button class="js-tab px-3 py-2 border-b-2" data-tab="all">全BL一覧</button>
+    <button class="js-tab px-3 py-2 border-b-2" data-tab="special">★特別管理BL <span id="specialCountBadge" class="ml-1 inline-block bg-red-500 text-white text-[10px] rounded-full px-1.5 py-0.5"></span></button>
+    <button class="js-tab px-3 py-2 border-b-2" data-tab="aggregate">顧客別/荷物別集計</button>
+    <div class="flex-1"></div>
+    <div id="specialListStatus" class="flex flex-wrap items-center justify-end gap-2 py-1"></div>
+  </div>`;
+}
+function updateTabsActive(){
+  document.querySelectorAll('.js-tab').forEach(btn=>{
+    const active = btn.dataset.tab===state.tab;
+    btn.classList.toggle('border-indigo-600', active);
+    btn.classList.toggle('text-indigo-600', active);
+    btn.classList.toggle('font-semibold', active);
+    btn.classList.toggle('border-transparent', !active);
+    btn.classList.toggle('text-slate-500', !active);
+  });
+  const badge = document.getElementById('specialCountBadge');
+  if(badge) badge.textContent = state.specialSet.size;
+}
+function renderFooter(){
+  const li = state.lastImport;
+  const saveLabel = state.saveStatus==='unsaved'
+    ? '<span class="text-red-500 font-semibold">未保存</span>'
+    : state.saveStatus==='saved' ? '<span class="text-slate-400">保存済み</span>' : '';
+  document.getElementById('appFooter').innerHTML = `データ件数: ${state.bls.length}件　最終取込: ${li ? esc(new Date(li.time).toLocaleString('ja-JP')) : '(サンプルデータ)'}${saveLabel ? '　保存状態: '+saveLabel : ''}
+  <span class="text-slate-300">| Powered by Tailwind CSS, Leaflet, SheetJS, Font Awesome</span>`;
+}
+function fixHeaderCheckboxIndeterminate(){
+  Object.keys(lastRenderedLists).forEach(id=>{
+    const cb = document.getElementById(id+'-headercb');
+    if(!cb) return;
+    const list = lastRenderedLists[id];
+    const all = list.length>0 && list.every(bl=>state.specialSet.has(bl.blNo));
+    const none = list.every(bl=>!state.specialSet.has(bl.blNo));
+    cb.indeterminate = !all && !none;
+  });
+}
+function currentTableList(tableId){ return lastRenderedLists[tableId] || null; }
+
+function update(){
+  lastRenderedLists = {};
+  updateTabsActive();
+  ['tab-map','tab-all','tab-special','tab-aggregate'].forEach(id=>{
+    document.getElementById(id).classList.toggle('hidden', id !== 'tab-'+state.tab);
+  });
+  const list = filteredBLs();
+  if(state.tab==='map') renderMapTabContent(list);
+  else if(state.tab==='all') renderAllTabContent(list);
+  else if(state.tab==='special') document.getElementById('tab-special').innerHTML = renderSpecialTab();
+  else if(state.tab==='aggregate') document.getElementById('tab-aggregate').innerHTML = renderAggregateTab(list);
+  fixHeaderCheckboxIndeterminate();
+  renderSpecialListStatus();
+  renderFooter();
+}
+// 地図コンテナのサイズ確定後にサイズ再計算し、未実施なら表示範囲を合わせる
+function ensureMapLayout(){
+  if(!leafletMap) return;
+  try{ leafletMap.invalidateSize(); }catch(e){}
+  if(!mapFitDone && state.tab==='map') renderMap(filteredBLs());
+}
+function switchTab(tab){
+  state.tab = tab;
+  try{ location.hash = tab; }catch(e){}
+  update();
+  if(tab==='map' && leafletMap){ setTimeout(ensureMapLayout, 60); }
+}
+
+function toast(msg, kind, onDetail){
+  kind = kind || 'ok';
+  const root = document.getElementById('toastRoot');
+  const div = document.createElement('div');
+  const colors = { ok:'bg-slate-800', warn:'bg-amber-600', error:'bg-red-600' };
+  div.className = `${colors[kind]||colors.ok} text-white text-sm px-4 py-2 rounded-lg shadow-lg max-w-sm`;
+  const msgSpan = document.createElement('span');
+  msgSpan.textContent = msg;
+  div.appendChild(msgSpan);
+  if(onDetail){
+    const btn = document.createElement('button');
+    btn.textContent = '詳細';
+    btn.className = 'ml-2 underline font-semibold';
+    btn.addEventListener('click', onDetail);
+    div.appendChild(btn);
+  }
+  root.appendChild(div);
+  setTimeout(()=>{ div.style.opacity='0'; div.style.transition='opacity .4s'; setTimeout(()=>div.remove(), 400); }, onDetail ? 9000 : 4500);
+}
+// 12.3: 取込警告一覧モーダル（最大200件）
+function showWarningsModal(warnings){
+  const shown = warnings.slice(0, 200);
+  const rows = shown.map(w=>`<li class="py-1 border-b last:border-0">${esc(w)}</li>`).join('');
+  const more = warnings.length>200 ? `<div class="text-xs text-slate-400 mt-2">他${warnings.length-200}件（省略）</div>` : '';
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="fixed inset-0 bg-black/40 z-[1000] flex items-center justify-center p-4" id="warnModalBackdrop">
+    <div class="bg-white rounded-xl shadow-xl max-w-xl w-full max-h-[80vh] overflow-auto p-5">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="font-bold text-lg">取込警告一覧（${warnings.length}件）</h3>
+        <button id="warnModalClose" class="text-slate-400 hover:text-slate-700 text-2xl leading-none px-2">&times;</button>
+      </div>
+      <ul class="text-sm text-slate-700">${rows}</ul>
+      ${more}
+    </div>
+  </div>`;
+}
+document.addEventListener('click', e=>{
+  if(e.target.id==='warnModalClose' || e.target.id==='warnModalBackdrop'){ document.getElementById('modalRoot').innerHTML=''; }
+});
+
+function resetToSample(){
+  state.bls = buildSampleData(state.baseDate);
+  if(!state.slist.handle) state.specialSet = new Set(state.bls.filter(b=>b.special).map(b=>b.blNo)); // リスト接続中はリストの内容を維持
+  state.lastImport = null;
+  state.phaseFilter = '';
+  invalidateAnalysis();
+  resetPages();
+  mapFitDone = false;
+  if(LS_OK){ try{ localStorage.removeItem(CONFIG.STORAGE_KEYS.data); }catch(e){} }
+  saveSpecial();
+  refreshFilterOptions();
+  update();
+  toast('サンプルデータに戻しました', 'ok');
+}
+
+function showImportChoice(pending){
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="fixed inset-0 bg-black/40 z-[1000] flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-5">
+      <h3 class="font-bold text-lg mb-2">取込モードの選択</h3>
+      <p class="text-sm text-slate-500 mb-4">${esc(pending.fileName)}: ${pending.result.bls.length}件のBLを検出しました。</p>
+      <div class="flex flex-col gap-2">
+        <button id="importReplace" class="px-3 py-2 rounded bg-indigo-600 text-white text-sm">置換（既存データを削除して取込）</button>
+        <button id="importAppend" class="px-3 py-2 rounded bg-indigo-100 text-indigo-700 text-sm">追加（同一BLは上書き）</button>
+        <button id="importCancel" class="px-3 py-2 rounded text-slate-500 text-sm">キャンセル</button>
+      </div>
+    </div>
+  </div>`;
+  state.pendingImport = pending;
+}
+function performImport(mode){
+  const pending = state.pendingImport;
+  if(!pending) return;
+  const { result, fileName } = pending;
+  if(mode==='replace'){
+    state.bls = result.bls;
+  } else if(mode==='append'){
+    const map = new Map(state.bls.map(bl=>[bl.blNo.toLowerCase(), bl]));
+    result.bls.forEach(bl=>{ map.set(bl.blNo.toLowerCase(), bl); });
+    state.bls = [...map.values()];
+  }
+  state.lastImport = { time: new Date().toISOString(), fileName, count: result.bls.length, skipped: result.skipped, warnings: result.warnings.length };
+  invalidateAnalysis();
+  resetPages();
+  mapFitDone = false;
+  saveData();
+  document.getElementById('modalRoot').innerHTML = '';
+  state.pendingImport = null;
+  const kind = result.warnings.length ? 'warn' : 'ok';
+  toast(`取込完了: ${result.bls.length}件 / スキップ ${result.skipped}件 / 警告 ${result.warnings.length}件`, kind,
+    result.warnings.length ? ()=>showWarningsModal(result.warnings) : null);
+  if(result.warnings.length) console.warn('LogiDash import warnings:', result.warnings);
+  refreshFilterOptions();
+  update();
+}
+async function handleFiles(files){
+  const file = files && files[0];
+  if(!file) return;
+  if(typeof XLSX==='undefined'){ toast('Excelライブラリが読み込まれていません', 'error'); return; }
+  const ext = file.name.toLowerCase().split('.').pop();
+  if(!['xlsx','xls','csv'].includes(ext)){ toast('未対応の拡張子です（.xlsx/.xls/.csvのみ対応）', 'error'); return; }
+  try{
+    const result = await readFile(file);
+    if(!result.bls.length){ toast('取込可能なBLが見つかりませんでした（BL番号列を確認してください）', 'error'); return; }
+    showImportChoice({ result, fileName: file.name });
+  }catch(err){
+    console.error(err);
+    toast('取込に失敗しました: ' + (err && err.message ? err.message : '不明なエラー'), 'error');
+  }
+}
+function setupDnD(){
+  let dragCounter = 0;
+  const overlay = document.getElementById('dropOverlay');
+  window.addEventListener('dragenter', e=>{ e.preventDefault(); dragCounter++; overlay.classList.remove('hidden'); });
+  window.addEventListener('dragover', e=>{ e.preventDefault(); });
+  window.addEventListener('dragleave', ()=>{ dragCounter--; if(dragCounter<=0){ dragCounter=0; overlay.classList.add('hidden'); } });
+  window.addEventListener('drop', e=>{
+    e.preventDefault(); dragCounter=0; overlay.classList.add('hidden');
+    if(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+  });
+}
+
+const debouncedTextFilter = debounce(v=>{ resetPages(); state.filters.text = v; update(); }, 250);
+
+// 11.5 特別管理トグルの差分更新: update()(全再描画)を呼ばず、必要な箇所だけ更新する
+function onSpecialToggle(blNo, checked){
+  if(checked) state.specialSet.add(blNo); else state.specialSet.delete(blNo);
+  saveSpecial();
+  onSpecialSetChanged();
+  // 同じ data-bl を持つ全チェックボックスのchecked状態を同期
+  document.querySelectorAll('input.js-special[data-bl]').forEach(cb=>{
+    if(cb.getAttribute('data-bl')===blNo) cb.checked = checked;
+  });
+  // タブの件数バッジ・ヘッダーチェックの3状態
+  const badge = document.getElementById('specialCountBadge');
+  if(badge) badge.textContent = state.specialSet.size;
+  fixHeaderCheckboxIndeterminate();
+  // 開いている詳細モーダルの特別管理チェックボックスは上のquerySelectorAllで同期済み
+  // タブごとの追加更新
+  if(state.tab==='special'){
+    document.getElementById('tab-special').innerHTML = renderSpecialTab();
+  } else if(state.tab==='map' && typeof L !== 'undefined'){
+    const list = filteredBLs();
+    const kpiEl = document.getElementById('mapKpis');
+    if(kpiEl) kpiEl.innerHTML = kpiCardsHtml(computeKPI(list));
+    const sumEl = document.getElementById('mapSummary');
+    if(sumEl) sumEl.innerHTML = renderSummaryTableHtml(aggregateByLocation(list)); // ★件数列の更新
+    renderRoutes(list); // ポップアップ内のチェックは上で同期済み。閉じたポップアップは開く時に最新状態で生成される
+  } else if(state.tab==='aggregate'){
+    document.getElementById('tab-aggregate').innerHTML = renderAggregateTab(filteredBLs());
+  }
+  // 他タブ(全BL一覧など)はチェック状態の同期のみ。タブ切替時に通常描画される。
+}
+
+document.addEventListener('change', e=>{
+  const t = e.target;
+  if(t.matches && t.matches('input.js-special[data-bl]')){
+    const blNo = t.getAttribute('data-bl');
+    onSpecialToggle(blNo, t.checked);
+    return;
+  }
+  if(t.id && t.id.endsWith('-headercb')){
+    const tableId = t.id.replace('-headercb','');
+    const list = currentTableList(tableId);
+    if(list){ list.forEach(bl=>{ if(t.checked) state.specialSet.add(bl.blNo); else state.specialSet.delete(bl.blNo); }); saveSpecial(); onSpecialSetChanged(); update(); }
+    return;
+  }
+  if(t.id==='baseDateInput'){ state.baseDate = t.value || todayStr(); invalidateAnalysis(); mapFitDone=false; resetPages(); update(); return; }
+  if(t.id==='warnDaysInput'){ state.settings.warnDays = Math.max(0, +t.value||0); invalidateAnalysis(); saveSettings(); update(); return; }
+  if(t.id==='dangerDaysInput'){ state.settings.dangerDays = Math.max(0, +t.value||0); invalidateAnalysis(); saveSettings(); update(); return; }
+  if(t.id==='filterCustomer'){ state.filters.customer = t.value; resetPages(); update(); return; }
+  if(t.id==='filterCarrier'){ state.filters.carrier = t.value; resetPages(); update(); return; }
+  if(t.id==='filterCargo'){ state.filters.cargoType = t.value; resetPages(); update(); return; }
+  if(t.id==='filterVia'){ state.filters.via = t.value; resetPages(); update(); return; }
+  if(t.id==='filterPhase'){
+    state.etaFilter = t.value==='ETA_UNDEF';
+    state.phaseFilter = state.etaFilter ? '' : t.value;
+    resetPages(); update(); return;
+  }
+  if(t.id==='specialCarrierSelect'){ state.specialCarrier = t.value; resetPages(); update(); return; }
+  if(t.id==='fileInput'){ handleFiles(t.files); t.value=''; return; }
+  if(t.classList && t.classList.contains('js-pagesize')){
+    const tableId = t.dataset.table;
+    const pg = pageStateFor(tableId);
+    pg.pageSize = +t.value || 100;
+    pg.page = 1;
+    update();
+    return;
+  }
+});
+
+document.addEventListener('input', e=>{
+  if(e.target.id==='filterText'){ debouncedTextFilter(e.target.value); }
+});
+
+document.addEventListener('click', e=>{
+  const tabBtn = e.target.closest('.js-tab');
+  if(tabBtn){ switchTab(tabBtn.dataset.tab); return; }
+
+  const kpi = e.target.closest('.js-kpi');
+  if(kpi){
+    if(kpi.dataset.eta){ state.etaFilter = true; state.phaseFilter = ''; }
+    else { state.phaseFilter = kpi.dataset.phase; state.etaFilter = false; }
+    switchTab('all');
+    return;
+  }
+
+  const sortTh = e.target.closest('.js-sort');
+  if(sortTh){
+    const key = sortTh.dataset.key, tableId = sortTh.dataset.table;
+    const st = sortStateFor(tableId);
+    if(st.key===key) st.dir = st.dir==='asc' ? 'desc' : 'asc'; else { st.key = key; st.dir = 'asc'; }
+    pageStateFor(tableId).page = 1;
+    update();
+    return;
+  }
+
+  const pagerBtn = e.target.closest('.js-pager');
+  if(pagerBtn){
+    const tableId = pagerBtn.dataset.table;
+    const pg = pageStateFor(tableId);
+    const dir = pagerBtn.dataset.dir;
+    if(dir==='first') pg.page = 1;
+    else if(dir==='prev') pg.page = Math.max(1, pg.page-1);
+    else if(dir==='next') pg.page = pg.page+1;
+    else if(dir==='last') pg.page = Infinity; // renderBLTable がクランプする
+    update();
+    return;
+  }
+
+  const showOnMapBtn = e.target.closest('#modalShowOnMap');
+  if(showOnMapBtn){
+    const blNo = showOnMapBtn.dataset.bl;
+    const bl = state.bls.find(b=>b.blNo===blNo);
+    document.getElementById('modalRoot').innerHTML = '';
+    switchTab('map');
+    setTimeout(()=>{
+      if(bl && leafletMap){
+        const nodes = [bl.pol, ...bl.vias, bl.pod].filter(nd=>nd.lat!=null && nd.lng!=null);
+        if(nodes.length) leafletMap.fitBounds(nodes.map(nd=>[nd.lat, nd.lng]), { padding:[40,40] });
+      }
+    }, 100);
+    return;
+  }
+  const detailBtn = e.target.closest('.js-detail');
+  if(detailBtn){ e.preventDefault(); renderModal(detailBtn.dataset.bl); return; }
+
+  const row = e.target.closest('.js-row');
+  if(row && !e.target.closest('button') && !e.target.closest('input') && !e.target.closest('a')){ renderModal(row.dataset.bl); return; }
+
+  const locRow = e.target.closest('.js-loc-row');
+  if(locRow){ flyToLocation(locRow.dataset.loc); return; }
+
+  const expCust = e.target.closest('.js-expand-cust');
+  if(expCust){ const k=expCust.dataset.key; if(state.expanded.customer.has(k)) state.expanded.customer.delete(k); else state.expanded.customer.add(k); update(); return; }
+  const expCargo = e.target.closest('.js-expand-cargo');
+  if(expCargo){ const k=expCargo.dataset.key; if(state.expanded.cargo.has(k)) state.expanded.cargo.delete(k); else state.expanded.cargo.add(k); update(); return; }
+
+  if(e.target.id==='modalClose' || e.target.id==='modalBackdrop'){ document.getElementById('modalRoot').innerHTML=''; return; }
+  if(e.target.id==='btnTemplate'){ downloadTemplate(); return; }
+  if(e.target.id==='btnSample'){ if(confirm('サンプルデータに戻します。取込済みデータは削除されます。よろしいですか？')){ resetToSample(); } return; }
+  if(e.target.id==='btnToday'){ state.baseDate = todayStr(); const el=document.getElementById('baseDateInput'); if(el) el.value = state.baseDate; invalidateAnalysis(); mapFitDone=false; update(); return; }
+  if(e.target.id==='btnImportFile'){ document.getElementById('fileInput').click(); return; }
+  if(e.target.id==='btnClearFilters'){ state.filters = {customer:'',carrier:'',cargoType:'',via:'',text:''}; state.phaseFilter=''; state.etaFilter=false; resetPages(); renderFilterBarShell(); refreshFilterOptions(); update(); return; }
+  if(e.target.id==='btnClearPhase'){ state.phaseFilter=''; resetPages(); update(); return; }
+  if(e.target.id==='btnClearEta'){ state.etaFilter=false; resetPages(); update(); return; }
+  if(e.target.id==='btnExportView'){ exportSpecial('view'); return; }
+  if(e.target.id==='btnExportAll'){ exportSpecial('all'); return; }
+  if(e.target.id==='importReplace'){ performImport('replace'); return; }
+  if(e.target.id==='importAppend'){ performImport('append'); return; }
+  if(e.target.id==='importCancel'){ document.getElementById('modalRoot').innerHTML=''; state.pendingImport=null; return; }
+});
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){ document.getElementById('modalRoot').innerHTML=''; }
+});
+
+/* ============================================================
+   11b. 特別管理リスト（共有xlsx）v1.5
+   File System Access API(Edge/Chrome)で開いたファイルに直接上書き保存する。
+   保存直前にファイルの更新時刻を読込時と比べ、他の人が先に保存していたら上書きしない
+============================================================ */
+const SL_SHEET = '特別管理', SL_INFO_SHEET = '情報';
+const SL_FILE_TYPES = [{ description:'Excel ブック', accept:{ 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx'] } }];
+const SL_SUPPORTED = typeof window.showOpenFilePicker === 'function';
+const SL_IDB_KEY = 'specialListHandle';
+
+// ファイル参照(FileSystemFileHandle)は localStorage に入らないため IndexedDB に保存する
+function idbOpen(){
+  return new Promise((res, rej)=>{
+    const r = indexedDB.open('logidash', 1);
+    r.onupgradeneeded = ()=> r.result.createObjectStore('kv');
+    r.onsuccess = ()=> res(r.result);
+    r.onerror = ()=> rej(r.error);
+  });
+}
+async function idbGet(key){
+  try{
+    const db = await idbOpen();
+    return await new Promise((res, rej)=>{ const q = db.transaction('kv').objectStore('kv').get(key); q.onsuccess = ()=>res(q.result); q.onerror = ()=>rej(q.error); });
+  }catch(e){ return undefined; }
+}
+async function idbSet(key, val){
+  try{
+    const db = await idbOpen();
+    await new Promise((res, rej)=>{ const tx = db.transaction('kv','readwrite'); tx.objectStore('kv').put(val, key); tx.oncomplete = ()=>res(); tx.onerror = ()=>rej(tx.error); });
+  }catch(e){}
+}
+function nowStr(){
+  const d = new Date(), p = n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}/${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+// リスト未接続のまま★を変更したか（接続時に上書きしてよいかの確認に使う）
+function slLocalDirty(){ if(!LS_OK) return false; try{ return localStorage.getItem(CONFIG.STORAGE_KEYS.specialLocalDirty)==='1'; }catch(e){ return false; } }
+function slSetLocalDirty(v){ if(!LS_OK) return; try{ if(v) localStorage.setItem(CONFIG.STORAGE_KEYS.specialLocalDirty,'1'); else localStorage.removeItem(CONFIG.STORAGE_KEYS.specialLocalDirty); }catch(e){} }
+function onSpecialSetChanged(){
+  if(!state.slist.handle) slSetLocalDirty(true);
+  renderSpecialListStatus();
+}
+// 未保存の変更件数 = ファイル上の集合と画面の集合の差
+function slUnsavedCount(){
+  const sl = state.slist;
+  if(!sl.handle) return 0;
+  let n = 0;
+  state.specialSet.forEach(no=>{ if(!sl.saved.has(no)) n++; });
+  sl.saved.forEach(no=>{ if(!state.specialSet.has(no)) n++; });
+  return n;
+}
+function slConfirmDiscard(){
+  const n = slUnsavedCount();
+  return n===0 || confirm(`特別管理リストに未保存の変更が${n}件あります。破棄してよろしいですか？`);
+}
+function slConfirmReplaceLocal(){
+  if(state.slist.handle || !slLocalDirty() || state.specialSet.size===0) return true;
+  return confirm(`このブラウザだけに保存されている特別管理（${state.specialSet.size}件）は、開くリストの内容に置き換わります。よろしいですか？\n（今の内容をリストにしたい場合は「キャンセル」→「新規作成」を使ってください）`);
+}
+async function slEnsurePermission(handle){
+  const opts = { mode:'readwrite' };
+  if((await handle.queryPermission(opts))==='granted') return true;
+  return (await handle.requestPermission(opts))==='granted';
+}
+function parseSpecialListWorkbook(wb){
+  const ws = wb.Sheets[SL_SHEET] || wb.Sheets[wb.SheetNames[0]];
+  const aoa = ws ? XLSX.utils.sheet_to_json(ws, { header:1, defval:null, raw:false }) : [];
+  const hmap = buildHeaderMap(aoa[0] || []);
+  if(!('BL番号' in hmap)) throw new Error('「BL番号」列が見つかりません');
+  const registered = new Map();
+  for(let r=1; r<aoa.length; r++){
+    const row = aoa[r] || [];
+    const no = String(row[hmap['BL番号']] ?? '').trim();
+    if(!no) continue;
+    registered.set(no, ('登録日時' in hmap) ? String(row[hmap['登録日時']] ?? '') : '');
+  }
+  let updatedAt = '';
+  const info = wb.Sheets[SL_INFO_SHEET];
+  if(info){
+    const rows = XLSX.utils.sheet_to_json(info, { header:1, defval:null, raw:false });
+    const hit = rows.find(r=> r && normalizeHeader(r[0])==='最終更新日時');
+    if(hit) updatedAt = String(hit[1] ?? '');
+  }
+  return { registered, updatedAt };
+}
+async function slLoad(handle){
+  const file = await handle.getFile();
+  const wb = XLSX.read(await file.arrayBuffer(), { type:'array' });
+  const { registered, updatedAt } = parseSpecialListWorkbook(wb);
+  Object.assign(state.slist, { handle, prevHandle:handle, name:file.name, lastModified:file.lastModified, updatedAt,
+    saved:new Set(registered.keys()), registered });
+  state.specialSet = new Set(registered.keys());
+  saveSpecial(); // この端末のキャッシュ（リスト未接続時の表示用）
+  slSetLocalDirty(false);
+  idbSet(SL_IDB_KEY, handle);
+  update();
+}
+async function slLoadWithPermission(handle){
+  try{
+    if(!(await slEnsurePermission(handle))){ toast('ファイルへのアクセスが許可されませんでした', 'error'); return; }
+    await slLoad(handle);
+    toast(`特別管理リストを読み込みました（${state.specialSet.size}件）`, 'ok');
+  }catch(e){
+    console.error(e);
+    toast('特別管理リストを読み込めませんでした: ' + (e && e.message ? e.message : e), 'error');
+  }
+}
+async function slOpen(){
+  if(!slConfirmDiscard() || !slConfirmReplaceLocal()) return;
+  let handle;
+  try{ [handle] = await window.showOpenFilePicker({ types:SL_FILE_TYPES, multiple:false }); }catch(e){ return; } // キャンセル
+  await slLoadWithPermission(handle);
+}
+async function slReopen(){
+  const h = state.slist.prevHandle;
+  if(!h || !slConfirmReplaceLocal()) return;
+  await slLoadWithPermission(h);
+}
+async function slReload(){
+  if(!state.slist.handle || !slConfirmDiscard()) return;
+  await slLoadWithPermission(state.slist.handle);
+}
+async function slCreateNew(){
+  if(!slConfirmDiscard()) return;
+  let handle;
+  try{ handle = await window.showSaveFilePicker({ suggestedName:'特別管理リスト.xlsx', types:SL_FILE_TYPES }); }catch(e){ return; }
+  // 今の特別管理(画面の★)をそのまま新しいリストとして保存する
+  Object.assign(state.slist, { handle, name:handle.name, lastModified:null, updatedAt:'', saved:new Set(), registered:new Map() });
+  await slSave();
+}
+async function slSave(){
+  const sl = state.slist;
+  if(!sl.handle || sl.busy) return;
+  sl.busy = true; renderSpecialListStatus();
+  try{
+    if(!(await slEnsurePermission(sl.handle))){ toast('ファイルへのアクセスが許可されませんでした', 'error'); return; }
+    if(sl.lastModified!=null){
+      const cur = await sl.handle.getFile();
+      if(cur.lastModified !== sl.lastModified){
+        toast('他の人が特別管理リストを更新しています。今回の変更は保存していません。「読み込み直し」で最新を取得してから、もう一度変更してください', 'error');
+        return;
+      }
+    }
+    const now = nowStr();
+    const registered = new Map();
+    [...state.specialSet].sort().forEach(no=> registered.set(no, sl.registered.get(no) || now));
+    const wb = XLSX.utils.book_new();
+    const ws1 = XLSX.utils.aoa_to_sheet([['BL番号','登録日時'], ...registered]);
+    ws1['!cols'] = [{wch:22},{wch:18}];
+    XLSX.utils.book_append_sheet(wb, ws1, SL_SHEET);
+    const ws2 = XLSX.utils.aoa_to_sheet([['項目','値'], ['最終更新日時', now], ['件数', registered.size]]);
+    ws2['!cols'] = [{wch:14},{wch:20}];
+    XLSX.utils.book_append_sheet(wb, ws2, SL_INFO_SHEET);
+    const data = XLSX.write(wb, { bookType:'xlsx', type:'array' });
+    const w = await sl.handle.createWritable();
+    await w.write(data);
+    await w.close();
+    const saved = await sl.handle.getFile();
+    Object.assign(sl, { prevHandle:sl.handle, name:saved.name, lastModified:saved.lastModified, updatedAt:now, saved:new Set(registered.keys()), registered });
+    slSetLocalDirty(false);
+    idbSet(SL_IDB_KEY, sl.handle);
+    toast(`特別管理リストを保存しました（${registered.size}件）`, 'ok');
+  }catch(e){
+    console.error(e);
+    toast('保存できませんでした（Excel でファイルを開いていると保存できません）: ' + (e && e.message ? e.message : e), 'error');
+  }finally{
+    sl.busy = false;
+    renderSpecialListStatus();
+  }
+}
+function renderSpecialListStatus(){
+  const el = document.getElementById('specialListStatus');
+  if(!el) return;
+  const sl = state.slist;
+  const btn = (id, label, cls, disabled)=> `<button id="${id}" class="js-sl text-xs px-2 py-1 rounded disabled:opacity-40 disabled:cursor-not-allowed ${cls}" ${disabled?'disabled':''}>${label}</button>`;
+  if(!SL_SUPPORTED){
+    el.innerHTML = '<span class="text-xs text-amber-600">このブラウザでは特別管理リストを使えません（Edge で開いてください）</span>';
+    return;
+  }
+  if(!sl.handle){
+    el.innerHTML = `<span class="text-xs text-amber-600" title="★の変更はこのブラウザだけに保存され、他の人とは共有されません"><i class="fa-solid fa-triangle-exclamation mr-1"></i>特別管理リスト: 未接続</span>
+      ${sl.prevHandle ? btn('btnSlReopen', `前回のリストを開く（${esc(sl.prevHandle.name)}）`, 'bg-indigo-600 text-white hover:bg-indigo-500') : ''}
+      ${btn('btnSlOpen', 'リストを開く', 'border border-indigo-300 text-indigo-700 hover:bg-indigo-50')}
+      ${btn('btnSlNew', '新規作成', 'text-indigo-600 hover:underline')}`;
+    return;
+  }
+  const n = slUnsavedCount();
+  el.innerHTML = `<span class="text-xs text-slate-600"><i class="fa-solid fa-file-excel text-emerald-600 mr-1"></i>${esc(sl.name)}</span>
+    <span class="text-xs text-slate-400">最終更新 ${esc(sl.updatedAt || '-')}</span>
+    ${n ? `<span class="text-xs font-semibold text-red-600">未保存 ${n}件</span>` : '<span class="text-xs text-emerald-600">保存済み</span>'}
+    ${btn('btnSlSave', sl.busy ? '保存中…' : '保存', 'bg-indigo-600 text-white hover:bg-indigo-500', !n || sl.busy)}
+    ${btn('btnSlReload', '読み込み直し', 'border border-slate-300 text-slate-600 hover:bg-slate-50', sl.busy)}
+    ${btn('btnSlOpen', '別のリストを開く', 'text-indigo-600 hover:underline', sl.busy)}`;
+}
+async function initSpecialList(){
+  if(!SL_SUPPORTED){ renderSpecialListStatus(); return; }
+  const h = await idbGet(SL_IDB_KEY);
+  if(h){
+    state.slist.prevHandle = h;
+    // 前回の許可が残っていれば自動で読み込む（未接続中の★変更がある場合は上書きしないよう手動に任せる）
+    try{ if(!slLocalDirty() && (await h.queryPermission({ mode:'readwrite' }))==='granted') await slLoad(h); }catch(e){}
+  }
+  renderSpecialListStatus();
+}
+document.addEventListener('click', e=>{
+  const b = e.target.closest('button.js-sl');
+  if(!b || b.disabled) return;
+  if(b.id==='btnSlOpen') slOpen();
+  else if(b.id==='btnSlReopen') slReopen();
+  else if(b.id==='btnSlNew') slCreateNew();
+  else if(b.id==='btnSlSave') slSave();
+  else if(b.id==='btnSlReload') slReload();
+});
+window.addEventListener('beforeunload', e=>{
+  if(slUnsavedCount() > 0){ e.preventDefault(); e.returnValue = ''; }
+});
+
+function loadState(){
+  let loadedBls = null;
+  if(LS_OK){
+    try{ const raw = localStorage.getItem(CONFIG.STORAGE_KEYS.data); if(raw) loadedBls = JSON.parse(raw); }catch(e){}
+    try{ const raw = localStorage.getItem(CONFIG.STORAGE_KEYS.special); if(raw) state.specialSet = new Set(JSON.parse(raw)); }catch(e){}
+    try{ const raw = localStorage.getItem(CONFIG.STORAGE_KEYS.settings); if(raw) Object.assign(state.settings, JSON.parse(raw)); }catch(e){}
+  }
+  if(loadedBls && Array.isArray(loadedBls) && loadedBls.length){
+    state.bls = loadedBls;
+    state.lastImport = { time: new Date().toISOString(), fileName:'(保存済みデータ)', count: loadedBls.length, skipped:0, warnings:0 };
+  } else {
+    state.bls = buildSampleData(state.baseDate);
+    if(state.specialSet.size===0){ state.specialSet = new Set(state.bls.filter(b=>b.special).map(b=>b.blNo)); }
+  }
+  const hash = location.hash.replace('#','');
+  if(['map','all','special','aggregate'].includes(hash)) state.tab = hash;
+}
+function init(){
+  if(!LS_OK) toast('この環境ではデータの保存ができません（メモリ内のみで動作します）', 'warn');
+  loadState();
+  renderHeaderShell();
+  renderFilterBarShell();
+  renderTabsShell();
+  refreshFilterOptions();
+  update();
+  setupDnD();
+  initSpecialList();
+  if(state.tab==='map'){ setTimeout(()=>{ if(leafletMap){ try{ leafletMap.invalidateSize(); }catch(e){} } }, 100); }
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="国際物流のコンテナ船・貨物の動静、現在地、滞留期間を可視化し、重要BLを特別管理として抽出・Excel出力できるLogiDashの紹介ページです。" />
+  <title>LogiDash | Works</title>
+  <style>
+    :root{
+      --bg:#f8fafc; --fg:#1f2937; --muted:#64748b; --line:#e2e8f0;
+      --card:#ffffff; --accent:#0f766e; --accent-hover:#115e59;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:"Noto Sans JP","Segoe UI",system-ui,sans-serif;
+      background:var(--bg); color:var(--fg); line-height:1.75;
+    }
+    .wrap{width:min(960px,100%); margin:0 auto; padding:24px}
+    .top-nav{margin-bottom:16px}
+    .back-link{color:var(--accent); text-decoration:none; font-weight:700}
+    .back-link:hover{text-decoration:underline}
+    .card{
+      background:var(--card); border:1px solid var(--line);
+      border-radius:14px; padding:24px;
+    }
+    h1{margin:0 0 10px; font-size:clamp(24px,3.4vw,34px)}
+    .lead{margin:0 0 20px; color:var(--muted)}
+    .thumb{
+      width:100%; height:auto; border:1px solid var(--line); border-radius:10px;
+      margin:0 0 18px;
+    }
+    h2{
+      margin:24px 0 10px; font-size:20px; padding-bottom:6px;
+      border-bottom:1px solid var(--line);
+    }
+    ul{margin:0; padding-left:20px}
+    li{margin:6px 0}
+    .note-link{
+      display:inline-block; margin-top:24px; padding:10px 16px;
+      border-radius:999px; background:var(--accent); color:#ffffff;
+      font-weight:700; text-decoration:none;
+    }
+    .note-link:hover{background:var(--accent-hover)}
+    .demo-link{
+      display:inline-block; margin-top:24px; margin-right:8px; padding:9px 15px;
+      border-radius:999px; border:1px solid var(--accent); color:var(--accent);
+      background:#ffffff; font-weight:700; text-decoration:none;
+    }
+    .demo-link:hover{background:#f0fdfa}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <nav class="top-nav" aria-label="パンくずリスト">
+      <a class="back-link" href="../../works.html">← Worksに戻る</a>
+    </nav>
+
+    <article class="card">
+      <h1>LogiDash — 国際コンテナ動静確認ダッシュボード</h1>
+      <p class="lead">国際物流のコンテナ船・貨物の動静、現在地、滞留期間を地図と一覧で可視化し、重要なBLを「特別管理」として抽出・Excel出力できる、単一HTMLのダッシュボードです。</p>
+      <img class="thumb" src="../61_image/LogiDash.png" alt="LogiDashの紹介画面" loading="lazy" decoding="async" />
+
+      <h2>解決したい課題</h2>
+      <ul>
+        <li>多数のBL（船荷証券）について、今どの港にいて、どこで何日滞留しているかを一目で把握しにくい。</li>
+        <li>出港遅延や経由地での滞留など、注意が必要な貨物を早めに見つけたい。</li>
+        <li>重要なBLをチームで共有し、必要な分だけを抽出して報告に使いたい。</li>
+      </ul>
+
+      <h2>ツールのアプローチ</h2>
+      <ul>
+        <li>Excel / CSV の動静データを取り込み、画面で設定した基準日から現在地・フェーズ・滞留日数を自動で算出。</li>
+        <li>1行 = 1BL × 1荷物の縦持ち形式で取り込み、同一BLの行は自動でマージ。列は見出し名で判定するため、列順の入れ替えにも対応。</li>
+        <li>特別管理の対象BLは動静データとは別の「特別管理リスト」（Excel）で管理し、共有フォルダ上でチームと共有。</li>
+        <li>サーバー不要。<code>index.html</code> をブラウザで開くだけで動作する単一HTML構成。</li>
+      </ul>
+
+      <h2>主な機能</h2>
+      <ul>
+        <li>地図＆サマリー：港マーカーをクリックすると、滞留中・通過予定のBL一覧と数量を表示。</li>
+        <li>全BL一覧：滞留3日以上を黄、7日以上を赤でハイライト（閾値は画面で変更可）。</li>
+        <li>★特別管理BL：一覧や地図で★を付けたBLを抽出し、船社フィルターをかけてExcel出力。</li>
+        <li>顧客別／荷物別集計、BLごとの詳細モーダル表示。</li>
+        <li>取込時の値の食い違いや解釈できない日付を警告として一覧表示（取込自体は継続）。</li>
+      </ul>
+
+      <h2>設計上の工夫</h2>
+      <ul>
+        <li>動静データに特別管理の記入を求めず、★の管理を別ファイルに分けて、データ更新と共有作業を切り離した。</li>
+        <li>保存前に他の人が同じリストを保存していた場合は上書きせずに知らせ、共有時の取りこぼしを防ぐ。</li>
+        <li>船社のETAとは別に「NUTS到着予定日」を表示専用で保持し、自動計算の結果と混同しないようにした。</li>
+        <li>1ページ100件のページングで描画件数を抑え、5,000件でもタブ切替が概ね500ms以内で動作。</li>
+      </ul>
+
+      <a class="demo-link" href="demo.html" target="_blank" rel="noopener noreferrer">デモを開く</a>
+      <!-- TODO: note記事公開後に href="#" を記事URLに差し替える -->
+      <a class="note-link" href="#" target="_blank" rel="noopener noreferrer">制作過程をnoteで読む</a>
+    </article>
+  </main>
+</body>
+</html>

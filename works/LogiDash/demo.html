@@ -60,7 +60,7 @@ const CONFIG = {
     specialLocalDirty: 'logidash.special.localdirty.v1'
   },
   DEFAULT_SETTINGS: { warnDays: 3, dangerDays: 7 },
-  DEFAULT_POD: '名古屋港'
+  DEFAULT_POD: '東京港'
 };
 
 /* ============================================================
@@ -232,29 +232,29 @@ function buildSampleData(T){
   const bls = [];
 
   bls.push({ blNo:'BL-2026-001', customer:'A商事', carrier:'ONE', vessel:'OCEAN FREEDOM V.012', statusText:'上海港 出港待ち', special:false,
-    pol: mkNode('上海港', {eta:A(2)}), vias:[], pod: mkNode('名古屋港', {eta:A(14)}),
+    pol: mkNode('上海港', {eta:A(2)}), vias:[], pod: mkNode('東京港', {eta:A(14)}),
     cargo: cg(['電子部品',100,'CTN']) });
 
   bls.push({ blNo:'BL-2026-002', customer:'B物産', carrier:'MAERSK', vessel:'MAERSK EDMONTON', statusText:'寧波港 出港待ち', special:false,
-    pol: mkNode('寧波港', {eta:A(1)}), vias:[], pod: mkNode('名古屋港', {eta:A(15)}),
+    pol: mkNode('寧波港', {eta:A(1)}), vias:[], pod: mkNode('大阪港', {eta:A(15)}),
     cargo: cg(['機械部品',50,'PLT']) });
 
   bls.push({ blNo:'BL-2026-003', customer:'C工業', carrier:'EVERGREEN', vessel:'EVER GIVEN', statusText:'青島港 出港遅延', special:true,
-    pol: mkNode('青島港', {ata:A(-9), etd:A(-2)}), vias:[], pod: mkNode('名古屋港', {eta:A(10)}),
+    pol: mkNode('青島港', {ata:A(-9), etd:A(-2)}), vias:[], pod: mkNode('博多港', {eta:A(10)}),
     cargo: cg(['自動車部品',300,'CTN'],['工具',20,'PLT']) });
 
   bls.push({ blNo:'BL-2026-004', customer:'D電機', carrier:'COSCO', vessel:'COSCO GALAXY V.201', statusText:'航行中', special:false,
-    pol: mkNode('塩田港', {ata:A(-6), atd:A(-5)}), vias:[], pod: mkNode('名古屋港', {eta:A(3)}),
+    pol: mkNode('塩田港', {ata:A(-6), atd:A(-5)}), vias:[], pod: mkNode('横浜港', {eta:A(3)}),
     cargo: cg(['家電製品',400,'CTN']) });
 
   bls.push({ blNo:'BL-2026-005', customer:'E自動車', carrier:'CMA CGM', vessel:'CMA CGM JACQUES SAADE', statusText:'欧州発 航行中', special:true,
     pol: mkNode('ロッテルダム港', {ata:A(-25), atd:A(-20)}),
     vias:[ mkNode('シンガポール港', {ata:A(-6), atd:A(-3)}), mkNode('香港港', {eta:A(6)}) ],
-    pod: mkNode('名古屋港', {eta:A(16)}),
+    pod: mkNode('神戸港', {eta:A(16)}),
     cargo: cg(['自動車部品',150,'CTN'],['タイヤ',500,'pcs']) });
 
   bls.push({ blNo:'BL-2026-006', customer:'A商事', carrier:'HMM', vessel:'HMM ALGECIRAS', statusText:'航行中', special:false,
-    pol: mkNode('ホーチミン港', {ata:A(-9), atd:A(-8)}), vias:[], pod: mkNode('名古屋港', {eta:A(2)}),
+    pol: mkNode('ホーチミン港', {ata:A(-9), atd:A(-8)}), vias:[], pod: mkNode('東京港', {eta:A(2)}),
     cargo: cg(['アパレル',800,'CTN']) });
 
   bls.push({ blNo:'BL-2026-007', customer:'B物産', carrier:'ONE', vessel:'ONE INNOVATION', statusText:'航行中', special:false,
@@ -264,38 +264,38 @@ function buildSampleData(T){
   bls.push({ blNo:'BL-2026-008', customer:'C工業', carrier:'MAERSK', vessel:'MAERSK SEALAND', statusText:'釜山港 滞留中', special:false,
     pol: mkNode('大連港', {ata:A(-11), atd:A(-10)}),
     vias:[ mkNode('釜山港', {ata:A(-4)}) ],
-    pod: mkNode('名古屋港', {eta:A(4)}),
+    pod: mkNode('博多港', {eta:A(4)}),
     cargo: cg(['精密機械',30,'pcs']) });
 
   bls.push({ blNo:'BL-2026-009', customer:'D電機', carrier:'EVERGREEN', vessel:'EVER ACE', statusText:'高雄港 滞留中', special:true,
     pol: mkNode('香港港', {ata:A(-13), atd:A(-12)}),
     vias:[ mkNode('高雄港', {ata:A(-8)}) ],
-    pod: mkNode('名古屋港', {eta:A(1)}),
+    pod: mkNode('神戸港', {eta:A(1)}),
     cargo: cg(['半導体部品',20,'CTN'],['梱包材',10,'PLT']) });
 
   bls.push({ blNo:'BL-2026-010', customer:'E自動車', carrier:'COSCO', vessel:'COSCO SHIPPING UNIVERSE', statusText:'シンガポール港 滞留中', special:false,
     pol: mkNode('ポートクラン港', {ata:A(-6), atd:A(-5)}),
     vias:[ mkNode('シンガポール港', {ata:A(-1)}) ],
-    pod: mkNode('名古屋港', {eta:A(3)}),
+    pod: mkNode('横浜港', {eta:A(3)}),
     cargo: cg(['ゴム製品',1200,'KG']) });
 
-  bls.push({ blNo:'BL-2026-011', customer:'A商事', carrier:'CMA CGM', vessel:'CMA CGM ANTOINE DE SAINT EXUPERY', statusText:'名古屋港 到着済', special:false,
+  bls.push({ blNo:'BL-2026-011', customer:'A商事', carrier:'CMA CGM', vessel:'CMA CGM ANTOINE DE SAINT EXUPERY', statusText:'大阪港 到着済', special:false,
     pol: mkNode('ハイフォン港', {ata:A(-20), atd:A(-19)}), vias:[],
-    pod: mkNode('名古屋港', {ata:A(-5)}),
+    pod: mkNode('大阪港', {ata:A(-5)}),
     cargo: cg(['家具',90,'CTN']) });
 
   bls.push({ blNo:'BL-2026-012', customer:'B物産', carrier:'HMM', vessel:'HMM NUERI', statusText:'搬出済', special:false,
     pol: mkNode('大連港', {ata:A(-24), atd:A(-23)}), vias:[],
-    pod: mkNode('名古屋港', {ata:A(-20), out:A(-15)}),
+    pod: mkNode('東京港', {ata:A(-20), out:A(-15)}),
     cargo: cg(['文具',300,'CTN']) });
 
   bls.push({ blNo:'BL-2026-013', customer:'C工業', carrier:'ONE', vessel:'ONE COMMITMENT', statusText:'搬出済', special:false,
     pol: mkNode('天津港', {ata:A(-33), atd:A(-32)}), vias:[],
-    pod: mkNode('名古屋港', {ata:A(-30), out:A(-25)}),
+    pod: mkNode('横浜港', {ata:A(-30), out:A(-25)}),
     cargo: cg(['化学製品',400,'KG'],['サンプル品',5,'CTN']) });
 
   bls.push({ blNo:'BL-2026-014', customer:'D電機', carrier:'COSCO', vessel:'COSCO GALAXY V.201', statusText:'航行中', special:false,
-    pol: mkNode('塩田港', {ata:A(-6), atd:A(-5)}), vias:[], pod: mkNode('名古屋港', {eta:A(3)}),
+    pol: mkNode('塩田港', {ata:A(-6), atd:A(-5)}), vias:[], pod: mkNode('横浜港', {eta:A(3)}),
     cargo: cg(['家電製品',250,'CTN']) });
 
   bls.push({ blNo:'BL-2026-015', customer:'E自動車', carrier:'HMM', vessel:'HMM PROMISE', statusText:'航行中', special:false,
@@ -305,7 +305,7 @@ function buildSampleData(T){
   bls.push({ blNo:'BL-2026-016', customer:'A商事', carrier:'ONE', vessel:'ONE COMPETENCE', statusText:'チェンナイ港発 航行中', special:false,
     pol: mkNode('チェンナイ港', {ata:A(-16), atd:A(-15)}),
     vias:[ mkNode('ポートクラン港', {ata:A(-9), atd:A(-8)}), mkNode('シンガポール港', {ata:A(-4), atd:A(-3)}), mkNode('香港港', {eta:A(5)}), mkNode('釜山港', {eta:A(9)}) ],
-    pod: mkNode('名古屋港', {eta:A(16)}),
+    pod: mkNode('東京港', {eta:A(16)}),
     cargo: cg(['化学薬品',80,'CTN']) });
 
   return bls;
@@ -407,12 +407,12 @@ function normalizeRows(aoa){
     setOrWarn(bl.pod,'name', get(row,'到着港'), '到着港', blNo);
     const podEta=parseDateOrWarn(get(row,'到着港ETA'),'到着港ETA',blNo), podAta=parseDateOrWarn(get(row,'到着港ATA'),'到着港ATA',blNo),
           podOut=parseDateOrWarn(get(row,'到着港搬出日'),'到着港搬出日',blNo);
-    const nutsRaw = get(row,'NUTS到着予定日') ?? get(row,'NUTS') ?? get(row,'NUTS到着予定');
-    const podNuts = parseDateOrWarn(nutsRaw,'NUTS到着予定日',blNo);
+    const nutsRaw = get(row,'予定日');
+    const podNuts = parseDateOrWarn(nutsRaw,'予定日',blNo);
     setOrWarn(bl.pod,'eta',podEta,'到着港ETA',blNo);
     setOrWarn(bl.pod,'ata',podAta,'到着港ATA',blNo);
     setOrWarn(bl.pod,'out',podOut,'到着港搬出日',blNo);
-    setOrWarn(bl.pod,'nuts',podNuts,'NUTS到着予定日',blNo);
+    setOrWarn(bl.pod,'nuts',podNuts,'予定日',blNo);
     const podLat=get(row,'到着港Lat'), podLng=get(row,'到着港Lng');
     if(podLat!=null && podLat!=='' && !isNaN(+podLat) && bl.pod.lat==null) bl.pod.lat=+podLat;
     if(podLng!=null && podLng!=='' && !isNaN(+podLng) && bl.pod.lng==null) bl.pod.lng=+podLng;
@@ -780,7 +780,7 @@ function dwellBadge(a){
 function specialCheckbox(blNo, checked){
   return `<input type="checkbox" class="js-special" data-bl="${esc(blNo)}" aria-label="${esc(blNo)}の特別管理" ${checked?'checked':''} onclick="event.stopPropagation()">`;
 }
-// 12.7: NUTS到着予定日セル。到着港ETAとの差を小さく表示（遅れ=赤・早まり=青）。計算には使わず表示のみ
+// 12.7: 予定日セル。到着港ETAとの差を小さく表示（遅れ=赤・早まり=青）。計算には使わず表示のみ
 function nutsCellHtml(bl){
   if(!bl.pod.nuts) return '<span class="text-slate-300">-</span>';
   const base = fmtMD(bl.pod.nuts);
@@ -810,7 +810,7 @@ const ALL_COLUMNS = [
   {key:'via4', label:'経由地4'},
   {key:'via5', label:'経由地5'},
   {key:'pod', label:'到着港'},
-  {key:'nuts', label:'NUTS到着予定'},
+  {key:'nuts', label:'予定日'},
   {key:'dwell', label:'累計滞留'},
   {key:'cargo', label:'荷物'},
   {key:'carrier', label:'船会社'},
@@ -841,7 +841,7 @@ function sortComparator(key){
       default: va=a.blNo; vb=b.blNo;
     }
     if(key.indexOf('via')===0 || key==='nuts'){
-      // 経由地・NUTSソートは空欄を末尾扱いにする
+      // 経由地・予定日ソートは空欄を末尾扱いにする
       if(va==='' && vb==='') return 0;
       if(va==='') return 1;
       if(vb==='') return -1;
@@ -1430,7 +1430,7 @@ function renderModal(blNo){
     if(dn.etaUndefined) badges += ' <span class="ml-1 text-xs px-1.5 py-0.5 rounded bg-slate-200 text-slate-600">ETA未定</span>';
     if(dn.ataNotEntered) badges += ' <span class="ml-1 text-xs px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">ATA未入力</span>';
     const est = dn.isEstimatedArr || dn.isEstimatedDep;
-    const nutsLine = isPodNode ? ` / NUTS ${fmtMD(ni.node.nuts)}` : '';
+    const nutsLine = isPodNode ? ` / 予定日 ${fmtMD(ni.node.nuts)}` : '';
     return `<div class="relative pl-6 pb-4 border-l-2 ${isCurrent?'border-indigo-500':'border-slate-200'}">
       <div class="absolute -left-[7px] top-0 w-3 h-3 rounded-full ${isCurrent?'bg-indigo-500':'bg-slate-300'}"></div>
       <div class="font-semibold ${est?'italic text-slate-600':''}">${esc(ni.label)}: ${esc(ni.node.name||'-')} ${isCurrent?`<span class="text-xs text-indigo-600 not-italic">${curLabel}</span>`:''}</div>
@@ -1487,7 +1487,7 @@ function longFormatHeader(maxVia){
     dateCols.push(base+1, base+2, base+3, base+4);
   }
   const podBase = header.length;
-  header.push('到着港','到着港ETA','到着港ATA','到着港搬出日','NUTS到着予定日','到着港Lat','到着港Lng');
+  header.push('到着港','到着港ETA','到着港ATA','到着港搬出日','予定日','到着港Lat','到着港Lng');
   dateCols.push(podBase+1, podBase+2, podBase+3, podBase+4);
   header.push('荷物種類','数量','単位');
   return { header, dateCols };
@@ -1500,7 +1500,7 @@ function downloadTemplate(){
      '上海港','2026-01-01','','2026-01-03','','','',
      '釜山港','2026-01-05','2026-01-05','2026-01-06','2026-01-06','','',
      '','','','','','','',
-     '名古屋港','2026-01-15','','','2026-01-15','','',
+     '東京港','2026-01-15','','','2026-01-15','','',
      '電子部品','100','CTN'],
     ['BL-SAMPLE-001','','','','', '','','','','','','', '','','','','','','', '','','','','','','', '','','','','','','',
      '精密機械','5','pcs']
@@ -1551,7 +1551,7 @@ function exportSpecial(scope){
   const s1podEtaIdx = s1header.length + 1;
   const s1podAtaIdx = s1header.length + 2;
   const s1nutsIdx = s1header.length + 3;
-  s1header.push('到着港','到着港ETA','到着港ATA','NUTS到着予定日','最大滞留日数','累計滞留日数','滞留警告','荷物内訳');
+  s1header.push('到着港','到着港ETA','到着港ATA','予定日','最大滞留日数','累計滞留日数','滞留警告','荷物内訳');
   s1dateCols.push(s1podEtaIdx, s1podAtaIdx, s1nutsIdx);
   const s1baseDateIdx = s1header.length;
   s1header.push('基準日');

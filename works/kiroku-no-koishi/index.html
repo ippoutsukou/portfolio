@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>記録の小石：日々の体重と生活ログ | Works</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --fg: #1f2937;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --card: #ffffff;
+      --primary: #2563eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans JP", "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.7;
+    }
+    .wrap { width: min(920px, 100%); margin: 0 auto; padding: 24px; }
+    .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .back-link { color: var(--primary); text-decoration: none; font-weight: 600; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    h1 { margin: 0 0 10px; font-size: clamp(24px, 3.6vw, 32px); }
+    .lead { color: var(--muted); margin: 0 0 20px; }
+    .thumb { width: 100%; border: 1px solid var(--line); border-radius: 10px; }
+    .section-title { font-size: 18px; margin: 22px 0 8px; }
+    .note { color: var(--muted); font-size: 14px; }
+    .actions { margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      border: 1px solid var(--line);
+      color: var(--fg);
+      background: #fff;
+    }
+    .btn.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top-nav">
+      <a class="back-link" href="../../works.html">←Worksに戻る</a>
+    </div>
+
+    <article class="card">
+      <h1>記録の小石：日々の体重と生活ログ</h1>
+      <p class="lead">体重が増えた日も減った日も、記録すれば小石が一つ増える。結果ではなく「記録したこと」を褒める体重管理アプリです（iPhone向け）。</p>
+
+      <img class="thumb" src="../61_image/kiroku-no-koishi.webp" alt="記録の小石の設計を説明する図解。結果ではなく記録を褒める仕組み、小石の瓶、生活タグ、端末内保存" loading="lazy" decoding="async" />
+
+      <h2 class="section-title">主な機能</h2>
+      <ul>
+        <li>記録：体重（必須）と体脂肪率（任意）に加え、外食・運動・早めに寝たなど12種類の生活タグから選んで記録</li>
+        <li>グラフ：7日・14日・30日の表示で、実測値と7日平均を確認。生活タグも同じ時間軸に並ぶ</li>
+        <li>小石の瓶：記録が小石として瓶に積み重なり、今週・今月の瓶や過去の月の棚で続けた年月を振り返れる</li>
+        <li>データ：アカウント登録は不要。記録は端末内に保存し、開発者のサーバーへ送らない</li>
+      </ul>
+
+      <h2 class="section-title">ご利用にあたって</h2>
+      <p class="note">
+        生活タグと翌日の体重変化の傾向表示は参考情報であり、体重変化の原因を断定するものではありません。
+        診断・治療を目的としたアプリではありません。
+      </p>
+    </article>
+  </main>
+</body>
+</html>
